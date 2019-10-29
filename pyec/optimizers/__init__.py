@@ -1,0 +1,4 @@
+
+
+class OptimizerError(Exception):
+    pass
