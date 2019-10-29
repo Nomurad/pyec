@@ -8,7 +8,7 @@ class Solver(object):
     def __init__(self,  popsize:int, #1世代あたりの個体数
                         dv_size:int, #設計変数の数
                         optimizer,
-                        eval_func=None, 
+                        eval_func, 
                         dv_bounds:tuple=(0,1) #設計変数の上下限値
                         ):
         """solver initializer
@@ -17,9 +17,9 @@ class Solver(object):
             popsize {int} -- [個体数]
             dv_size {int} -- [設計変数の数]
             optimizer     -- [進化計算手法]
+            eval_func {[type]} -- [目的関数(評価関数)] (default: {None})
         
         Keyword Arguments:
-            eval_func {[type]} -- [目的関数(評価関数)] (default: {None})
             dv_bounds {tuple} -- [設計変数の上下限値] (default: {(0,1)})
         """
         
