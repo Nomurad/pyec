@@ -25,6 +25,8 @@ class Pool(object):
         self.data.append(pop)
 
 class Environment(object):
+    """進化計算のパラメータなどを保存するクラス
+    """
     
     def __init__(self,  popsize:int, #1世代あたりの個体数
                         dv_size:int, #設計変数の数
@@ -47,23 +49,7 @@ class Environment(object):
         self.initializer = UniformInitializer(dv_size) 
         self.creator = Creator(self.initializer, dv_size)
 
-        #初期個体の生成
-        for _ in range(popsize):
-            indiv = self.creator()
-            
-            indiv.id = self.current_id
-            indiv.bounds = self.dv_bounds
-            
-            self.nowpop.append(indiv)
-            self.current_id += 1
-
-        for indiv in self.nowpop:
-            self.evaluate(indiv)
-
-        #適応度計算
-        self.optimizer.calc_fitness(self.nowpop)
-
-
+        
     def evaluate(self, indiv:Individual):
         genome = indiv.genome
         val = self.evaluate(genome)
@@ -81,6 +67,9 @@ class Environment(object):
 
 
 class Creator(object):
+    """初期個体の生成器
+    """
+    
     def __init__(self, initializer, dv_size:int):
         self.initializer = initializer
         self.dv_size = dv_size
