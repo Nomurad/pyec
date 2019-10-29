@@ -58,7 +58,7 @@ class Environment(object):
         
     def evaluate(self, indiv:Individual):
         genome = indiv.genome
-        val = self.evaluate(genome)
+        val = self.func(genome)
         indiv.set_value(val)
 
     def evaluated_all(self):
