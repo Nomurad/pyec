@@ -1,4 +1,6 @@
-from .indiv import Individual, Genome, Fitness
+import numpy as np 
+
+from .indiv import Individual, Fitness
 from .population import Population
 from ..operators.initializer import UniformInitializer
 
@@ -7,22 +9,26 @@ class EnvironmentError(Exception):
 
 class Pool(object):
     """
-    すべてのPopulationが入る(世代ごと)
     """
 
     def __init__(self):
-        self.current_epoch = 0
+        self.cls = Individual
+        self.current_id = 0
         self.data = []
+
+    def __call__(self, genome):
+        indiv = self.cls(genome)
+        indiv.set_id(self.current_id)
+        self.append(indiv)
 
     def __getitem__(self, key):
         return self.data[key]
 
     def __len__(self):
-        return self.current_epoch
+        return self.current_id
     
-    def append(self, pop):
-        self.current_epoch += 1
-        self.data.append(pop)
+    def append(self, indiv):
+        self.data.append(indiv)
 
 class Environment(object):
     """進化計算のパラメータなどを保存するクラス
@@ -75,6 +81,6 @@ class Creator(object):
         self.dv_size = dv_size
         
     def __call__(self):
-        genome = Genome(self.initializer())
+        genome = np.array(self.initializer())
         indiv = Individual(genome)
         return indiv

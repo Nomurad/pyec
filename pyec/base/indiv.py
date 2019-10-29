@@ -1,15 +1,7 @@
 import numpy as np
 
 class IndividualError(Exception):
-    pass 
-
-class Genome(np.ndarray):
-
-    def __init__(self, *args, **kwargs):
-        # super().__init__(self, *args, **kwargs)
-        pass
-
-
+    pass     
 
 class Fitness(object):
     """適応度
@@ -32,11 +24,17 @@ class Individual(object):
         self.genome = genome #遺伝子
         self.value = None #評価値
         self.wvalue = None #重みづけ評価値
+        self.feasble_value = None #制約違反量
         self.fitness = Fitness()
 
     def __str__(self):
         return f"indiv_id:{self.id}"
 
+    def set_id(self, _id):
+        self.id = _id
+
+    def get_genome(self):
+        return self.genome
 
     def decode(self, genome):        
         lower, upper = self.bounds
@@ -71,6 +69,3 @@ class Individual(object):
 if __name__ == "__main__":
     indiv = Individual(10)
     print(indiv)
-
-    a = Genome((1,))
-    print(a)

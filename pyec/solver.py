@@ -17,7 +17,7 @@ class Solver(object):
             popsize {int} -- [個体数]
             dv_size {int} -- [設計変数の数]
             optimizer     -- [進化計算手法]
-            eval_func {[type]} -- [目的関数(評価関数)] (default: {None})
+            eval_func {[type]} -- [目的関数(評価関数)]
         
         Keyword Arguments:
             dv_bounds {tuple} -- [設計変数の上下限値] (default: {(0,1)})
@@ -34,7 +34,7 @@ class Solver(object):
         for _ in range(popsize):
             indiv = self.env.creator()
             
-            indiv.id = self.env.current_id
+            indiv.set_id(self.env.current_id)
             indiv.bounds = self.env.dv_bounds
             
             self.nowpop.append(indiv)
@@ -45,3 +45,9 @@ class Solver(object):
 
         #適応度計算
         self.optimizer.calc_fitness(self.nowpop)
+
+    def __call__(self):
+        pass 
+
+    def advance(self):
+        pass
