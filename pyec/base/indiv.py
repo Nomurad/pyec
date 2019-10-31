@@ -43,6 +43,9 @@ class Individual(object):
     def get_design_variable(self):
         return self.decode(self.genome)
 
+    def set_fitness(self, fit):
+        self.fitness.set_fitness(fit)
+
     def set_value(self, value):
         if self.value is None:
             self.value = value
