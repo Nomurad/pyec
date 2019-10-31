@@ -16,6 +16,41 @@ def separate_random_func(self, pop, k):
     return selected, rest
 
 ###########################################################
+class SelectorError(Exception):
+    pass 
+
+class Selector(object):
+    
+    def __init__(self, selection, reset_cycle):
+        self._selection = selection
+        self._reset_cycle = reset_cycle
+        self._population = None
+        self._stored = []
+
+    def __call__(self, population=None):
+        if (population is None) and (self._population is None):
+            raise SelectorError("You should set population.")
+        elif (population is None) and (self._population is not None):
+            population = self._population
+        
+        self._stored = []
+        rest = []
+        for _ in range(self._reset_cycle):
+            if not rest:
+                rest = list(population)
+            
+            selected, rest = self._selection(rest)
+            if selected is None:
+                continue
+            
+            self._stored.append(selected)
+        
+        return self._stored
+
+    def Set_population(self, population):
+        self._population = population
+
+
 class SelectionIterator(object):
     ''' 交配の親選択イテレータ
     個体集団から親個体を選択し，選択された親個体を解集団から削除する(削除方式はselection関数に依存)
