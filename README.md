@@ -1,4 +1,4 @@
-# PyEC
+# PyEC( under development )  
 
 PyEC is a framework for evolutionary computing in Python3.  
 
