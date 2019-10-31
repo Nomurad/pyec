@@ -22,7 +22,6 @@ class Solver(object):
         Keyword Arguments:
             dv_bounds {tuple} -- [設計変数の上下限値] (default: {(0,1)})
         """
-        
         self.env = Environment(popsize, dv_size, optimizer,
                           eval_func, dv_bounds)
         
