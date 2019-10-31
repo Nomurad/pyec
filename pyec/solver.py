@@ -40,6 +40,7 @@ class Solver(object):
             self.env.current_id += 1
 
         for indiv in self.nowpop:
+            #目的関数値を計算
             self.env.evaluate(indiv)
 
         #適応度計算

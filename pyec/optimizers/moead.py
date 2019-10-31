@@ -77,6 +77,15 @@ class MOEAD(object):
         self.ref_points = []
         self.weight_vec = None
 
-    def calc_fitness(self, indiv:Individual):
-        scalar_chebyshev(indiv, self.weight_vec, self.ref_points)
+    def calc_fitness(self, population):
+        """population内全ての個体の適応度を計算
+        """
+        for indiv in population:
+            self.calc_fitness_single(indiv)
+
+    def calc_fitness_single(self, indiv:Individual):
+        """1個体の適応度計算
+        """
+        fit = scalar_chebyshev(indiv, self.weight_vec, self.ref_points)
+        indiv.set_fitness(fit)
 
