@@ -14,11 +14,16 @@ class Pool(object):
     def __init__(self):
         self.cls = Individual
         self.current_id = 0
-        self.data = []
+        self.data = [] #全個体リスト
 
-    def __call__(self, genome):
+    def __call__(self, genome:np.ndarray):
+        """遺伝子情報から個体を生成，全個体リストに追加しておく
+        
+        Arguments:
+            genome {np.ndarray} -- [遺伝子情報]
+        """
         indiv = self.cls(genome)
-        indiv.set_id(self.current_id)
+        self.current_id = indiv.set_id(self.current_id) #set id & renew current_id
         self.append(indiv)
 
     def __getitem__(self, key):
@@ -57,7 +62,14 @@ class Environment(object):
 
         
     def evaluate(self, indiv:Individual):
-        indiv.evaluate(self.func)
+        """目的関数値を計算
+           適応度はoptimizerを使って設定
+        
+        Arguments:
+            indiv {Individual} -- [個体情報]
+        """
+        res = indiv.evaluate(self.func)
+        return res 
 
     def evaluated_all(self):
         flag_evaluated = True   
@@ -74,11 +86,12 @@ class Creator(object):
     """初期個体の生成器
     """
     
-    def __init__(self, initializer, dv_size:int):
+    def __init__(self, initializer, pool:Pool):
         self.initializer = initializer
-        self.dv_size = dv_size
+        self._pool = pool
         
     def __call__(self):
         genome = np.array(self.initializer())
         indiv = Individual(genome)
+        indiv = self._pool()
         return indiv
