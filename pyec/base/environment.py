@@ -17,6 +17,9 @@ class Pool(object):
         self.data = [] #全個体リスト
 
     def __call__(self, genome:np.ndarray):
+        self.indiv_creator(genome)
+
+    def indiv_creator(self, genome:np.ndarray):
         """遺伝子情報から個体を生成，全個体リストに追加しておく
         
         Arguments:
@@ -99,6 +102,6 @@ class Creator(object):
         
     def __call__(self):
         genome = np.array(self.initializer())
-        indiv = Individual(genome)
-        indiv = self._pool()
+        # indiv = Individual(genome)
+        indiv = self._pool.indiv_creator(genome)
         return indiv

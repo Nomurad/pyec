@@ -33,7 +33,7 @@ class Solver(object):
         for _ in range(popsize):
             indiv = self.env.creator()
             
-            indiv.set_id(self.env.current_id)
+            # indiv.set_id(self.env.current_id)
             indiv.bounds = self.env.dv_bounds
             
             self.nowpop.append(indiv)
@@ -45,6 +45,9 @@ class Solver(object):
 
         #適応度計算
         self.optimizer.calc_fitness(self.nowpop)
+        
+        #初期個体を世代履歴に保存
+        self.env.alternate()
 
     def __call__(self):
         self.optimizer()
