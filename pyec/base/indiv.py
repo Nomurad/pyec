@@ -16,7 +16,7 @@ class Fitness(object):
 class Individual(object):
 
     def __init__(self, genome):
-        self.id = None
+        self._id = None
         self.parent_id = None
         self.bounds = (0,1)
         self.weight = None
@@ -29,10 +29,13 @@ class Individual(object):
         self.fitness = Fitness()
 
     def __str__(self):
-        return f"indiv_id:{self.id}"
+        return f"indiv_id:{self._id}"
 
     def set_id(self, _id):
-        self.id = _id
+        self._id = _id
+
+    def get_id(self):
+        return self._id 
 
     def get_genome(self):
         return self.genome
