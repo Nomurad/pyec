@@ -17,6 +17,7 @@ class Individual(object):
 
     def __init__(self, genome):
         self.id = None
+        self.parent_id = None
         self.bounds = (0,1)
         self.weight = None
         self.n_obj = 1
