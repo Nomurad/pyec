@@ -16,7 +16,7 @@ class Solver(object):
         Arguments:
             popsize {int} -- [個体数]
             dv_size {int} -- [設計変数の数]
-            optimizer     -- [進化計算手法]
+            optimizer     -- [進化計算手法] *インスタンス化したものを入れる
             eval_func {[type]} -- [目的関数(評価関数)]
         
         Keyword Arguments:
