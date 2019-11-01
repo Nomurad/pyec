@@ -47,7 +47,9 @@ class Environment(object):
                         ):
 
         self.current_id = 0
+        self.popsize = popsize
         self.nowpop = Population(capa=popsize)
+        self.history = [] #過去世代のpopulationのリスト
         self.pool = Pool()
         self.func = eval_func
         self.optimizer = optimizer()
@@ -60,6 +62,11 @@ class Environment(object):
         self.initializer = UniformInitializer(dv_size) 
         self.creator = Creator(self.initializer, dv_size)
 
+    def alternate(self):
+        """世代交代時に呼び出し
+        """
+        self.history.append(self.nowpop)
+        self.nowpop = Population(capa=self.popsize)
         
     def evaluate(self, indiv:Individual):
         """目的関数値を計算
