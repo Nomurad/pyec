@@ -10,7 +10,6 @@ class Fitness(object):
         self.fitness = None #適応度
         self.optimizer = None #NSGA-II , MOEA/D, etc...
     
-    def set_fitness(self, value):
     def set_fitness(self, value, optimizer=None):
         self.fitness = value
         self.optimizer = None
@@ -36,6 +35,7 @@ class Individual(object):
 
     def set_id(self, _id):
         self._id = _id
+        return (self._id + 1)
 
     def get_id(self):
         return self._id 
