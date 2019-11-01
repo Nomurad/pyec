@@ -8,9 +8,12 @@ class Fitness(object):
     """
     def __init__(self):
         self.fitness = None #適応度
+        self.optimizer = None #NSGA-II , MOEA/D, etc...
     
     def set_fitness(self, value):
+    def set_fitness(self, value, optimizer=None):
         self.fitness = value
+        self.optimizer = None
         
 
 class Individual(object):
