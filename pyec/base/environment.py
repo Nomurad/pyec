@@ -1,4 +1,6 @@
-from .indiv import Individual, Genome, Fitness
+import numpy as np 
+
+from .indiv import Individual, Fitness
 from .population import Population
 from ..operators.initializer import UniformInitializer
 
@@ -7,24 +9,35 @@ class EnvironmentError(Exception):
 
 class Pool(object):
     """
-    すべてのPopulationが入る(世代ごと)
     """
 
     def __init__(self):
-        self.current_epoch = 0
-        self.data = []
+        self.cls = Individual
+        self.current_id = 0
+        self.data = [] #全個体リスト
+
+    def __call__(self, genome:np.ndarray):
+        """遺伝子情報から個体を生成，全個体リストに追加しておく
+        
+        Arguments:
+            genome {np.ndarray} -- [遺伝子情報]
+        """
+        indiv = self.cls(genome)
+        self.current_id = indiv.set_id(self.current_id) #set id & renew current_id
+        self.append(indiv)
 
     def __getitem__(self, key):
         return self.data[key]
 
     def __len__(self):
-        return self.current_epoch
+        return self.current_id
     
-    def append(self, pop):
-        self.current_epoch += 1
-        self.data.append(pop)
+    def append(self, indiv):
+        self.data.append(indiv)
 
 class Environment(object):
+    """進化計算のパラメータなどを保存するクラス
+    """
     
     def __init__(self,  popsize:int, #1世代あたりの個体数
                         dv_size:int, #設計変数の数
@@ -34,7 +47,9 @@ class Environment(object):
                         ):
 
         self.current_id = 0
+        self.popsize = popsize
         self.nowpop = Population(capa=popsize)
+        self.history = [] #過去世代のpopulationのリスト
         self.pool = Pool()
         self.func = eval_func
         self.optimizer = optimizer()
@@ -47,27 +62,21 @@ class Environment(object):
         self.initializer = UniformInitializer(dv_size) 
         self.creator = Creator(self.initializer, dv_size)
 
-        #初期個体の生成
-        for _ in range(popsize):
-            indiv = self.creator()
-            
-            indiv.id = self.current_id
-            indiv.bounds = self.dv_bounds
-            
-            self.nowpop.append(indiv)
-            self.current_id += 1
-
-        for indiv in self.nowpop:
-            self.evaluate(indiv)
-
-        #適応度計算
-        self.optimizer.calc_fitness(self.nowpop)
-
-
+    def alternate(self):
+        """世代交代時に呼び出し
+        """
+        self.history.append(self.nowpop)
+        self.nowpop = Population(capa=self.popsize)
+        
     def evaluate(self, indiv:Individual):
-        genome = indiv.genome
-        val = self.evaluate(genome)
-        indiv.set_value(val)
+        """目的関数値を計算
+           適応度はoptimizerを使って設定
+        
+        Arguments:
+            indiv {Individual} -- [個体情報]
+        """
+        res = indiv.evaluate(self.func)
+        return res 
 
     def evaluated_all(self):
         flag_evaluated = True   
@@ -81,11 +90,15 @@ class Environment(object):
 
 
 class Creator(object):
-    def __init__(self, initializer, dv_size:int):
+    """初期個体の生成器
+    """
+    
+    def __init__(self, initializer, pool:Pool):
         self.initializer = initializer
-        self.dv_size = dv_size
+        self._pool = pool
         
     def __call__(self):
-        genome = Genome(self.initializer())
+        genome = np.array(self.initializer())
         indiv = Individual(genome)
+        indiv = self._pool()
         return indiv

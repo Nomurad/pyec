@@ -17,7 +17,7 @@ class Population(object):
         if isinstance(pop, Population):
             self.pop = pop 
             self.capacity = pop.capacity
-            self.current_id = 0
+            # self.current_id = 0
         
         else:
             if indivs is not None:

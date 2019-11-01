@@ -1,30 +1,25 @@
 import numpy as np
 
 class IndividualError(Exception):
-    pass 
-
-class Genome(np.ndarray):
-
-    def __init__(self, *args, **kwargs):
-        # super().__init__(self, *args, **kwargs)
-        pass
-
-
+    pass     
 
 class Fitness(object):
     """適応度
     """
     def __init__(self):
         self.fitness = None #適応度
+        self.optimizer = None #NSGA-II , MOEA/D, etc...
     
-    def set_fitness(self, value):
+    def set_fitness(self, value, optimizer=None):
         self.fitness = value
+        self.optimizer = None
         
 
 class Individual(object):
 
     def __init__(self, genome):
-        self.id = None
+        self._id = None
+        self.parent_id = None
         self.bounds = (0,1)
         self.weight = None
         self.n_obj = 1
@@ -32,11 +27,21 @@ class Individual(object):
         self.genome = genome #遺伝子
         self.value = None #評価値
         self.wvalue = None #重みづけ評価値
+        self.feasble_value = None #制約違反量
         self.fitness = Fitness()
 
     def __str__(self):
-        return f"indiv_id:{self.id}"
+        return f"indiv_id:{self._id}"
 
+    def set_id(self, _id):
+        self._id = _id
+        return (self._id + 1)
+
+    def get_id(self):
+        return self._id 
+
+    def get_genome(self):
+        return self.genome
 
     def decode(self, genome):        
         lower, upper = self.bounds
@@ -44,6 +49,9 @@ class Individual(object):
 
     def get_design_variable(self):
         return self.decode(self.genome)
+
+    def set_fitness(self, fit):
+        self.fitness.set_fitness(fit)
 
     def set_value(self, value):
         if self.value is None:
@@ -71,6 +79,3 @@ class Individual(object):
 if __name__ == "__main__":
     indiv = Individual(10)
     print(indiv)
-
-    a = Genome((1,))
-    print(a)
