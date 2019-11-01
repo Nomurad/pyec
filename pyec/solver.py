@@ -47,7 +47,11 @@ class Solver(object):
         self.optimizer.calc_fitness(self.nowpop)
 
     def __call__(self):
-        pass 
+        self.optimizer()
+
+    def optimizing(self):
+        # TODO: optimizerの実行コードを入れる
+        pass
 
     def advance(self):
         pass
