@@ -37,7 +37,6 @@ class Solver(object):
             indiv.bounds = self.env.dv_bounds
             
             self.nowpop.append(indiv)
-            self.env.current_id += 1
 
         for indiv in self.nowpop:
             #目的関数値を計算

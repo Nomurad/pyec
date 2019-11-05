@@ -31,7 +31,7 @@ class Mating(object):
         
         for child_genome in child_genomes:
             child_genome = self._mutation(child_genome) #一定確率で突然変異
-            child_indiv = self._pool(child_genome)
+            child_indiv = self._pool.indiv_creator(child_genome, parents)
             self._stored.append(child_indiv)
         
         return self._stored

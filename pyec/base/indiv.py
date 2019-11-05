@@ -17,10 +17,10 @@ class Fitness(object):
 
 class Individual(object):
 
-    def __init__(self, genome):
+    def __init__(self, genome, parents=None):
         self._id = None
-        self.parent_id = None
-        self.bounds = (0,1)
+        self.parent_id = []
+        self.bounds = (0,1) # ((lower), (upper))
         self.weight = None
         self.n_obj = 1
 
@@ -40,6 +40,10 @@ class Individual(object):
     def get_id(self):
         return self._id 
 
+    def set_parents_id(self, parents):
+        for parent in parents:
+            self.parent_id.append(parent.get_id())
+
     def get_genome(self):
         return self.genome
 
@@ -49,6 +53,9 @@ class Individual(object):
 
     def get_design_variable(self):
         return self.decode(self.genome)
+
+    def set_boundary(self, bounds):
+        self.bounds = tuple(bounds)
 
     def set_fitness(self, fit):
         self.fitness.set_fitness(fit)
