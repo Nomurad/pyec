@@ -62,6 +62,9 @@ def weight_vector_generator(nobj, divisions, coeff=1):
     return weight_vectors
 
 ################################################################################
+class MOEADError(Exception):
+    pass
+
 
 class MOEAD(object):
     """MOEA/D
@@ -73,7 +76,44 @@ class MOEAD(object):
         self.nobj = nobj
         self.ksize = ksize
         self.ref_points = []
-        self.weight_vec = weight_vector_generator(nobj, self.popsize)
+
+    def init_weight(self):
+        self.weight_vec = weight_vector_generator(self.nobj, self.popsize)
+        self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
+        self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
+
+
+    def get_neighber(self, index):
+        norms = np.zeros((self.weight_vec.shape[0], self.weight_vec.shape[1]+2))
+        self.neighbers = np.zeros((self.weight_vec.shape[0], self.ksize))
+        w1 = self.weight_vec[index]
+
+        for i, w2 in enumerate(self.weight):
+            norms[i,0] = np.linalg.norm(w1 - w2)
+            norms[i,1] = i
+            norms[i,2:] = w2
+
+        norms_sort = norms[norms[:,0].argsort(),:]  #normの大きさでnormsをソート
+        # print(norms)
+        neighber_index = np.zeros((self.ksize), dtype="int")
+        for i in range(self.ksize):
+            neighber_index[i] = norms_sort[i,1]
+        
+        # print(neighber_index)
+        return neighber_index
+
+    def update_reference(self, indiv:Individual):
+        try:
+            self.ref_point = np.min([self.ref_point, np.array(indiv.wvalue)],axis=0)
+            # print("update ref point = ", self.ref_point)
+        except:
+            print(self.ref_point.dtype)
+            print(self.ref_point)
+            print(np.array(indiv.wvalue).dtype)
+            print(np.array(indiv.wvalue))
+            print([self.ref_point, np.array(indiv.wvalue)])
+            raise MOEADError()
+
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
