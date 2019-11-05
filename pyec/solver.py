@@ -26,6 +26,7 @@ class Solver(object):
                           eval_func, dv_bounds)
         
         self.nowpop = self.env.nowpop
+        self.nobj = len(eval_func)
         self.optimizer = optimizer
 
 
@@ -51,7 +52,7 @@ class Solver(object):
     def __call__(self):
         self.optimizer()
 
-    def optimizing(self):
+    def optimizing(self, iter):
         # TODO: optimizerの実行コードを入れる
         pass
 

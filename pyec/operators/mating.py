@@ -21,7 +21,7 @@ class Mating(object):
     def __call__(self, parents=None):
         if (parents is None) and (self._parents is None):
             raise MatingError("You should set parents.")
-        if (parents is None) and (self._parents is not None):
+        elif (parents is None) and (self._parents is not None):
             parents = self._parents
 
         self._stored = []
