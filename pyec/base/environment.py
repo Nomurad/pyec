@@ -98,7 +98,6 @@ class Environment(object):
         return True
 
 
-
 class Creator(object):
     """初期個体の生成器
     """
@@ -112,3 +111,12 @@ class Creator(object):
         # indiv = Individual(genome)
         indiv = self._pool.indiv_creator(genome)
         return indiv
+
+class Normalizer(object):
+    """評価値のnormalizer
+    """
+    def __init__(self, upper:list, lower:list):
+        if len(upper) != len(lower):
+            raise Exception("UpperList size != LowerList size")
+        self.upper = upper
+        self.lower = lower
