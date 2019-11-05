@@ -1,13 +1,15 @@
 import numpy as np
+import random
 
 from ..base.indiv import Individual
 from ..base.population import Population
 from ..operators.initializer import UniformInitializer
 
 from ..operators.crossover import SimulatedBinaryCrossover
+from ..operators.mutation import PolynomialMutation
 from ..operators.selection import TournamentSelection, TournamentSelectionStrict
-from ..operators.selection import SelectionIterator
-from ..operators.mating import MatingIterator
+from ..operators.selection import SelectionIterator, Selector
+from ..operators.mating import MatingIterator, Mating
 
 
 ################################################################################
@@ -70,12 +72,21 @@ class MOEAD(object):
     """MOEA/D
 
     """
+    name = "moead"
 
-    def __init__(self, popsize, nobj, ksize=3):
+    def __init__(self, popsize:int, nobj:int,
+                    selection:Selector, mating:Mating, ksize=3 ):
         self.popsize = popsize
         self.nobj = nobj
         self.ksize = ksize
         self.ref_points = []
+        self.selector = selection
+        self.mating = mating
+        self.scalar = scalar_chebyshev
+        self.init_weight()
+
+    def __call__(self):
+        pass
 
     def init_weight(self):
         self.weight_vec = weight_vector_generator(self.nobj, self.popsize)
@@ -114,6 +125,18 @@ class MOEAD(object):
             print([self.ref_point, np.array(indiv.wvalue)])
             raise MOEADError()
 
+    def get_offspring(self, index, population:Population):
+        subpop = [population[i] for i in self.weight_vec]
+
+        for i, indiv in enumerate(subpop):
+            fit_value = self.scalar(indiv, self.weight_vec, self.ref_points)
+            indiv.set_fitness(fit_value)
+        
+        parents = self.selector(subpop)
+        child = random.choice(self.mating(parents))
+        child.set_fitness(self.scalar(child, self.weight_vec, self.ref_points))
+
+        return max(population[index], child)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
