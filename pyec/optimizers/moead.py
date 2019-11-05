@@ -30,13 +30,9 @@ def scalar_boundaryintersection(indiv, weight, ref_point):
     return -(d1 + bi_theta * d2)
 
 ################################################################################
-def weight_vector_generator(nobj=None, divisions=None, coeff=1):
+def weight_vector_generator(nobj, divisions, coeff=1):
     import copy
 
-    if not nobj:
-        nobj = self.nobj
-    if not divisions:
-        divisions = self.popsize
     if coeff:
         divisions = divisions*coeff
     
@@ -72,10 +68,12 @@ class MOEAD(object):
 
     """
 
-    def __init__(self, popsize, problem, ksize=3):
-        self.popsize = 10
+    def __init__(self, popsize, nobj, ksize=3):
+        self.popsize = popsize
+        self.nobj = nobj
+        self.ksize = ksize
         self.ref_points = []
-        self.weight_vec = None
+        self.weight_vec = weight_vector_generator(nobj, self.popsize)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
