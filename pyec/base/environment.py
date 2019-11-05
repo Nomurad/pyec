@@ -66,11 +66,17 @@ class Environment(object):
         self.initializer = UniformInitializer(dv_size) 
         self.creator = Creator(self.initializer, dv_size)
 
-    def alternate(self):
+    def alternate(self, population=None, indivs=None):
         """世代交代時に呼び出し
         """
         self.history.append(self.nowpop)
-        self.nowpop = Population(capa=self.popsize)
+        
+        if population is not None:
+            self.nowpop = Population(pop=population)
+        elif indivs is not None:
+            self.nowpop = Population(indivs=indivs)
+        else:
+            self.nowpop = Population(capa=self.popsize)
         
     def evaluate(self, indiv:Individual):
         """目的関数値を計算
