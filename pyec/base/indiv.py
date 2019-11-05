@@ -81,7 +81,8 @@ class Individual(object):
     def evaluate(self, func): 
         if not self.evaluated():
             self.function = func 
-            self.value = func()
+            self.set_value(func())
+            # self.value = func()
 
 if __name__ == "__main__":
     indiv = Individual(10)
