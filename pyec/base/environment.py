@@ -29,6 +29,7 @@ class Pool(object):
         indiv = self.cls(genome)
         self.current_id = indiv.set_id(self.current_id) #set id & renew current_id
         self.append(indiv)
+        return indiv
 
     def __getitem__(self, key):
         return self.data[key]
@@ -56,7 +57,7 @@ class Environment(object):
         self.history = [] #過去世代のpopulationのリスト
         self.pool = Pool()
         self.func = eval_func
-        self.optimizer = optimizer()
+        self.optimizer = optimizer
         self.weight = None #重み(正=>最小化, 負=>最大化)
 
         #設計変数の上下限値 # None or (low, up) or ([low], [up])
@@ -64,7 +65,7 @@ class Environment(object):
 
         #initializerの設定
         self.initializer = UniformInitializer(dv_size) 
-        self.creator = Creator(self.initializer, dv_size)
+        self.creator = Creator(self.initializer, self.pool)
 
     def alternate(self, population=None, indivs=None):
         """世代交代時に呼び出し
@@ -76,7 +77,8 @@ class Environment(object):
         elif indivs is not None:
             self.nowpop = Population(indivs=indivs)
         else:
-            self.nowpop = Population(capa=self.popsize)
+            # self.nowpop = Population(capa=self.popsize)
+            pass
         
     def evaluate(self, indiv:Individual):
         """目的関数値を計算
@@ -85,7 +87,7 @@ class Environment(object):
         Arguments:
             indiv {Individual} -- [個体情報]
         """
-        res = indiv.evaluate(self.func)
+        res = indiv.evaluate(self.func, indiv.get_design_variable())
         return res 
 
     def evaluated_all(self):
@@ -110,6 +112,11 @@ class Creator(object):
         genome = np.array(self.initializer())
         # indiv = Individual(genome)
         indiv = self._pool.indiv_creator(genome)
+        return indiv
+
+    def dummy_make(self):
+        genome = np.array(self.initializer())
+        indiv = Individual(genome)
         return indiv
 
 class Normalizer(object):

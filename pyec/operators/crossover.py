@@ -2,7 +2,7 @@ import random
 import numpy as np 
 
 class BlendCrossover(object):
-    """BLX-α
+    """BLX-alpha
     """
     def __init__(self, rate=0.9, alpha=0.5, oneout=False):
         self.rate = rate

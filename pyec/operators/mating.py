@@ -1,5 +1,5 @@
 import numpy as np 
-from ..base.indiv import Individual, Genome
+from ..base.indiv import Individual
 from ..base.environment import Pool
 
 from .selection import TournamentSelection, TournamentSelectionStrict
@@ -27,6 +27,7 @@ class Mating(object):
         self._stored = []
 
         parent_genomes = [indiv.get_genome() for indiv in parents]
+        # print("parent genomes:", parent_genomes)
         child_genomes = self._crossover(parent_genomes)
         
         for child_genome in child_genomes:
