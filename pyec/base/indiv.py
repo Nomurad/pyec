@@ -43,6 +43,9 @@ class Individual(object):
     def set_parents_id(self, parents):
         for parent in parents:
             self.parent_id.append(parent.get_id())
+        
+    def set_weight(self, weight):
+        self.weight = weight
 
     def get_genome(self):
         return self.genome

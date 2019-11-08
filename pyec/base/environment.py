@@ -73,7 +73,7 @@ class Environment(object):
         self.history.append(self.nowpop)
         
         if population is not None:
-            self.nowpop = Population(pop=population)
+            self.nowpop = population
         elif indivs is not None:
             self.nowpop = Population(indivs=indivs)
         else:

@@ -86,3 +86,15 @@ class SimulatedBinaryCrossover(object):
         else:
             return y1, y2
 
+if __name__ == "__main__":
+    g_size = 3
+    genome1 = np.random.rand(g_size)
+    genome2 = np.random.rand(g_size)
+
+    cross = SimulatedBinaryCrossover(rate=1.0, eta=20)
+    # cross = BlendCrossover(rate=1.0, alpha=0.5)
+
+    out1, out2 = cross([genome1,genome2])
+
+    print(genome1, genome2)
+    print(out1, out2)
