@@ -24,7 +24,7 @@ class Problem():
         return a*10
 
 # problem = Problem()
-problem = zdt2
+problem = zdt1
 
 args = {
     "popsize":51,
@@ -48,7 +48,7 @@ for indiv in pop:
 
 print(solver)
 
-max_epoch = 100*10
+max_epoch = 100*5
 solver.run(max_epoch)
 
 result = solver.result()
@@ -64,15 +64,15 @@ data = np.array(data)
 plt.scatter(data[:,0], data[:,1], c=data[:,2], cmap=cm)
 # plt.scatter(data[-1,0], data[-1,1])
 
-print(data)
+# print(data)
 
 print()
-pop = result[-1]
-for indiv in pop:
-    print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
+# pop = result[-1]
+# for indiv in pop:
+#     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
 
 # for vec in solver.optimizer.weight_vec:
 #     plt.plot([0,vec[0]], [0,vec[1]])
 # print(solver.optimizer.weight_vec)
-print(solver.optimizer.ref_points)
+print(f"ref_points={solver.optimizer.ref_points}")
 plt.show()

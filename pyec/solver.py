@@ -117,13 +117,14 @@ class Solver(object):
 
     def result(self):
         result = np.array(self.env.history)
-        print("result shape",result.shape)
+        # print("result shape",result.shape)
 
         # for i, pop in enumerate(result):
         #     print()
         #     for indiv in pop:
         #         print(f"{i}, {indiv._id:>10} \t{indiv.value}")
         # np.savetxt(path, res, delimiter=",")
+        
         return result
 
     def advance(self):
