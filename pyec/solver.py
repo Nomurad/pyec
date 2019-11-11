@@ -32,7 +32,7 @@ class Solver(object):
             popsize {int} -- [個体数]
             dv_size {int} -- [設計変数の数]
             selector      -- [selector]
-            mating        -- [mating]
+            mating        -- [crossover,mutation]
             optimizer     -- [進化計算手法] 
             eval_func {[type]} -- [目的関数(評価関数)]
         
@@ -50,8 +50,8 @@ class Solver(object):
         # dummy_indiv = self.env.creator.dummy_make()
         # self.nobj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("nobj:",self.nobj)
-        self.selector = Selector(TournamentSelectionStrict, reset_cycle=2)
-        self.mating = Mating(SBX(rate=1.0), PM(), self.env.pool)
+        self.selector = selector
+        self.mating = Mating(mating[0], mating[1], self.env.pool)
         if optimizer.name is "moead":
             if ksize is None:
                 ksize = 3
@@ -87,13 +87,18 @@ class Solver(object):
     def __call__(self, iter):
         self.run(iter)
 
-    def run(self, iter):
+    def run(self, iter, nextline=None):
+        if nextline is None:
+            nextline = int(iter/10)
+
         for i in range(iter):
-            print(f"iter:{i+1:>5d}")
+            if i%nextline == 0:
+                print()
+            print(f"iter:{i+1:>5d}", end="\r")
             # for indiv in self.env.nowpop:
             #     print(indiv.get_id(), end=" ")
-            # print()
             self.optimizing()
+        print()
 
     def optimizing(self):
         # TODO: optimizerの実行コードを入れる

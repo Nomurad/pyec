@@ -21,7 +21,7 @@ class SelectorError(Exception):
 
 class Selector(object):
     
-    def __init__(self, selection, reset_cycle):
+    def __init__(self, selection, reset_cycle=2):
         self._selection = selection()
         self._reset_cycle = reset_cycle
         self._population = None
