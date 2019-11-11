@@ -141,7 +141,7 @@ class MOEAD(object):
         subpop = [population[i] for i in self.neighbers[index]]
 
         for i, indiv in enumerate(subpop):
-            fit_value = self.scalar(indiv, self.weight_vec, self.ref_points)
+            fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
             indiv.set_fitness(fit_value)
         
         parents = self.selector(subpop)
@@ -149,9 +149,10 @@ class MOEAD(object):
         child = random.choice(self.mating(parents))
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
-        child.set_fitness(self.scalar(child, self.weight_vec, self.ref_points))
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        return min(population[index], child)
+        return max(population[index], child)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
