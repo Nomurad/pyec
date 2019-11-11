@@ -23,11 +23,11 @@ class Problem():
     def __call__(self, a):
         return a*10
 
-problem = Problem()
-problem = zdt1
+# problem = Problem()
+problem = zdt2
 
 args = {
-    "popsize":10,
+    "popsize":51,
     "dv_size":10,
     "nobj":2,
     "selector":Selector,
@@ -35,30 +35,44 @@ args = {
     "optimizer":MOEAD,
     "eval_func":problem,
     "dv_bounds":(0,1),
-    "weight":[1, 0.1]
+    "weight":[1, 1]
 }
 
 solver = Solver(**args)
 # solver.env.weight = [1, 0.1]
+pop = solver.env.history[0]
+for indiv in pop:
+    # print(indiv.fitness.fitness)
+    print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
+# input()
 
 print(solver)
 
-max_epoch = 10
+max_epoch = 100*10
 solver.run(max_epoch)
 
 result = solver.result()
 
+cm = plt.get_cmap("Blues")
+
+data = []
 for epoch, pop in enumerate(result):
-    data = []
     for i, indiv in enumerate(pop):
-        data.append(indiv.value)
+        data.append(list(indiv.value)+[epoch])
 
-    data = np.array(data)
-    plt.scatter(data[:,0], data[:,1], c="blue", alpha=i/max_epoch)
+data = np.array(data)
+plt.scatter(data[:,0], data[:,1], c=data[:,2], cmap=cm)
+# plt.scatter(data[-1,0], data[-1,1])
 
+print(data)
+
+print()
 pop = result[-1]
 for indiv in pop:
-    # print(indiv.fitness.fitness)
-    print(indiv.value, indiv.wvalue, indiv.weight)
+    print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
 
+# for vec in solver.optimizer.weight_vec:
+#     plt.plot([0,vec[0]], [0,vec[1]])
+# print(solver.optimizer.weight_vec)
+print(solver.optimizer.ref_points)
 plt.show()
