@@ -45,7 +45,7 @@ class Solver(object):
                           eval_func, dv_bounds)
         self.eval_func = eval_func
         
-        self.nowpop = self.env.nowpop
+        # self.nowpop = self.env.nowpop
         self.nobj = nobj
         # dummy_indiv = self.env.creator.dummy_make()
         # self.nobj = len(eval_func( dummy_indiv.get_design_variable() ))
@@ -66,19 +66,20 @@ class Solver(object):
             # print(type(indiv))
             indiv.set_boundary(self.env.dv_bounds)
             if weight is not None:
-                print("set weight")
+                print("set weight", weight)
+                self.env.weight = np.array(weight)
             indiv.set_weight(self.env.weight)
             
-            self.nowpop.append(indiv)
+            self.env.nowpop.append(indiv)
 
-        for indiv in self.nowpop:
+        for indiv in self.env.nowpop:
             #目的関数値を計算
             # print("func:", self.eval_func.__dict__)
             res = self.env.evaluate(indiv)
             # print("res", res)
 
         #適応度計算
-        self.optimizer.calc_fitness(self.nowpop)
+        self.optimizer.calc_fitness(self.env.nowpop)
         
         #初期個体を世代履歴に保存
         self.env.alternate()
@@ -97,7 +98,7 @@ class Solver(object):
     def optimizing(self):
         # TODO: optimizerの実行コードを入れる
         next_pop = Population(capa=len(self.env.nowpop))
-        print(len(self.env.history))
+        # print(len(self.env.history))
 
         for i in range(len(self.env.nowpop)):
             # print(i, len(next_pop), self.optimizer.neighbers[i])
