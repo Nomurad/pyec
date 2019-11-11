@@ -16,15 +16,20 @@ class Pool(object):
         self.current_id = 0
         self.data = [] #全個体リスト
 
-    def __call__(self, genome:np.ndarray):
+    def __call__(self, genome:np.ndarray, parents=None):
+        self.indiv_creator(genome, parents)
+
+    def indiv_creator(self, genome:np.ndarray, parents=None):
         """遺伝子情報から個体を生成，全個体リストに追加しておく
         
         Arguments:
             genome {np.ndarray} -- [遺伝子情報]
+            parents {Individual} -- [親]
         """
         indiv = self.cls(genome)
         self.current_id = indiv.set_id(self.current_id) #set id & renew current_id
         self.append(indiv)
+        return indiv
 
     def __getitem__(self, key):
         return self.data[key]
@@ -52,7 +57,7 @@ class Environment(object):
         self.history = [] #過去世代のpopulationのリスト
         self.pool = Pool()
         self.func = eval_func
-        self.optimizer = optimizer()
+        self.optimizer = optimizer
         self.weight = None #重み(正=>最小化, 負=>最大化)
 
         #設計変数の上下限値 # None or (low, up) or ([low], [up])
@@ -60,13 +65,20 @@ class Environment(object):
 
         #initializerの設定
         self.initializer = UniformInitializer(dv_size) 
-        self.creator = Creator(self.initializer, dv_size)
+        self.creator = Creator(self.initializer, self.pool)
 
-    def alternate(self):
+    def alternate(self, population=None, indivs=None):
         """世代交代時に呼び出し
         """
         self.history.append(self.nowpop)
-        self.nowpop = Population(capa=self.popsize)
+        
+        if population is not None:
+            self.nowpop = population
+        elif indivs is not None:
+            self.nowpop = Population(indivs=indivs)
+        else:
+            # self.nowpop = Population(capa=self.popsize)
+            pass
         
     def evaluate(self, indiv:Individual):
         """目的関数値を計算
@@ -75,7 +87,7 @@ class Environment(object):
         Arguments:
             indiv {Individual} -- [個体情報]
         """
-        res = indiv.evaluate(self.func)
+        res = indiv.evaluate(self.func, indiv.get_design_variable())
         return res 
 
     def evaluated_all(self):
@@ -88,7 +100,6 @@ class Environment(object):
         return True
 
 
-
 class Creator(object):
     """初期個体の生成器
     """
@@ -99,6 +110,20 @@ class Creator(object):
         
     def __call__(self):
         genome = np.array(self.initializer())
-        indiv = Individual(genome)
-        indiv = self._pool()
+        # indiv = Individual(genome)
+        indiv = self._pool.indiv_creator(genome)
         return indiv
+
+    def dummy_make(self):
+        genome = np.array(self.initializer())
+        indiv = Individual(genome)
+        return indiv
+
+class Normalizer(object):
+    """評価値のnormalizer
+    """
+    def __init__(self, upper:list, lower:list):
+        if len(upper) != len(lower):
+            raise Exception("UpperList size != LowerList size")
+        self.upper = upper
+        self.lower = lower

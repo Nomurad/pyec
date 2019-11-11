@@ -1,5 +1,5 @@
 import numpy as np 
-from ..base.indiv import Individual, Genome
+from ..base.indiv import Individual
 from ..base.environment import Pool
 
 from .selection import TournamentSelection, TournamentSelectionStrict
@@ -21,17 +21,20 @@ class Mating(object):
     def __call__(self, parents=None):
         if (parents is None) and (self._parents is None):
             raise MatingError("You should set parents.")
-        if (parents is None) and (self._parents is not None):
+        elif (parents is None) and (self._parents is not None):
             parents = self._parents
 
         self._stored = []
 
         parent_genomes = [indiv.get_genome() for indiv in parents]
+        # print("parent genomes:", parent_genomes)
         child_genomes = self._crossover(parent_genomes)
         
         for child_genome in child_genomes:
             child_genome = self._mutation(child_genome) #一定確率で突然変異
-            child_indiv = self._pool(child_genome)
+            child_indiv = self._pool.indiv_creator(child_genome, parents)
+            child_indiv.set_parents_id(parents)
+            child_indiv.set_weight(parents[0].weight)
             self._stored.append(child_indiv)
         
         return self._stored

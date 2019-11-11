@@ -1,23 +1,31 @@
 import numpy as np
+import random
 
 from ..base.indiv import Individual
 from ..base.population import Population
 from ..operators.initializer import UniformInitializer
 
 from ..operators.crossover import SimulatedBinaryCrossover
+from ..operators.mutation import PolynomialMutation
 from ..operators.selection import TournamentSelection, TournamentSelectionStrict
-from ..operators.selection import SelectionIterator
-from ..operators.mating import MatingIterator
+from ..operators.selection import SelectionIterator, Selector
+from ..operators.mating import MatingIterator, Mating
 
 
 ################################################################################
 # スカラー化関数
 ################################################################################
+class ScalarError(Exception):
+    pass
+
 def scalar_weighted_sum(indiv, weight, ref_point):
     return -np.sum(weight * np.abs(indiv.wvalue - ref_point))
 
 def scalar_chebyshev(indiv, weight, ref_point):
-    return -np.max(weight * np.abs(indiv.wvalue - ref_point))
+    if not indiv.evaluated():
+        raise ScalarError("indiv not evaluated.")
+    res = -np.max(weight * np.abs(indiv.wvalue - ref_point))
+    return res
 
 def scalar_boundaryintersection(indiv, weight, ref_point):
     ''' norm(weight) == 1
@@ -30,13 +38,9 @@ def scalar_boundaryintersection(indiv, weight, ref_point):
     return -(d1 + bi_theta * d2)
 
 ################################################################################
-def weight_vector_generator(nobj=None, divisions=None, coeff=1):
+def weight_vector_generator(nobj, divisions, coeff=1):
     import copy
-
-    if not nobj:
-        nobj = self.nobj
-    if not divisions:
-        divisions = self.popsize
+    
     if coeff:
         divisions = divisions*coeff
     
@@ -46,7 +50,6 @@ def weight_vector_generator(nobj=None, divisions=None, coeff=1):
     #                                     for i in range(1, divisions-1)])
     # else:
     weight_vectors = []
-    # ele_candidate = np.array(list(range(popsize+1)))/popsize
 
     def weight_recursive(weight_vectors, weight, left, total, idx=0):
 
@@ -66,26 +69,104 @@ def weight_vector_generator(nobj=None, divisions=None, coeff=1):
     return weight_vectors
 
 ################################################################################
+class MOEADError(Exception):
+    pass
+
 
 class MOEAD(object):
     """MOEA/D
 
     """
+    name = "moead"
 
-    def __init__(self, popsize, problem, ksize=3):
-        self.popsize = 10
+    def __init__(self, popsize:int, nobj:int,
+                    selection:Selector, mating:Mating, ksize=3 ):
+        self.popsize = popsize
+        self.nobj = nobj
+        self.ksize = ksize
         self.ref_points = []
-        self.weight_vec = None
+        self.selector = selection
+        self.mating = mating
+        self.scalar = scalar_chebyshev
+        self.init_weight()
+
+    def __call__(self):
+        pass
+
+    def init_weight(self):
+        self.weight_vec = weight_vector_generator(self.nobj, self.popsize-1)
+        self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
+        self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
+
+        print("weight vector shape:", self.weight_vec.shape)
+        print("ref point:", self.ref_points.shape)
+        print("neighber:", self.neighbers)
+
+
+    def get_neighber(self, index):
+        norms = np.zeros((self.weight_vec.shape[0], self.weight_vec.shape[1]+2))
+        self.neighbers = np.zeros((self.weight_vec.shape[0], self.ksize))
+        w1 = self.weight_vec[index]
+
+        for i, w2 in enumerate(self.weight_vec):
+            # print(i)
+            norms[i,0] = np.linalg.norm(w1 - w2)
+            norms[i,1] = i
+            norms[i,2:] = w2
+
+        norms_sort = norms[norms[:,0].argsort(),:]  #normの大きさでnormsをソート
+        # print(norms)
+        neighber_index = np.zeros((self.ksize), dtype="int")
+        for i in range(self.ksize):
+            neighber_index[i] = norms_sort[i,1]
+        
+        # print(neighber_index)
+        return neighber_index
+
+    def update_reference(self, indiv:Individual):
+        try:
+            self.ref_points = np.min([self.ref_points, np.array(indiv.wvalue)],axis=0)
+            # print("update ref point = ", self.ref_point)
+        except:
+            print("\n Error")
+            print(self.ref_points.dtype)
+            print(self.ref_points)
+            print(np.array(indiv.wvalue).dtype)
+            print(np.array(indiv.wvalue))
+            print([self.ref_points, np.array(indiv.wvalue)])
+            raise MOEADError()
+
+    def get_offspring(self, index, population:Population, eval_func):
+        # print(self.neighbers[index])
+        subpop = [population[i] for i in self.neighbers[index]]
+
+        for i, indiv in enumerate(subpop):
+            fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
+            indiv.set_fitness(fit_value)
+        
+        parents = self.selector(subpop)
+        # print("len parents", len(parents))
+        child = random.choice(self.mating(parents))
+        # print(child.evaluated(), child.value)
+        child.evaluate(eval_func, (child.get_design_variable()))
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        return max(population[index], child)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
         """
         for indiv in population:
-            self.calc_fitness_single(indiv)
+            self.update_reference(indiv)
 
-    def calc_fitness_single(self, indiv:Individual):
+        for idx, indiv in enumerate(population):
+            self.calc_fitness_single(indiv, idx)
+
+    def calc_fitness_single(self, indiv:Individual, index):
         """1個体の適応度計算
         """
-        fit = scalar_chebyshev(indiv, self.weight_vec, self.ref_points)
+        fit = scalar_chebyshev(indiv, self.weight_vec[index], self.ref_points)
         indiv.set_fitness(fit)
+        # print("fit:",fit)
 

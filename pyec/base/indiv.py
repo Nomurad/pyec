@@ -17,10 +17,10 @@ class Fitness(object):
 
 class Individual(object):
 
-    def __init__(self, genome):
+    def __init__(self, genome, parents=None):
         self._id = None
-        self.parent_id = None
-        self.bounds = (0,1)
+        self.parent_id = []
+        self.bounds = (0,1) # ((lower), (upper))
         self.weight = None
         self.n_obj = 1
 
@@ -40,6 +40,13 @@ class Individual(object):
     def get_id(self):
         return self._id 
 
+    def set_parents_id(self, parents):
+        for parent in parents:
+            self.parent_id.append(parent.get_id())
+        
+    def set_weight(self, weight):
+        self.weight = weight
+
     def get_genome(self):
         return self.genome
 
@@ -49,6 +56,9 @@ class Individual(object):
 
     def get_design_variable(self):
         return self.decode(self.genome)
+
+    def set_boundary(self, bounds):
+        self.bounds = tuple(bounds)
 
     def set_fitness(self, fit):
         self.fitness.set_fitness(fit)
@@ -71,10 +81,34 @@ class Individual(object):
     def evaluated(self):
         return self.value is not None 
 
-    def evaluate(self, func): 
-        if not self.evaluated():
-            self.function = func 
-            self.value = func()
+    def evaluate(self, func, funcargs):
+        # self.function = func 
+        res = func(funcargs)
+        # print("indiv eval", (res))
+        self.set_value(res)
+        return res
+        
+    def __eq__(self, other):     #equal "=="
+        if not isinstance(other, Individual):
+            return NotImplemented
+        return self.fitness.fitness == other.fitness.fitness
+
+    def __lt__(self, other):     #less than "<"
+        if not isinstance(other, Individual):
+            return NotImplemented
+        return self.fitness.fitness < other.fitness.fitness
+    
+    def __ne__(self, other):     #not equal "!="
+        return not self.__eq__(other)
+
+    def __le__(self, other):     #less than or equal "<="
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __gt__(self, other):     #greater than ">"
+        return not self.__le__(other)
+
+    def __ge__(self, other):     #greater than or equal ">="
+        return not self.__lt__(other)
 
 if __name__ == "__main__":
     indiv = Individual(10)

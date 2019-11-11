@@ -22,7 +22,7 @@ class SelectorError(Exception):
 class Selector(object):
     
     def __init__(self, selection, reset_cycle):
-        self._selection = selection
+        self._selection = selection()
         self._reset_cycle = reset_cycle
         self._population = None
         self._stored = []
@@ -35,15 +35,18 @@ class Selector(object):
         
         self._stored = []
         rest = []
-        for _ in range(self._reset_cycle):
+        while(True):
             if not rest:
                 rest = list(population)
             
             selected, rest = self._selection(rest)
+            
             if selected is None:
                 continue
             
             self._stored.append(selected)
+            if len(self._stored) >= self._reset_cycle:
+                break
         
         return self._stored
 
@@ -147,6 +150,9 @@ class TournamentSelectionStrict(object):
     def __init__(self, key=identity, ksize=2):
         self.key = key
         self.ksize = ksize
+
+    # def __len__(self):
+    #     pass
 
     def __call__(self, population):
         s = len(population)
