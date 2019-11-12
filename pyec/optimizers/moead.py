@@ -89,18 +89,21 @@ class MOEAD(object):
         self.mating = mating
         self.scalar = scalar_chebyshev
         self.init_weight()
+        
+        self.alternation = "normal"
+        self.EP = []
 
-    def __call__(self):
-        pass
+    def __call__(self, index:int, population:Population, eval_func) -> Individual:
+        return self.get_offspring(index, population, eval_func)
 
     def init_weight(self):
         self.weight_vec = weight_vector_generator(self.nobj, self.popsize-1)
         self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
         self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
 
-        print("weight vector shape:", self.weight_vec.shape)
-        print("ref point:", self.ref_points.shape)
-        print("neighber:", self.neighbers)
+        # print("weight vector shape:", self.weight_vec.shape)
+        # print("ref point:", self.ref_points.shape)
+        # print("neighber:", self.neighbers)
 
 
     def get_neighber(self, index):
@@ -136,7 +139,7 @@ class MOEAD(object):
             print([self.ref_points, np.array(indiv.wvalue)])
             raise MOEADError()
 
-    def get_offspring(self, index, population:Population, eval_func):
+    def get_offspring(self, index, population:Population, eval_func) -> Individual:
         # print(self.neighbers[index])
         subpop = [population[i] for i in self.neighbers[index]]
 
@@ -152,7 +155,10 @@ class MOEAD(object):
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        return max(population[index], child)
+        if self.alternation is "all":
+            return max(population[index], child)
+        else:
+            return max(*subpop, child)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
@@ -170,3 +176,59 @@ class MOEAD(object):
         indiv.set_fitness(fit)
         # print("fit:",fit)
 
+
+class MOEAD_DE(MOEAD):
+    name = "moead_de"
+
+    def __init__(self, popsize:int, nobj:int,
+                    selection:Selector, mating:Mating, ksize=3):
+        super().__init__(popsize, nobj,selection, mating, ksize=3)
+
+        self.CR = 0.9   #交叉率
+        self.scaling_F = 0.5    #スケーリングファクタ--->( 0<=F<=1 )
+        self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
+        print(self.name)
+
+        
+    def get_offspring(self, index, population:Population, eval_func) -> Individual:
+        rand = random.random()
+        
+        if rand >= self.offspring_delta:
+            subpop = [population[i] for i in range(len(population))]
+        else:
+            subpop = [population[i] for i in self.neighbers[index]]
+
+        for i, indiv in enumerate(subpop):
+            fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
+            indiv.set_fitness(fit_value)
+        
+        # parents = self.selector(subpop)
+        parents = random.sample(subpop, 2)
+        child = Individual(np.random.rand(len(parents[0].genome)))
+
+        rand = random.random()
+        if rand < self.CR:
+            bounds = parents[0].bounds
+            de = self.scaling_F*(parents[0]-parents[1])
+            child_dv = population[index] + de
+            for i,dv in enumerate(child_dv):
+                if dv < bounds[0] or dv > bounds[1]:
+                    child_dv[i] = random.random()*(bounds[1]-bounds[0])+bounds[0]
+
+            # print("child_dv:", (child_dv))
+            child.encode(child_dv)
+        else:
+            child = population[index]
+
+        mutate_genome = self.mating._mutation(child.get_genome())
+        child.set_genome(mutate_genome)
+
+        child.evaluate(eval_func, (child.get_design_variable()))
+        # print(child.evaluated(), child.value)
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        if self.alternation is "all":
+            return max(population[index], child)
+        else:
+            return max(*subpop, child)
