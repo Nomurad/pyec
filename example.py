@@ -7,7 +7,7 @@ from pyec.operators.selection import Selector, TournamentSelectionStrict
 from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 
-from pyec.optimizers.moead import MOEAD
+from pyec.optimizers.moead import MOEAD, MOEAD_DE
 from pyec.solver import Solver
 
 from pyec.testfunctions import zdt1, zdt2, zdt3
@@ -26,34 +26,42 @@ class Problem():
 # problem = Problem()
 problem = zdt1
 
+optimizer = MOEAD_DE
+max_epoch = 100*3
+
 args = {
     "popsize":51,
     "dv_size":10,
     "nobj":2,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
-    "optimizer":MOEAD,
+    "optimizer":optimizer,
     "eval_func":problem,
     "dv_bounds":(0,1),
     "weight":[1, 1]
 }
 
+print(optimizer.name)
+
 solver = Solver(**args)
+print(solver.optimizer)
 # solver.env.weight = [1, 0.1]
 pop = solver.env.history[0]
-for indiv in pop:
-    # print(indiv.fitness.fitness)
-    print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
+# for indiv in pop:
+#     # print(indiv.fitness.fitness)
+#     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
 # input()
 
-print(solver)
 
-max_epoch = 100*5
 solver.run(max_epoch)
 
 result = solver.result()
 
 cm = plt.get_cmap("Blues")
+
+# for vec in solver.optimizer.weight_vec:
+#     plt.plot([0,vec[0]], [0,vec[1]])
+# print(solver.optimizer.weight_vec)
 
 data = []
 for epoch, pop in enumerate(result):
@@ -71,8 +79,5 @@ print()
 # for indiv in pop:
 #     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
 
-# for vec in solver.optimizer.weight_vec:
-#     plt.plot([0,vec[0]], [0,vec[1]])
-# print(solver.optimizer.weight_vec)
 print(f"ref_points={solver.optimizer.ref_points}")
 plt.show()
