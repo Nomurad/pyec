@@ -99,6 +99,25 @@ class Individual(object):
         # print("indiv eval", (res))
         self.set_value(res)
         return res
+
+    def dominate(self, other) -> bool:
+        """selfがotherを優越する場合 -> True
+           その他の場合             -> False
+        
+        Arguments:
+            other {Individual} -- [description]
+        
+        Returns:
+            bool -- [description]
+        """
+        if not isinstance(other, Individual):
+            return NotImplemented
+        res = False
+
+        if all( s <= o for s,o in zip(self.wvalue, other.wvalue)) and \
+            any( s != o for s,o in zip(self.wvalue, other.wvalue)):
+            res = True
+        return res
         
     def __eq__(self, other):     #equal "=="
         if not isinstance(other, Individual):
