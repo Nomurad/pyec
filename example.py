@@ -27,7 +27,7 @@ class Problem():
 problem = zdt1
 
 optimizer = MOEAD_DE
-max_epoch = 100*3
+max_epoch = 100*10
 
 args = {
     "popsize":51,
@@ -80,4 +80,5 @@ print()
 #     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
 
 print(f"ref_points={solver.optimizer.ref_points}")
+print(f"pool size={len(solver.env.pool)}")
 plt.show()

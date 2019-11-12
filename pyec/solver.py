@@ -62,7 +62,7 @@ class Solver(object):
         elif optimizer.name is "moead_de":
             if ksize is None:
                 ksize = 3
-            self.optimizer = MOEAD_DE((popsize), self.nobj, 
+            self.optimizer = MOEAD_DE((popsize), self.nobj, self.env.pool,
                                     self.selector, self.mating, ksize=ksize)
 
         #初期個体の生成
