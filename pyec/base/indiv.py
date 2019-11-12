@@ -17,7 +17,7 @@ class Fitness(object):
 
 class Individual(object):
 
-    def __init__(self, genome, parents=None):
+    def __init__(self, genome:np.ndarray, parents=None):
         self._id = None
         self.parent_id = []
         self.bounds = (0,1) # ((lower), (upper))
@@ -50,9 +50,21 @@ class Individual(object):
     def get_genome(self):
         return self.genome
 
+    def set_genome(self, genome:np.ndarray):
+        self.genome = genome
+
     def decode(self, genome):        
         lower, upper = self.bounds
         return (upper - lower)*genome + lower
+
+    def encode(self, dv_list):
+        lower, upper = self.bounds
+        g = []
+        for dv in dv_list:
+            g.append( (dv-lower)/(upper-lower) )
+        
+        self.genome = np.array(g)
+
 
     def get_design_variable(self):
         return self.decode(self.genome)
@@ -109,6 +121,22 @@ class Individual(object):
 
     def __ge__(self, other):     #greater than or equal ">="
         return not self.__lt__(other)
+
+    def __add__(self, other):
+        if isinstance(other, Individual):
+            return (self.get_design_variable() + other.get_design_variable())
+        elif isinstance(other, np.ndarray):
+            return (self.get_design_variable() + other)
+        else:
+            return NotImplemented
+
+    def __sub__(self, other):
+        if isinstance(other, Individual):
+            return (self.get_design_variable() - other.get_design_variable())
+        elif isinstance(other, np.ndarray):
+            return (self.get_design_variable() - other)
+        else:
+            return NotImplemented
 
 if __name__ == "__main__":
     indiv = Individual(10)
