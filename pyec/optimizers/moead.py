@@ -3,6 +3,7 @@ import random
 
 from ..base.indiv import Individual
 from ..base.population import Population
+from ..base.environment import Pool
 from ..operators.initializer import UniformInitializer
 
 from ..operators.crossover import SimulatedBinaryCrossover
@@ -149,7 +150,12 @@ class MOEAD(object):
         
         parents = self.selector(subpop)
         # print("len parents", len(parents))
-        child = random.choice(self.mating(parents))
+        childs = self.mating(parents)
+        child = random.choice(childs)
+        idx = 0
+        if all(child.genome == childs[idx]):
+            idx = 1
+        self.mating._pool.pop(idx)
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
@@ -180,10 +186,11 @@ class MOEAD(object):
 class MOEAD_DE(MOEAD):
     name = "moead_de"
 
-    def __init__(self, popsize:int, nobj:int,
+    def __init__(self, popsize:int, nobj:int, pool:Pool,
                     selection:Selector, mating:Mating, ksize=3):
         super().__init__(popsize, nobj,selection, mating, ksize=3)
 
+        self.pool = pool
         self.CR = 0.9   #交叉率
         self.scaling_F = 0.5    #スケーリングファクタ--->( 0<=F<=1 )
         self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
@@ -204,7 +211,8 @@ class MOEAD_DE(MOEAD):
         
         # parents = self.selector(subpop)
         parents = random.sample(subpop, 2)
-        child = Individual(np.random.rand(len(parents[0].genome)))
+        # child = Individual(np.random.rand(len(parents[0].genome)))
+        child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
 
         rand = random.random()
         if rand < self.CR:
