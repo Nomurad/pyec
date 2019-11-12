@@ -208,12 +208,12 @@ class MOEAD_DE(MOEAD):
 
         rand = random.random()
         if rand < self.CR:
-            bounds = parents[0].bounds
+            lower, upper = parents[0].bounds
             de = self.scaling_F*(parents[0]-parents[1])
             child_dv = population[index] + de
             for i,dv in enumerate(child_dv):
-                if dv < bounds[0] or dv > bounds[1]:
-                    child_dv[i] = random.random()*(bounds[1]-bounds[0])+bounds[0]
+                if dv < lower or dv > upper:
+                    child_dv[i] = random.random()*(upper-lower)+lower
 
             # print("child_dv:", (child_dv))
             child.encode(child_dv)
