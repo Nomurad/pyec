@@ -40,6 +40,10 @@ class Pool(object):
     def append(self, indiv):
         self.data.append(indiv)
 
+    def pop(self, index):
+        self.current_id -= 1
+        return self.data.pop(index)
+
 class Environment(object):
     """進化計算のパラメータなどを保存するクラス
     """
