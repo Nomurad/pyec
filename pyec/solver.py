@@ -9,7 +9,7 @@ from .operators.mutation import PolynomialMutation as PM
 from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
 
-from .optimizers.moead import MOEAD
+from .optimizers.moead import MOEAD, MOEAD_DE
 
 class Solver(object):
     """進化計算ソルバー    
@@ -52,10 +52,17 @@ class Solver(object):
         print("nobj:",self.nobj)
         self.selector = selector
         self.mating = Mating(mating[0], mating[1], self.env.pool)
+        
+        print("set optimizer:", optimizer.name)
         if optimizer.name is "moead":
             if ksize is None:
                 ksize = 3
             self.optimizer = MOEAD((popsize), self.nobj, 
+                                    self.selector, self.mating, ksize=ksize)
+        elif optimizer.name is "moead_de":
+            if ksize is None:
+                ksize = 3
+            self.optimizer = MOEAD_DE((popsize), self.nobj, 
                                     self.selector, self.mating, ksize=ksize)
 
         #初期個体の生成
@@ -66,7 +73,7 @@ class Solver(object):
             # print(type(indiv))
             indiv.set_boundary(self.env.dv_bounds)
             if weight is not None:
-                print("set weight", weight)
+                # print("set weight", weight)
                 self.env.weight = np.array(weight)
             indiv.set_weight(self.env.weight)
             
