@@ -27,7 +27,7 @@ class Problem():
 problem = zdt1
 
 optimizer = MOEAD_DE
-max_epoch = 100*10
+max_epoch = 100*3
 
 args = {
     "popsize":51,
