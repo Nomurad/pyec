@@ -90,15 +90,24 @@ class Individual(object):
         else:
             self.wvalue = self.value
 
+    def set_feasible(self, feasible):
+        self.feasble_value = feasible
+
     def evaluated(self):
         return self.value is not None 
 
-    def evaluate(self, func, funcargs):
-        # self.function = func 
-        res = func(funcargs)
-        # print("indiv eval", (res))
-        self.set_value(res)
-        return res
+    def evaluate(self, func, funcargs, n_feasible=0):
+        if n_feasible == 0:
+            res = func(funcargs)
+            # print("indiv eval", (res))
+            self.set_value(res)
+            return res
+
+        else:
+            res, feasible = func(funcargs)
+            self.set_value(res) 
+            self.set_feasible(feasible)
+            return res, feasible
 
     def dominate(self, other) -> bool:
         """selfがotherを優越する場合 -> True
