@@ -92,8 +92,8 @@ pareto = fronts[0]
 pareto_val = np.array([indiv.value for indiv in pareto])
 
 
-# plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-plt.scatter(pareto_val[:,0], pareto_val[:,1], cmap=cm)
+plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+plt.scatter(pareto_val[:,0], pareto_val[:,1], c="Red")
 
 np.savetxt("temp.csv", data, delimiter=",")
 np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
