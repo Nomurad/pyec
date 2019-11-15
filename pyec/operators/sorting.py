@@ -10,7 +10,7 @@ class NonDominatedSort(object):
     def __init__(self):
         pass 
 
-    def sort(self, population:Population):
+    def sort(self, population:Population, return_rank=False):
         popsize = len(population)
 
         is_dominated = np.empty((popsize, popsize), dtype=np.bool)
@@ -28,6 +28,7 @@ class NonDominatedSort(object):
 
         #iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
+        # print(num_dominated)
 
         paretofronts = []
         limit = popsize
