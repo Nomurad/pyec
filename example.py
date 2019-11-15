@@ -25,8 +25,8 @@ class Problem():
         return a*10
 
 # problem = Problem()
+# problem = tnk
 problem = zdt1 
-problem = tnk
 
 optimizer = MOEAD_DE
 max_epoch = 100*1
@@ -81,8 +81,8 @@ for i in range(1, 11):
     pop = pop + solver.env.history[-i]
 
 print("popsize",len(pop))
-# fronts = sort_func.sort(pop)
-fronts = non_dominate_sort(pop)
+fronts = sort_func.sort(pop)
+# fronts = non_dominate_sort(pop)
 print("pareto size", len(fronts[0]), end="\n\n")
 # print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
 pareto = fronts[0]
