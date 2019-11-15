@@ -27,7 +27,7 @@ class Individual(object):
         self.genome = genome #遺伝子
         self.value = None #評価値
         self.wvalue = None #重みづけ評価値
-        self.feasble_value = None #制約違反量
+        self.feasble_value = None #制約違反量(負の値=制約違反なし)
         self.fitness = Fitness()
 
     def __str__(self):
@@ -127,7 +127,18 @@ class Individual(object):
             any( s != o for s,o in zip(self.value, other.value)):
             res = True
         return res
-        
+
+    def feasible_dominate(self, other) -> bool:
+        if not isinstance(other, Individual):
+            return NotImplemented
+        res = False 
+
+        if all( s <= o for s,o in zip(self.feasble_value, other.value)) and \
+            any( s != o for s,o in zip(self.value, other.value)):
+            res = True
+        return res
+
+
     def __eq__(self, other):     #equal "=="
         if not isinstance(other, Individual):
             return NotImplemented
