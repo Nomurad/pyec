@@ -58,13 +58,11 @@ st_time = time.time()
 solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
 
-result = solver.result()
+result = solver.result(save=True)
+
+###############################################################################
 
 cm = plt.get_cmap("Blues")
-
-# for vec in solver.optimizer.weight_vec:
-#     plt.plot([0,vec[0]], [0,vec[1]])
-# print(solver.optimizer.weight_vec)
 
 data = []
 for epoch, pop in enumerate(result):

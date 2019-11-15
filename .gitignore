@@ -1,6 +1,7 @@
 test.py
 .vscode
 temp*.csv
+*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
