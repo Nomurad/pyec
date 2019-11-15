@@ -24,7 +24,8 @@ class Solver(object):
                         eval_func, 
                         ksize:int=None,
                         dv_bounds:tuple=(0,1), #設計変数の上下限値
-                        weight=None
+                        weight=None,
+                        normalize=False
                         ):
         """solver initializer
         
@@ -40,19 +41,19 @@ class Solver(object):
             ksize {int}       -- [近傍サイズ] (default: None)
             dv_bounds {tuple} -- [設計変数の上下限値] (default: {(0,1)})
             weight {list or tuple} -- [目的関数の重み付け] (default: None)
+            normalize {bool} -- [評価値の正規化] (default: False)
         """
         self.env = Environment(popsize, dv_size, optimizer,
                           eval_func, dv_bounds)
         self.eval_func = eval_func
         
-        # self.nowpop = self.env.nowpop
+
         self.nobj = nobj
-        # dummy_indiv = self.env.creator.dummy_make()
         # self.nobj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("nobj:",self.nobj)
         self.selector = selector
         self.mating = Mating(mating[0], mating[1], self.env.pool)
-        
+
         print("set optimizer:", optimizer.name)
         if optimizer.name is "moead":
             if ksize is None:
@@ -64,6 +65,8 @@ class Solver(object):
                 ksize = 3
             self.optimizer = MOEAD_DE((popsize), self.nobj, self.env.pool,
                                     self.selector, self.mating, ksize=ksize)
+
+        self.optimizer.normalize = normalize
 
         #初期個体の生成
         for _ in range(popsize):

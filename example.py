@@ -14,6 +14,7 @@ from pyec.testfunctions import zdt1, zdt2, zdt3
 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 class Problem():
@@ -26,7 +27,7 @@ class Problem():
 # problem = Problem()
 problem = zdt1
 
-optimizer = MOEAD_DE
+optimizer = MOEAD
 max_epoch = 100*3
 
 args = {
@@ -38,7 +39,8 @@ args = {
     "optimizer":optimizer,
     "eval_func":problem,
     "dv_bounds":(0,1),
-    "weight":[1, 1]
+    "weight":[1, 1],
+    "normalize": True
 }
 
 print(optimizer.name)
@@ -52,8 +54,9 @@ pop = solver.env.history[0]
 #     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
 # input()
 
-
+st_time = time.time()
 solver.run(max_epoch)
+print("calc time: ", time.time()-st_time)
 
 result = solver.result()
 

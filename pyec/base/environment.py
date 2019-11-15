@@ -53,7 +53,8 @@ class Environment(object):
                         optimizer,
                         eval_func=None, 
                         dv_bounds:tuple=(0,1), #設計変数の上下限値
-                        feasible_size=0 #制約条件の数
+                        feasible_size=0, #制約条件の数
+                        normalize=False
                         ):
 
         self.current_id = 0
@@ -133,5 +134,21 @@ class Normalizer(object):
     def __init__(self, upper:list, lower:list):
         if len(upper) != len(lower):
             raise Exception("UpperList size != LowerList size")
-        self.upper = upper
-        self.lower = lower
+        self.upper = np.array(upper)
+        self.lower = np.array(lower)
+
+    def normalizing(self, indiv:Individual):
+        val = np.array(indiv.value)
+        res = (val - self.lower)/(self.upper - self.lower)
+        indiv.wvalue = list(res) 
+        return res
+
+    def ref_update(self, upper, lower):
+        upper = np.array(upper)
+        lower = np.array(lower)
+
+        temp = np.vstack((self.upper, upper))
+        self.upper = np.max(temp, axis=0)
+
+        temp = np.vstack((self.lower, lower))
+        self.lower = np.min(temp, axis=0)

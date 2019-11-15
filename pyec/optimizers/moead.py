@@ -3,7 +3,7 @@ import random
 
 from ..base.indiv import Individual
 from ..base.population import Population
-from ..base.environment import Pool
+from ..base.environment import Pool, Normalizer
 from ..operators.initializer import UniformInitializer
 
 from ..operators.crossover import SimulatedBinaryCrossover
@@ -92,6 +92,8 @@ class MOEAD(object):
         self.init_weight()
         
         self.alternation = "normal"
+        self.normalize = False
+        self.normalizer = None
         self.EP = []
 
     def __call__(self, index:int, population:Population, eval_func) -> Individual:
@@ -129,7 +131,10 @@ class MOEAD(object):
 
     def update_reference(self, indiv:Individual):
         try:
-            self.ref_points = np.min([self.ref_points, np.array(indiv.wvalue)],axis=0)
+            if self.normalize is not None:
+                self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
+            else:
+                self.ref_points = np.min([self.ref_points, np.array(indiv.wvalue)],axis=0)
             # print("update ref point = ", self.ref_point)
         except:
             print("\n Error")
@@ -159,6 +164,10 @@ class MOEAD(object):
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
+        # if self.normalizer is not None:
+        #     self.normalizer.normalizing(child)
+            # print("ori, normalize:",child.value, child.wvalue)
+            # input()
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
         if self.alternation is "all":
@@ -172,6 +181,21 @@ class MOEAD(object):
         for indiv in population:
             self.update_reference(indiv)
 
+        if self.normalize is True:
+            values = list(map(self._get_indiv_value, population))
+            values = np.array(values)
+            upper = [np.max(values[:,0]), np.max(values[:,1])]
+            lower = [np.min(values[:,0]), np.min(values[:,1])]
+            # print("upper/lower: ",(upper), (lower))
+            # input()
+            if self.normalizer is None:
+                self.normalizer = Normalizer(upper, lower)
+            else:
+                self.normalizer.ref_update(upper, lower)
+
+            for indiv in population:
+                self.normalizer.normalizing(indiv)
+
         for idx, indiv in enumerate(population):
             self.calc_fitness_single(indiv, idx)
 
@@ -181,6 +205,9 @@ class MOEAD(object):
         fit = scalar_chebyshev(indiv, self.weight_vec[index], self.ref_points)
         indiv.set_fitness(fit)
         # print("fit:",fit)
+
+    def _get_indiv_value(self, indiv:Individual):
+        return indiv.value
 
 
 class MOEAD_DE(MOEAD):
