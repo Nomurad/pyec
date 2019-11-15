@@ -1,6 +1,6 @@
 test.py
 .vscode
-temp.csv
+temp*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
