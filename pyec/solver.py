@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 
 from .base.indiv import Individual
 from .base.population import Population
@@ -125,7 +126,7 @@ class Solver(object):
 
         self.env.alternate(next_pop)
 
-    def result(self):
+    def result(self, save=False):
         result = np.array(self.env.history)
         # print("result shape",result.shape)
 
@@ -134,6 +135,9 @@ class Solver(object):
         #     for indiv in pop:
         #         print(f"{i}, {indiv._id:>10} \t{indiv.value}")
         # np.savetxt(path, res, delimiter=",")
+        if save is True:
+            with open("opt_result.pkl", "wb") as f:
+                pickle.dump(self, f)
         
         return result
 
