@@ -11,6 +11,7 @@ from ..operators.mutation import PolynomialMutation
 from ..operators.selection import TournamentSelection, TournamentSelectionStrict
 from ..operators.selection import SelectionIterator, Selector
 from ..operators.mating import MatingIterator, Mating
+from ..operators.sorting import NonDominatedSort
 
 
 ################################################################################
@@ -274,10 +275,13 @@ class MOEAD_DE(MOEAD):
 
 
 class C_MOEAD_DE(MOEAD_DE):
+    name = "c_moead_de"
 
-    def __init__(self, popsize:int, nobj:int, pool:Pool,
+    def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
         super().__init__(popsize, nobj, pool, selection, mating, ksize=3)
+        self.n_constraint = n_constraint
+        self.feasible_sort = NonDominatedSort()
 
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
         rand = random.random()
@@ -289,10 +293,12 @@ class C_MOEAD_DE(MOEAD_DE):
 
         for i, indiv in enumerate(subpop):
             fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
-            indiv.set_fitness(fit_value)
+            indiv.set_fitness(fit_value, self)
         
         # parents = self.selector(subpop)
-        parents = random.sample(subpop, 2)
+        feasible_sorted = self.feasible_sort.feasible_sort(subpop)
+        print(feasible_sorted)
+        parents = random.sample(feasible_sorted[0], 2)
         # child = Individual(np.random.rand(len(parents[0].genome)))
         child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
 
@@ -302,18 +308,21 @@ class C_MOEAD_DE(MOEAD_DE):
             de = self.scaling_F*(parents[0]-parents[1])
             child_dv = population[index] + de
             for i,dv in enumerate(child_dv):
-                if dv < lower or dv > upper:
-                    child_dv[i] = random.random()*(upper-lower)+lower
+                if dv < lower[i] or dv > upper[i]:
+                    child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
 
             # print("child_dv:", (child_dv))
             child.encode(child_dv)
+            child.set_boundary(parents[0].bounds)
+            child.set_weight(parents[0].weight)
         else:
             child = population[index]
 
         mutate_genome = self.mating._mutation(child.get_genome())
         child.set_genome(mutate_genome)
 
-        child.evaluate(eval_func, (child.get_design_variable()))
+        child.evaluate(eval_func, (child.get_design_variable()), 
+                        self.n_constraint)
         # print(child.evaluated(), child.value)
         if self.normalizer is not None:
             self.normalizer.normalizing(child)

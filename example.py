@@ -25,13 +25,16 @@ class Problem():
         return a*10
 
 # problem = Problem()
-# problem = tnk
 problem = zdt1 
-
 optimizer = MOEAD_DE
-# optimizer = C_MOEAD_DE
+n_const = 0
+
 max_epoch = 100*1
 dvsize = 5
+
+optimizer = C_MOEAD_DE
+problem = tnk
+n_const = 2
 
 args = {
     "popsize":50,
@@ -44,7 +47,7 @@ args = {
     "dv_bounds":([0]*dvsize, [1]*dvsize),
     "weight":[1, 1],
     "normalize": True,
-    
+    "n_constraint":n_const
 }
 
 print(optimizer.name)
@@ -78,7 +81,7 @@ data = np.array(data)
 print(f"ref_points={solver.optimizer.ref_points}")
 print(f"pool size={len(solver.env.pool)}")
 
-sort_func = NonDominatedSort(pop)
+sort_func = NonDominatedSort()
 pop = solver.env.history[-1]
 for i in range(1, 11):
     pop = pop + solver.env.history[-i]
@@ -92,11 +95,12 @@ pareto = fronts[0]
 pareto_val = np.array([indiv.value for indiv in pareto])
 
 
-plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+# plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
 plt.scatter(pareto_val[:,0], pareto_val[:,1], c="Red")
 
 np.savetxt("temp.csv", data, delimiter=",")
 np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
+# print([indiv.value for indiv in pareto])
 
 for i, indiv in enumerate(pareto):
     dom = 0

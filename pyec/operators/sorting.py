@@ -7,8 +7,9 @@ class NonDominatedSortError(Exception):
 
 class NonDominatedSort(object):
 
-    def __init__(self, pop):
-        self.pop = pop
+    def __init__(self):
+        pass
+        # self.pop = pop
 
     def sort(self, population:Population, return_rank=False):
         popsize = len(population)
@@ -68,7 +69,7 @@ class NonDominatedSort(object):
                 # if i == j:
                 #     continue
                 #iがjに優越されている -> True
-                dom = population[j].feasible_sort(population[i])
+                dom = population[j].feasible_dominate(population[i])
                 is_dominated[i,j] = (i!= j) and dom
 
         #iを優越する個体の数

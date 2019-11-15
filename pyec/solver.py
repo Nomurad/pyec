@@ -10,7 +10,7 @@ from .operators.mutation import PolynomialMutation as PM
 from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
 
-from .optimizers.moead import MOEAD, MOEAD_DE
+from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD_DE
 
 class Solver(object):
     """進化計算ソルバー    
@@ -68,6 +68,11 @@ class Solver(object):
                 ksize = 3
             self.optimizer = MOEAD_DE((popsize), self.nobj, self.env.pool,
                                     self.selector, self.mating, ksize=ksize)
+        elif optimizer.name is "c_moead_de":
+            if ksize is None:
+                ksize = 3
+            self.optimizer = C_MOEAD_DE((popsize), self.nobj, self.env.pool,
+                            n_constraint, self.selector, self.mating, ksize=ksize)
 
         self.optimizer.normalize = normalize
 
@@ -120,8 +125,9 @@ class Solver(object):
         for i in range(len(self.env.nowpop)):
             # print(i, len(next_pop), self.optimizer.neighbers[i])
             child = self.optimizer.get_offspring(i, self.env.nowpop, self.eval_func)
-            self.env.evaluate(child)
+            res = self.env.evaluate(child)
             next_pop.append(child)
+            # print(child.value, " | ", res)
 
         self.optimizer.calc_fitness(next_pop)
 

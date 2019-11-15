@@ -100,6 +100,7 @@ class Individual(object):
         return self.value is not None 
 
     def evaluate(self, func, funcargs, n_feasible=0):
+        # print("n_feasible:",n_feasible)
         if n_feasible == 0:
             res = func(funcargs)
             # print("indiv eval", (res))
