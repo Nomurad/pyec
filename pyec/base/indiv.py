@@ -123,8 +123,8 @@ class Individual(object):
             return NotImplemented
         res = False
 
-        if all( s <= o for s,o in zip(self.wvalue, other.wvalue)) and \
-            any( s != o for s,o in zip(self.wvalue, other.wvalue)):
+        if all( s <= o for s,o in zip(self.value, other.value)) and \
+            any( s != o for s,o in zip(self.value, other.value)):
             res = True
         return res
         

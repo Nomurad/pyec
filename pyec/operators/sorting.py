@@ -7,8 +7,8 @@ class NonDominatedSortError(Exception):
 
 class NonDominatedSort(object):
 
-    def __init__(self):
-        pass 
+    def __init__(self, pop):
+        self.pop = pop
 
     def sort(self, population:Population, return_rank=False):
         popsize = len(population)
@@ -20,17 +20,17 @@ class NonDominatedSort(object):
 
         for i in range(popsize):
             for j in range(popsize):
-                if i == j:
-                    continue
+                # if i == j:
+                #     continue
                 #iがjに優越されている -> True
                 dom = population[j].dominate(population[i])
-                is_dominated[i,j] = dom
+                is_dominated[i,j] = (i!= j) and dom
 
         #iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
         # print(num_dominated)
 
-        paretofronts = []
+        fronts = []
         limit = popsize
         for r in range(popsize):
             front = []
@@ -41,15 +41,61 @@ class NonDominatedSort(object):
                     rank[i] = r + 1
                     front.append(population[i])
                 
-            paretofronts.append(front)
+            fronts.append(front)
             limit -= len(front)
 
             if return_rank:
                 if rank.all():
                     return rank 
             elif limit <= 0:
-                return paretofronts
+                return fronts
 
+            # print(np.sum(mask & is_dominated))
             num_dominated -= np.sum(mask & is_dominated, axis=(1,))
 
         raise NonDominatedSortError("Error: reached the end of function")
+
+def non_dominate_sort(population:Population, return_rank=False):
+    popsize = len(population)
+
+    is_dominated = np.empty((popsize, popsize), dtype=np.bool)
+    num_dominated = np.zeros(popsize, dtype=np.int64)
+    mask = np.empty(popsize, dtype=np.bool)
+    rank = np.zeros(popsize, dtype=np.int64)
+
+    for i in range(popsize):
+        for j in range(popsize):
+            # if i == j:
+            #     continue
+            #iがjに優越されている -> True
+            dom = population[j].dominate(population[i])
+            is_dominated[i,j] = (i!= j) and dom
+
+    #iを優越する個体の数
+    is_dominated.sum(axis=(1,), out=num_dominated)
+    # print(num_dominated)
+
+    fronts = []
+    limit = popsize
+    for r in range(popsize):
+        front = []
+        for i in range(popsize):
+            is_rank_ditermined = not(rank[i] or num_dominated[i])
+            mask[i] = is_rank_ditermined
+            if is_rank_ditermined:
+                rank[i] = r + 1
+                front.append(population[i])
+            
+        fronts.append(front)
+        limit -= len(front)
+
+        if return_rank:
+            if rank.all():
+                return rank 
+        elif limit <= 0:
+            return fronts
+
+        # print(np.sum(mask & is_dominated))
+        num_dominated -= np.sum(mask & is_dominated, axis=(1,))
+
+    raise NonDominatedSortError("Error: reached the end of function")

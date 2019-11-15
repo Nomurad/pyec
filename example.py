@@ -6,7 +6,7 @@ from pyec.operators.crossover import SimulatedBinaryCrossover
 from pyec.operators.selection import Selector, TournamentSelectionStrict
 from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
-from pyec.operators.sorting import NonDominatedSort
+from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
 from pyec.optimizers.moead import MOEAD, MOEAD_DE
 from pyec.solver import Solver
@@ -16,7 +16,6 @@ from pyec.testfunctions import zdt1, zdt2, zdt3
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-
 
 class Problem():
     def __init__(self):
@@ -32,7 +31,7 @@ optimizer = MOEAD_DE
 max_epoch = 100*1
 
 args = {
-    "popsize":51,
+    "popsize":50,
     "dv_size":5,
     "nobj":2,
     "selector":Selector(TournamentSelectionStrict),
@@ -74,24 +73,36 @@ for epoch, pop in enumerate(result):
 
 data = np.array(data)
 # plt.scatter(data[-1,0], data[-1,1])
+print(f"ref_points={solver.optimizer.ref_points}")
+print(f"pool size={len(solver.env.pool)}")
 
-sort_func = NonDominatedSort()
+sort_func = NonDominatedSort(pop)
 pop = solver.env.history[-1]
-for i in range(80, len(solver.env.history)):
+for i in range(1, 11):
     pop = pop + solver.env.history[-i]
 
-print(type(pop))
-fronts = sort_func.sort(pop)
-print("num of pareto indiv", len(fronts[0]))
+print("popsize",len(pop))
+# fronts = sort_func.sort(pop)
+fronts = non_dominate_sort(pop)
+print("pareto size", len(fronts[0]), end="\n\n")
+# print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
 pareto = fronts[0]
 pareto_val = np.array([indiv.value for indiv in pareto])
 
 
 # plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
 plt.scatter(pareto_val[:,0], pareto_val[:,1], cmap=cm)
-print(f"ref_points={solver.optimizer.ref_points}")
-print(f"pool size={len(solver.env.pool)}")
 
 np.savetxt("temp.csv", data, delimiter=",")
+np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
+
+for i, indiv in enumerate(pareto):
+    dom = 0
+    for j, other in enumerate(pareto):
+        if i == j:
+            continue
+        dom += (indiv.dominate(other))
+    if dom != 0:
+        print("dominate:",i, dom)
 
 plt.show()
