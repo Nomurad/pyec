@@ -31,16 +31,17 @@ problem = zdt1
 optimizer = MOEAD_DE
 # optimizer = C_MOEAD_DE
 max_epoch = 100*1
+dvsize = 5
 
 args = {
     "popsize":50,
-    "dv_size":5,
+    "dv_size":dvsize,
     "nobj":2,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
     "optimizer":optimizer,
     "eval_func":problem,
-    "dv_bounds":(0,1),
+    "dv_bounds":([0]*dvsize, [1]*dvsize),
     "weight":[1, 1],
     "normalize": True,
     

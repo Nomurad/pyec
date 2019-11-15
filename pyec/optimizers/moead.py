@@ -247,11 +247,13 @@ class MOEAD_DE(MOEAD):
             de = self.scaling_F*(parents[0]-parents[1])
             child_dv = population[index] + de
             for i,dv in enumerate(child_dv):
-                if dv < lower or dv > upper:
-                    child_dv[i] = random.random()*(upper-lower)+lower
+                if dv < lower[i] or dv > upper[i]:
+                    child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
 
             # print("child_dv:", (child_dv))
             child.encode(child_dv)
+            child.set_boundary(parents[0].bounds)
+            child.set_weight(parents[0].weight)
         else:
             child = population[index]
 

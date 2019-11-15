@@ -56,6 +56,8 @@ class Individual(object):
 
     def decode(self, genome):        
         lower, upper = self.bounds
+        lower = np.array(lower)
+        upper = np.array(upper)
         return (upper - lower)*genome + lower
 
     def encode(self, dv_list):
