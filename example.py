@@ -8,7 +8,7 @@ from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
-from pyec.optimizers.moead import MOEAD, MOEAD_DE
+from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD_DE
 from pyec.solver import Solver
 
 from pyec.testfunctions import zdt1, zdt2, zdt3, tnk
@@ -29,6 +29,7 @@ class Problem():
 problem = zdt1 
 
 optimizer = MOEAD_DE
+# optimizer = C_MOEAD_DE
 max_epoch = 100*1
 
 args = {
@@ -42,6 +43,7 @@ args = {
     "dv_bounds":(0,1),
     "weight":[1, 1],
     "normalize": True,
+    
 }
 
 print(optimizer.name)
