@@ -28,6 +28,7 @@ class Individual(object):
         self.value = None #評価値
         self.wvalue = None #重みづけ評価値
         self.feasible_value = None #制約違反量(負の値=制約違反なし)
+        self.feasible_rank = None
         self.fitness = Fitness()
 
     def __str__(self):
@@ -142,12 +143,12 @@ class Individual(object):
     def __eq__(self, other):     #equal "=="
         if not isinstance(other, Individual):
             return NotImplemented
-        return self.wvalue == other.wvalue
+        return (self.fitness.fitness == other.fitness.fitness)
 
     def __lt__(self, other):     #less than "<"
         if not isinstance(other, Individual):
             return NotImplemented
-        return self.wvalue < other.wvalue
+        return (self.fitness.fitness < other.fitness.fitness)
     
     def __ne__(self, other):     #not equal "!="
         return not self.__eq__(other)
