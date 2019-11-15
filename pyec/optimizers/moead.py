@@ -164,8 +164,8 @@ class MOEAD(object):
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
-        # if self.normalizer is not None:
-        #     self.normalizer.normalizing(child)
+        if self.normalizer is not None:
+            self.normalizer.normalizing(child)
             # print("ori, normalize:",child.value, child.wvalue)
             # input()
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
@@ -260,6 +260,8 @@ class MOEAD_DE(MOEAD):
 
         child.evaluate(eval_func, (child.get_design_variable()))
         # print(child.evaluated(), child.value)
+        if self.normalizer is not None:
+            self.normalizer.normalizing(child)
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 

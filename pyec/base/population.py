@@ -37,6 +37,12 @@ class Population(object):
     def __len__(self):
         return len(self.pop)
 
+    def __add__(self, other):
+        if not isinstance(other, Population):
+            return NotImplemented
+        pop = self.pop + other.pop
+        return Population(indivs=pop, capa=len(pop))
+
     def append(self, indiv:Individual):
         if not isinstance(indiv, Individual):
             raise PopulationError("Only you can append indiv which class is Individual.")
