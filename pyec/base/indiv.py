@@ -27,7 +27,7 @@ class Individual(object):
         self.genome = genome #遺伝子
         self.value = None #評価値
         self.wvalue = None #重みづけ評価値
-        self.feasble_value = None #制約違反量(負の値=制約違反なし)
+        self.feasible_value = None #制約違反量(負の値=制約違反なし)
         self.fitness = Fitness()
 
     def __str__(self):
@@ -91,7 +91,7 @@ class Individual(object):
             self.wvalue = self.value
 
     def set_feasible(self, feasible):
-        self.feasble_value = feasible
+        self.feasible_value = feasible
 
     def evaluated(self):
         return self.value is not None 
@@ -133,8 +133,8 @@ class Individual(object):
             return NotImplemented
         res = False 
 
-        if all( s <= o for s,o in zip(self.feasble_value, other.value)) and \
-            any( s != o for s,o in zip(self.value, other.value)):
+        if all( s <= o for s,o in zip(self.feasible_value, other.feasible_value)) and \
+            any( s != o for s,o in zip(self.feasible_value, other.feasible_value)):
             res = True
         return res
 
@@ -142,12 +142,12 @@ class Individual(object):
     def __eq__(self, other):     #equal "=="
         if not isinstance(other, Individual):
             return NotImplemented
-        return self.fitness.fitness == other.fitness.fitness
+        return self.wvalue == other.wvalue
 
     def __lt__(self, other):     #less than "<"
         if not isinstance(other, Individual):
             return NotImplemented
-        return self.fitness.fitness < other.fitness.fitness
+        return self.wvalue < other.wvalue
     
     def __ne__(self, other):     #not equal "!="
         return not self.__eq__(other)
