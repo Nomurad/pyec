@@ -112,7 +112,6 @@ class Solver(object):
         print()
 
     def optimizing(self):
-        # TODO: optimizerの実行コードを入れる
         next_pop = Population(capa=len(self.env.nowpop))
         # print(len(self.env.history))
 
@@ -141,5 +140,4 @@ class Solver(object):
         
         return result
 
-    def advance(self):
-        pass
+    
