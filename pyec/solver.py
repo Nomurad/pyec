@@ -26,7 +26,8 @@ class Solver(object):
                         ksize:int=None,
                         dv_bounds:tuple=(0,1), #設計変数の上下限値
                         weight=None,
-                        normalize=False
+                        normalize=False,
+                        n_constraint=0
                         ):
         """solver initializer
         
@@ -43,9 +44,10 @@ class Solver(object):
             dv_bounds {tuple} -- [設計変数の上下限値] (default: {(0,1)})
             weight {list or tuple} -- [目的関数の重み付け] (default: None)
             normalize {bool} -- [評価値の正規化] (default: False)
+            n_constraint {int} -- [制約条件数] (dafault: 0)
         """
         self.env = Environment(popsize, dv_size, optimizer,
-                          eval_func, dv_bounds)
+                          eval_func, dv_bounds, n_constraint)
         self.eval_func = eval_func
         
 
