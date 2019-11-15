@@ -215,7 +215,7 @@ class MOEAD_DE(MOEAD):
 
     def __init__(self, popsize:int, nobj:int, pool:Pool,
                     selection:Selector, mating:Mating, ksize=3):
-        super().__init__(popsize, nobj,selection, mating, ksize=3)
+        super().__init__(popsize, nobj, selection, mating, ksize=3)
 
         self.pool = pool
         self.CR = 0.9   #交叉率
@@ -224,6 +224,59 @@ class MOEAD_DE(MOEAD):
         print(self.name)
 
         
+    def get_offspring(self, index, population:Population, eval_func) -> Individual:
+        rand = random.random()
+        
+        if rand >= self.offspring_delta:
+            subpop = [population[i] for i in range(len(population))]
+        else:
+            subpop = [population[i] for i in self.neighbers[index]]
+
+        for i, indiv in enumerate(subpop):
+            fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
+            indiv.set_fitness(fit_value)
+        
+        # parents = self.selector(subpop)
+        parents = random.sample(subpop, 2)
+        # child = Individual(np.random.rand(len(parents[0].genome)))
+        child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+
+        rand = random.random()
+        if rand < self.CR:
+            lower, upper = parents[0].bounds
+            de = self.scaling_F*(parents[0]-parents[1])
+            child_dv = population[index] + de
+            for i,dv in enumerate(child_dv):
+                if dv < lower or dv > upper:
+                    child_dv[i] = random.random()*(upper-lower)+lower
+
+            # print("child_dv:", (child_dv))
+            child.encode(child_dv)
+        else:
+            child = population[index]
+
+        mutate_genome = self.mating._mutation(child.get_genome())
+        child.set_genome(mutate_genome)
+
+        child.evaluate(eval_func, (child.get_design_variable()))
+        # print(child.evaluated(), child.value)
+        if self.normalizer is not None:
+            self.normalizer.normalizing(child)
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        if self.alternation is "all":
+            return max(population[index], child)
+        else:
+            return max(*subpop, child)
+
+
+class C_MOEAD_DE(MOEAD_DE):
+
+    def __init__(self, popsize:int, nobj:int, pool:Pool,
+                    selection:Selector, mating:Mating, ksize=3):
+        super().__init__(popsize, nobj, pool, selection, mating, ksize=3)
+
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
         rand = random.random()
         
