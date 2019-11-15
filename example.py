@@ -6,6 +6,7 @@ from pyec.operators.crossover import SimulatedBinaryCrossover
 from pyec.operators.selection import Selector, TournamentSelectionStrict
 from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
+from pyec.operators.sorting import NonDominatedSort
 
 from pyec.optimizers.moead import MOEAD, MOEAD_DE
 from pyec.solver import Solver
@@ -27,12 +28,12 @@ class Problem():
 # problem = Problem()
 problem = zdt1
 
-optimizer = MOEAD
-max_epoch = 100*3
+optimizer = MOEAD_DE
+max_epoch = 100*1
 
 args = {
     "popsize":51,
-    "dv_size":10,
+    "dv_size":5,
     "nobj":2,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
@@ -69,19 +70,28 @@ cm = plt.get_cmap("Blues")
 data = []
 for epoch, pop in enumerate(result):
     for i, indiv in enumerate(pop):
-        data.append(list(indiv.value)+[epoch])
+        data.append([epoch]+list(indiv.value)+list(indiv.wvalue))
 
 data = np.array(data)
-plt.scatter(data[:,0], data[:,1], c=data[:,2], cmap=cm)
 # plt.scatter(data[-1,0], data[-1,1])
 
-# print(data)
+sort_func = NonDominatedSort()
+pop = solver.env.history[-1]
+for i in range(80, len(solver.env.history)):
+    pop = pop + solver.env.history[-i]
 
-print()
-# pop = result[-1]
-# for indiv in pop:
-#     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
+print(type(pop))
+fronts = sort_func.sort(pop)
+print("num of pareto indiv", len(fronts[0]))
+pareto = fronts[0]
+pareto_val = np.array([indiv.value for indiv in pareto])
 
+
+# plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+plt.scatter(pareto_val[:,0], pareto_val[:,1], cmap=cm)
 print(f"ref_points={solver.optimizer.ref_points}")
 print(f"pool size={len(solver.env.pool)}")
+
+np.savetxt("temp.csv", data, delimiter=",")
+
 plt.show()
