@@ -12,7 +12,7 @@ class Fitness(object):
     
     def set_fitness(self, value, optimizer=None):
         self.fitness = value
-        self.optimizer = None
+        self.optimizer = optimizer
         
 
 class Individual(object):
@@ -72,8 +72,8 @@ class Individual(object):
     def set_boundary(self, bounds):
         self.bounds = tuple(bounds)
 
-    def set_fitness(self, fit):
-        self.fitness.set_fitness(fit)
+    def set_fitness(self, fit, optimizer=None):
+        self.fitness.set_fitness(fit, optimizer)
 
     def set_value(self, value):
         if self.value is None:
