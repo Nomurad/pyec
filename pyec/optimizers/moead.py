@@ -295,10 +295,17 @@ class C_MOEAD_DE(MOEAD_DE):
             fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
             indiv.set_fitness(fit_value, self)
         
-        # parents = self.selector(subpop)
+        parents = random.sample(subpop, 2)
         feasible_sorted = self.feasible_sort.feasible_sort(subpop)
-        print(feasible_sorted)
-        parents = random.sample(feasible_sorted[0], 2)
+        # print(feasible_sorted)
+        if len(feasible_sorted[0]) > 2:
+            parents = random.sample(feasible_sorted[0], 2)
+        elif len(feasible_sorted[0]) == 2:
+            parents = feasible_sorted[0]
+        else:
+            parents = [feasible_sorted[0][0]]
+            p = random.choice(feasible_sorted[1])
+            parents.append(p)
         # child = Individual(np.random.rand(len(parents[0].genome)))
         child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
 
