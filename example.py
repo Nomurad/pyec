@@ -56,10 +56,15 @@ solver = Solver(**args)
 print(solver.optimizer)
 # solver.env.weight = [1, 0.1]
 pop = solver.env.history[0]
-# for indiv in pop:
-#     # print(indiv.fitness.fitness)
-#     print(indiv.value, indiv.wvalue, indiv.fitness.fitness)
-# input()
+data = []
+for indiv in pop:
+    data.append(list(indiv.value)+list(indiv.feasible_value))
+data = np.array(data)
+plt.scatter(data[:,0], data[:,1], c="Blue")
+for d in data:
+    if d[-2]>=0 and d[-1]>=0:
+        plt.scatter(data[:,0], data[:,1], c="Red")
+plt.show()
 
 st_time = time.time()
 solver.run(max_epoch)
@@ -94,13 +99,20 @@ print("pareto size", len(fronts[0]), end="\n\n")
 pareto = fronts[0]
 pareto_val = np.array([indiv.value for indiv in pareto])
 
-
-# plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-plt.scatter(pareto_val[:,0], pareto_val[:,1], c="Red")
-
 np.savetxt("temp.csv", data, delimiter=",")
 np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
-# print([indiv.value for indiv in pareto])
+
+plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="Red")
+
+data = []
+for pop in solver.env.history:
+    for indiv in pop:
+        if all( val >= 0 for val in indiv.feasible_value):
+            data.append([epoch]+list(indiv.value)+list(indiv.feasible_value))
+
+data = np.array(data)
+plt.scatter(data[:,1], data[:,2], c="Red")
 
 for i, indiv in enumerate(pareto):
     dom = 0
