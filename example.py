@@ -21,8 +21,17 @@ class Problem():
     def __init__(self):
         pass
 
-    def __call__(self, a):
-        return a*10
+    def __call__(self, x):
+        """ 
+        0 <= x1 <= 5
+        0 <= x2 <= 3
+        """
+        return self.belegundu(x)
+
+    def belegundu(self, vars):
+        x = vars[0]
+        y = vars[1]
+        return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
 # problem = Problem()
 problem = zdt1 
@@ -33,7 +42,7 @@ max_epoch = 100*1
 dvsize = 5
 
 optimizer = C_MOEAD_DE
-problem = tnk
+problem = Problem()
 n_const = 2
 
 args = {
@@ -108,10 +117,11 @@ plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
 data = []
 for pop in solver.env.history:
     for indiv in pop:
-        if all( val >= 0 for val in indiv.feasible_value):
+        if all( val <= 0 for val in indiv.feasible_value):
             data.append([epoch]+list(indiv.value)+list(indiv.feasible_value))
 
 data = np.array(data)
+print(data)
 plt.scatter(data[:,1], data[:,2], c="Red")
 
 for i, indiv in enumerate(pareto):
