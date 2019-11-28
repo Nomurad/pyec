@@ -41,9 +41,9 @@ n_const = 0
 max_epoch = 100*1
 dvsize = 5
 
-optimizer = C_MOEAD_DE
-problem = Problem()
-n_const = 2
+# optimizer = C_MOEAD_DE
+# problem = Problem()
+# n_const = 2
 
 args = {
     "popsize":50,
@@ -67,7 +67,7 @@ print(solver.optimizer)
 pop = solver.env.history[0]
 data = []
 for indiv in pop:
-    data.append(list(indiv.value)+list(indiv.feasible_value))
+    data.append(list(indiv.value))
 data = np.array(data)
 plt.scatter(data[:,0], data[:,1], c="Blue")
 for d in data:
@@ -108,29 +108,29 @@ print("pareto size", len(fronts[0]), end="\n\n")
 pareto = fronts[0]
 pareto_val = np.array([indiv.value for indiv in pareto])
 
-np.savetxt("temp.csv", data, delimiter=",")
+np.savetxt("temp_data.csv", data, delimiter=",")
 np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="Red")
 
-data = []
-for pop in solver.env.history:
-    for indiv in pop:
-        if all( val <= 0 for val in indiv.feasible_value):
-            data.append([epoch]+list(indiv.value)+list(indiv.feasible_value))
+### 以下，制約条件ありで行う場合使用
+# data = []
+# for pop in solver.env.history:
+#     for indiv in pop:
+#         if all( val <= 0 for val in indiv.feasible_value):
+#             data.append([epoch]+list(indiv.value)+list(indiv.feasible_value))
 
-data = np.array(data)
-print(data)
-plt.scatter(data[:,1], data[:,2], c="Red")
+# data = np.array(data)
+# print(data)
+# plt.scatter(data[:,1], data[:,2], c="Red")
 
-for i, indiv in enumerate(pareto):
-    dom = 0
-    for j, other in enumerate(pareto):
-        if i == j:
-            continue
-        dom += (indiv.dominate(other))
-    if dom != 0:
-        print("dominate:",i, dom)
+# for i, indiv in enumerate(pareto):
+#     dom = 0
+#     for j, other in enumerate(pareto):
+#         if i == j:
+#             continue
+#         dom += (indiv.dominate(other))
+#     if dom != 0:
+#         print("dominate:",i, dom)
 
 plt.show()
