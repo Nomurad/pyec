@@ -221,6 +221,7 @@ class MOEAD_DE(MOEAD):
         self.pool = pool
         self.CR = 0.9   #交叉率
         self.scaling_F = 0.7    #スケーリングファクタ--->( 0<=F<=1 )
+        self.pm = self.mating._mutation.rate
         self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
         print(self.name)
 
@@ -247,16 +248,16 @@ class MOEAD_DE(MOEAD):
         vi = population[index] + de
         child_dv = np.zeros(vi.shape)
         j_rand = random.randint(0,len(vi))
-        # print(j_rand)
-        for i,dv in enumerate(vi):
-            rand = random.random()
-            if (i==j_rand) or (rand < self.CR):
-                child_dv[i] = vi[i]
-            else:
-                child_dv[i] = population[index].get_design_variable()[i]
-                
-            if dv < lower[i] or dv > upper[i]:
-                child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
+        if random.random() > self.pm:
+            for i,dv in enumerate(vi):
+                rand = random.random()
+                if (i==j_rand) or (rand < self.CR):
+                    child_dv[i] = vi[i]
+                else:
+                    child_dv[i] = population[index].get_design_variable()[i]
+                    
+                if dv < lower[i] or dv > upper[i]:
+                    child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
 
         # print("child_dv:", (child_dv))
         child.encode(child_dv)
