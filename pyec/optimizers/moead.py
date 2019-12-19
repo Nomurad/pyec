@@ -220,7 +220,8 @@ class MOEAD_DE(MOEAD):
 
         self.pool = pool
         self.CR = 0.9   #交叉率
-        self.scaling_F = 0.5    #スケーリングファクタ--->( 0<=F<=1 )
+        self.scaling_F = 0.7    #スケーリングファクタ--->( 0<=F<=1 )
+        self.pm = self.mating._mutation.rate
         self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
         print(self.name)
 
@@ -242,21 +243,26 @@ class MOEAD_DE(MOEAD):
         # child = Individual(np.random.rand(len(parents[0].genome)))
         child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
 
-        rand = random.random()
-        if rand < self.CR:
-            lower, upper = parents[0].bounds
-            de = self.scaling_F*(parents[0]-parents[1])
-            child_dv = population[index] + de
-            for i,dv in enumerate(child_dv):
+        lower, upper = parents[0].bounds
+        de = self.scaling_F*(parents[0]-parents[1])
+        vi = population[index] + de
+        child_dv = np.zeros(vi.shape)
+        j_rand = random.randint(0,len(vi))
+        if random.random() > self.pm:
+            for i,dv in enumerate(vi):
+                rand = random.random()
+                if (i==j_rand) or (rand < self.CR):
+                    child_dv[i] = vi[i]
+                else:
+                    child_dv[i] = population[index].get_design_variable()[i]
+                    
                 if dv < lower[i] or dv > upper[i]:
                     child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
 
-            # print("child_dv:", (child_dv))
-            child.encode(child_dv)
-            child.set_boundary(parents[0].bounds)
-            child.set_weight(parents[0].weight)
-        else:
-            child = population[index]
+        # print("child_dv:", (child_dv))
+        child.encode(child_dv)
+        child.set_boundary(parents[0].bounds)
+        child.set_weight(parents[0].weight)
 
         mutate_genome = self.mating._mutation(child.get_genome())
         child.set_genome(mutate_genome)
@@ -268,10 +274,15 @@ class MOEAD_DE(MOEAD):
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        if self.alternation is "all":
-            return max(population[index], child)
-        else:
-            return max(*subpop, child)
+        if population[index] > child:
+            child = population[index]
+        
+        return child
+
+        # if self.alternation is "all":
+        #     return max(population[index], child)
+        # else:
+        #     return max(*subpop, child)
 
 
 class C_MOEAD_DE(MOEAD_DE):

@@ -55,7 +55,7 @@ args = {
     "eval_func":problem,
     "dv_bounds":([0]*dvsize, [1]*dvsize),
     "weight":[1, 1],
-    "normalize": True,
+    "normalize": False,
     "n_constraint":n_const
 }
 
@@ -69,11 +69,11 @@ data = []
 for indiv in pop:
     data.append(list(indiv.value))
 data = np.array(data)
-plt.scatter(data[:,0], data[:,1], c="Blue")
-for d in data:
-    if d[-2]>=0 and d[-1]>=0:
-        plt.scatter(data[:,0], data[:,1], c="Red")
-plt.show()
+# plt.scatter(data[:,0], data[:,1], c="Blue")
+# for d in data:
+#     if d[-2]>=0 and d[-1]>=0:
+#         plt.scatter(data[:,0], data[:,1], c="Red")
+# plt.show()
 
 st_time = time.time()
 solver.run(max_epoch)
