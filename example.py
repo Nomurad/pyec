@@ -113,7 +113,8 @@ np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
 
-np.savetxt("gen000_pop_objs_eval.txt", data)
+np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
+print("data shape",data.shape)
 
 ### 以下，制約条件ありで行う場合使用
 # data = []

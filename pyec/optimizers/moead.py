@@ -102,6 +102,9 @@ class MOEAD(object):
 
     def init_weight(self):
         self.weight_vec = weight_vector_generator(self.nobj, self.popsize-1)
+        self.popsize = len(self.weight_vec)
+        print(f"popsize update -> {self.popsize}")
+        
         self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
         self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
 
@@ -127,7 +130,7 @@ class MOEAD(object):
         for i in range(self.ksize):
             neighber_index[i] = norms_sort[i,1]
         
-        # print(neighber_index)
+        print("neighbers_index", neighber_index)
         return neighber_index
 
     def update_reference(self, indiv:Individual):
@@ -185,9 +188,12 @@ class MOEAD(object):
         if self.normalize is True:
             values = list(map(self._get_indiv_value, population))
             values = np.array(values)
-            upper = [np.max(values[:,0]), np.max(values[:,1])]
-            lower = [np.min(values[:,0]), np.min(values[:,1])]
-            # print("upper/lower: ",(upper), (lower))
+            print(values.shape)
+            # upper = [np.max(values[:,0]), np.max(values[:,1])]
+            # lower = [np.min(values[:,0]), np.min(values[:,1])]
+            upper = [np.max(values[:, idx]) for idx in range(values.shape[-1])]
+            lower = [np.min(values[:, idx]) for idx in range(values.shape[-1])]
+            print("upper/lower: ",(upper), (lower))
             # input()
             if self.normalizer is None:
                 self.normalizer = Normalizer(upper, lower)

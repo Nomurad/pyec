@@ -16,18 +16,18 @@ class Solver(object):
     """進化計算ソルバー    
     """
 
-    def __init__(self,  popsize:int, #1世代あたりの個体数
-                        dv_size:int, #設計変数の数
-                        nobj:int, #目的関数の数
+    def __init__(self,  popsize: int, #1世代あたりの個体数
+                        dv_size: int, #設計変数の数
+                        nobj: int, #目的関数の数
                         selector,
                         mating,
                         optimizer,
                         eval_func, 
-                        ksize:int=None,
-                        dv_bounds:tuple=(0,1), #設計変数の上下限値
-                        weight=None,
-                        normalize=False,
-                        n_constraint=0
+                        ksize: int= None,
+                        dv_bounds: tuple = (0,1), #設計変数の上下限値
+                        weight = None,
+                        normalize = False,
+                        n_constraint = 0
                         ):
         """solver initializer
         
@@ -46,10 +46,10 @@ class Solver(object):
             normalize {bool} -- [評価値の正規化] (default: False)
             n_constraint {int} -- [制約条件数] (dafault: 0)
         """
+        
         self.env = Environment(popsize, dv_size, optimizer,
                           eval_func, dv_bounds, n_constraint)
         self.eval_func = eval_func
-        
 
         self.nobj = nobj
         # self.nobj = len(eval_func( dummy_indiv.get_design_variable() ))
@@ -61,26 +61,31 @@ class Solver(object):
         if optimizer.name is "moead":
             if ksize is None:
                 ksize = 3
-            self.optimizer = MOEAD((popsize), self.nobj, 
+            self.optimizer = MOEAD((self.env.popsize), self.nobj, 
                                     self.selector, self.mating, ksize=ksize)
         elif optimizer.name is "moead_de":
             if ksize is None:
                 ksize = 3
-            self.optimizer = MOEAD_DE((popsize), self.nobj, self.env.pool,
+            self.optimizer = MOEAD_DE((self.env.popsize), self.nobj, self.env.pool,
                                     self.selector, self.mating, ksize=ksize)
         elif optimizer.name is "c_moead_de":
             if ksize is None:
                 ksize = 3
-            self.optimizer = C_MOEAD_DE((popsize), self.nobj, self.env.pool,
+            self.optimizer = C_MOEAD_DE((self.env.popsize), self.nobj, self.env.pool,
                             n_constraint, self.selector, self.mating, ksize=ksize)
 
         self.optimizer.normalize = normalize
 
+        #moea/dの場合, popsizeが更新されるので，修正する
+        self.env.popsize = self.optimizer.popsize 
+        self.env.nowpop.capacity = self.env.popsize
+        # print("opt popsize", self.optimizer.popsize)
+
         #初期個体の生成
-        for _ in range(popsize):
+        for _ in range(self.optimizer.popsize):
             indiv = self.env.creator()
             
-            # indiv.set_id(self.env.current_id)
+            indiv.set_id(self.env.current_id)
             # print(type(indiv))
             indiv.set_boundary(self.env.dv_bounds)
             if weight is not None:

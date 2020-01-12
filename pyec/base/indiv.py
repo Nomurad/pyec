@@ -102,13 +102,13 @@ class Individual(object):
     def evaluate(self, func, funcargs, n_feasible=0):
         # print("n_feasible:",n_feasible)
         if n_feasible == 0:
-            res = func(funcargs)
-            # print("indiv eval", (res))
+            res = func(*funcargs)
+            print("indiv eval", (res))
             self.set_value(res)
             return res
 
         else:
-            res, feasible = func(funcargs)
+            res, feasible = func(*funcargs)
             self.set_value(res) 
             self.set_feasible(feasible)
             return res, feasible
