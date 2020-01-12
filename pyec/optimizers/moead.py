@@ -83,6 +83,7 @@ class MOEAD(object):
 
     def __init__(self, popsize:int, nobj:int,
                     selection:Selector, mating:Mating, ksize=3 ):
+        self.division = popsize
         self.popsize = popsize
         self.nobj = nobj
         self.ksize = ksize
@@ -188,7 +189,7 @@ class MOEAD(object):
         if self.normalize is True:
             values = list(map(self._get_indiv_value, population))
             values = np.array(values)
-            print(values.shape)
+            # print(values.shape)
             # upper = [np.max(values[:,0]), np.max(values[:,1])]
             # lower = [np.min(values[:,0]), np.min(values[:,1])]
             upper = [np.max(values[:, idx]) for idx in range(values.shape[-1])]

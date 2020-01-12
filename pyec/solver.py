@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import copy
 
 from .base.indiv import Individual
 from .base.population import Population
@@ -27,7 +28,8 @@ class Solver(object):
                         dv_bounds: tuple = (0,1), #設計変数の上下限値
                         weight = None,
                         normalize = False,
-                        n_constraint = 0
+                        n_constraint = 0,
+                        old_pop=None
                         ):
         """solver initializer
         
@@ -45,10 +47,21 @@ class Solver(object):
             weight {list or tuple} -- [目的関数の重み付け] (default: None)
             normalize {bool} -- [評価値の正規化] (default: False)
             n_constraint {int} -- [制約条件数] (dafault: 0)
+            old_pop [Population] -- [last population, Restart時に使用]
         """
-        
-        self.env = Environment(popsize, dv_size, optimizer,
-                          eval_func, dv_bounds, n_constraint)
+        self.restart = 0
+        if old_pop is not None:
+            self.restart = len(old_pop)
+            print(f"start epoch is {self.restart}")
+            # print("oldpop", old_pop[-1].__dict__)
+            self.env = Environment(popsize, dv_size, optimizer,
+                            eval_func, dv_bounds, n_constraint, 
+                            old_pop=old_pop[-1])
+            self.env.history.extend(old_pop)
+            # print("history", len(self.env.history))
+        else:
+            self.env = Environment(popsize, dv_size, optimizer,
+                            eval_func, dv_bounds, n_constraint)
         self.eval_func = eval_func
 
         self.nobj = nobj
@@ -82,30 +95,31 @@ class Solver(object):
         # print("opt popsize", self.optimizer.popsize)
 
         #初期個体の生成
-        for _ in range(self.optimizer.popsize):
-            indiv = self.env.creator()
-            
-            indiv.set_id(self.env.current_id)
-            # print(type(indiv))
-            indiv.set_boundary(self.env.dv_bounds)
-            if weight is not None:
-                # print("set weight", weight)
-                self.env.weight = np.array(weight)
-            indiv.set_weight(self.env.weight)
-            
-            self.env.nowpop.append(indiv)
+        if self.restart == 0:
+            for _ in range(self.optimizer.popsize):
+                indiv = self.env.creator()
+                
+                indiv.set_id(self.env.current_id)
+                # print(type(indiv))
+                indiv.set_boundary(self.env.dv_bounds)
+                if weight is not None:
+                    # print("set weight", weight)
+                    self.env.weight = np.array(weight)
+                indiv.set_weight(self.env.weight)
+                
+                self.env.nowpop.append(indiv)
 
-        for indiv in self.env.nowpop:
-            #目的関数値を計算
-            # print("func:", self.eval_func.__dict__)
-            res = self.env.evaluate(indiv)
+            for indiv in self.env.nowpop:
+                #目的関数値を計算
+                # print("func:", self.eval_func.__dict__)
+                res = self.env.evaluate(indiv)
             # print("res", res)
 
-        #適応度計算
-        self.optimizer.calc_fitness(self.env.nowpop)
-        
-        #初期個体を世代履歴に保存
-        self.env.alternate()
+            #適応度計算
+            self.optimizer.calc_fitness(self.env.nowpop)
+                
+            #初期個体を世代履歴に保存
+            self.env.alternate()
 
     def __call__(self, iter):
         self.run(iter)
@@ -121,6 +135,12 @@ class Solver(object):
             # for indiv in self.env.nowpop:
             #     print(indiv.get_id(), end=" ")
             self.optimizing()
+            if self.restart > 0:
+                n_epoch = i + self.restart
+            else:
+                n_epoch = i + 1
+                
+            self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
         print()
 
     def optimizing(self):
@@ -138,7 +158,7 @@ class Solver(object):
 
         self.env.alternate(next_pop)
 
-    def result(self, save=False):
+    def result(self, save=False, fname=None):
         result = np.array(self.env.history)
         # print("result shape",result.shape)
 
@@ -147,9 +167,18 @@ class Solver(object):
         #     for indiv in pop:
         #         print(f"{i}, {indiv._id:>10} \t{indiv.value}")
         # np.savetxt(path, res, delimiter=",")
+        if fname is None:
+            fname = "opt_result.pkl"
+
         if save is True:
-            with open("opt_result.pkl", "wb") as f:
-                pickle.dump(self, f)
+            with open(fname, "wb") as f:
+                env = copy.copy(self.env)
+                env.func = "problem"
+                savedata = {
+                    "result": result,
+                    "env": env, 
+                    "optimizer": self.optimizer }
+                pickle.dump(savedata, f)
         
         return result
 

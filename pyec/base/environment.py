@@ -54,12 +54,20 @@ class Environment(object):
                         eval_func=None, 
                         dv_bounds:tuple=(0,1), #設計変数の上下限値
                         feasible_size=0, #制約条件の数
-                        normalize=False
+                        normalize=False,
+                        old_pop=None
                         ):
 
         self.current_id = 0
         self.popsize = popsize
-        self.nowpop = Population(capa=popsize)
+        self.dv_size = dv_size
+        if old_pop is None:
+            print("Start EA.")
+            self.nowpop = Population(capa=popsize)
+        else:
+            print("Re Start EA.")
+            print("oldpop dict",old_pop.__dict__)
+            self.nowpop = old_pop
         self.history = [] #過去世代のpopulationのリスト
         self.pool = Pool()
         self.func = eval_func
