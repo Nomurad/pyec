@@ -103,7 +103,7 @@ class Individual(object):
         # print("n_feasible:",n_feasible)
         if n_feasible == 0:
             res = func(*funcargs)
-            print("indiv eval", (res))
+            # print("indiv eval", (res))
             self.set_value(res)
             return res
 
