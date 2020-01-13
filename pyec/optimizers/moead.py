@@ -90,7 +90,9 @@ class MOEAD(object):
         self.ref_points = []
         self.selector = selection
         self.mating = mating
-        self.scalar = scalar_chebyshev
+        # self.scalar = scalar_chebyshev
+        self.scalar = scalar_weighted_sum
+        print("scalar func is ", self.scalar)
         self.init_weight()
         
         self.alternation = "normal"
