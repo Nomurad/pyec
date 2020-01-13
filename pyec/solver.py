@@ -94,6 +94,10 @@ class Solver(object):
         self.env.nowpop.capacity = self.env.popsize
         # print("opt popsize", self.optimizer.popsize)
 
+        if weight is not None:
+            # print("set weight", weight)
+            self.env.weight = np.array(weight)
+            
         #初期個体の生成
         if self.restart == 0:
             for _ in range(self.optimizer.popsize):
@@ -102,9 +106,6 @@ class Solver(object):
                 indiv.set_id(self.env.current_id)
                 # print(type(indiv))
                 indiv.set_boundary(self.env.dv_bounds)
-                if weight is not None:
-                    # print("set weight", weight)
-                    self.env.weight = np.array(weight)
                 indiv.set_weight(self.env.weight)
                 
                 self.env.nowpop.append(indiv)
