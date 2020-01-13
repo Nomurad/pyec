@@ -99,6 +99,34 @@ class Solver(object):
             self.env.weight = np.array(weight)
             
         #初期個体の生成
+        # if self.restart == 0:
+        #     for _ in range(self.optimizer.popsize):
+        #         indiv = self.env.creator()
+                
+        #         indiv.set_id(self.env.current_id)
+        #         # print(type(indiv))
+        #         indiv.set_boundary(self.env.dv_bounds)
+        #         indiv.set_weight(self.env.weight)
+                
+        #         self.env.nowpop.append(indiv)
+
+        #     for indiv in self.env.nowpop:
+        #         #目的関数値を計算
+        #         # print("func:", self.eval_func.__dict__)
+        #         res = self.env.evaluate(indiv)
+        #     # print("res", res)
+
+        #     #適応度計算
+        #     self.optimizer.calc_fitness(self.env.nowpop)
+                
+        #     #初期個体を世代履歴に保存
+        #     self.env.alternate()
+
+    def __call__(self, iter):
+        self.run(iter)
+
+    #初期個体の生成
+    def initialize(self):
         if self.restart == 0:
             for _ in range(self.optimizer.popsize):
                 indiv = self.env.creator()
@@ -121,9 +149,6 @@ class Solver(object):
                 
             #初期個体を世代履歴に保存
             self.env.alternate()
-
-    def __call__(self, iter):
-        self.run(iter)
 
     def run(self, iter, nextline=None):
         if nextline is None:
