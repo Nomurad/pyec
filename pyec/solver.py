@@ -131,7 +131,8 @@ class Solver(object):
             for _ in range(self.optimizer.popsize):
                 indiv = self.env.creator()
                 
-                indiv.set_id(self.env.current_id)
+                # indiv.set_id(self.env.current_id)
+                self.env.current_id = indiv.get_id()
                 # print(type(indiv))
                 indiv.set_boundary(self.env.dv_bounds)
                 indiv.set_weight(self.env.weight)
@@ -157,7 +158,7 @@ class Solver(object):
         for i in range(iter):
             if i%nextline == 0:
                 print()
-            print(f"iter:{i+1:>5d}", end="\r")
+            print(f"iter:{i+1:>5d}", end="\r\n")
             # for indiv in self.env.nowpop:
             #     print(indiv.get_id(), end=" ")
             self.optimizing()

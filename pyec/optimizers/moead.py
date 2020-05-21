@@ -107,6 +107,7 @@ class MOEAD(object):
         self.weight_vec = weight_vector_generator(self.nobj, self.popsize-1)
         self.popsize = len(self.weight_vec)
         print(f"popsize update -> {self.popsize}")
+        # print([np.linalg.norm(n) for n in self.weight_vec])
         
         self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
         self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
@@ -157,17 +158,19 @@ class MOEAD(object):
         subpop = [population[i] for i in self.neighbers[index]]
 
         for i, indiv in enumerate(subpop):
-            fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
-            indiv.set_fitness(fit_value)
+            self.calc_fitness_single(indiv, index)
+            # fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
+            # indiv.set_fitness(fit_value)
         
         parents = self.selector(subpop)
-        # print("len parents", len(parents))
+        # print("len parents", parents)
+        # print("id_s", [p.get_id() for p in parents])
         childs = self.mating(parents)
         child = random.choice(childs)
         idx = 0
         if all(child.genome == childs[idx]):
             idx = 1
-        self.mating._pool.pop(idx)
+        self.mating._pool.pop(childs[idx].get_id())
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
@@ -212,7 +215,7 @@ class MOEAD(object):
     def calc_fitness_single(self, indiv:Individual, index):
         """1個体の適応度計算
         """
-        fit = scalar_chebyshev(indiv, self.weight_vec[index], self.ref_points)
+        fit = self.scalar(indiv, self.weight_vec[index], self.ref_points)
         indiv.set_fitness(fit)
         # print("fit:",fit)
 

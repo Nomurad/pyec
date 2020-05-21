@@ -42,11 +42,14 @@ class Individual(object):
         return self._id 
 
     def set_parents_id(self, parents):
+        # print("N_parents", len(parents))
         for parent in parents:
             self.parent_id.append(parent.get_id())
+            # print("parent id", parent.get_id())
         
     def set_weight(self, weight):
-        self.weight = weight
+        self.weight = np.array(weight)
+        # self.wvalue = self.weight*self.value
 
     def get_genome(self):
         return self.genome
@@ -127,8 +130,16 @@ class Individual(object):
             return NotImplemented
         res = False
 
-        if all( s <= o for s,o in zip(self.value, other.value)) and \
-            any( s != o for s,o in zip(self.value, other.value)):
+        try:
+            # print(len(self.value), len(self.weight))
+            self.wvalue = self.weight*self.value
+            other.wvalue = other.weight*other.value
+        except:
+            raise
+
+
+        if all( s <= o for s,o in zip(self.wvalue, other.wvalue)) and \
+            any( s != o for s,o in zip(self.wvalue, other.wvalue)):
             res = True
         return res
 
