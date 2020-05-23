@@ -16,6 +16,7 @@ from pyec.testfunctions import zdt1, zdt2, zdt3, tnk
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from pprint import pprint
 
 class Problem():
     def __init__(self):
