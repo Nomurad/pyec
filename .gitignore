@@ -2,6 +2,7 @@ test.py
 .vscode
 temp*.csv
 *.pkl
+gen000_pop_objs_eval.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
