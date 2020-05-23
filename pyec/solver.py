@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import copy
+import os 
 
 from .base.indiv import Individual
 from .base.population import Population
@@ -169,6 +170,7 @@ class Solver(object):
                 n_epoch = i + 1
                 
             self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
+            self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
         print()
 
     def optimizing(self):
@@ -186,7 +188,7 @@ class Solver(object):
 
         self.env.alternate(next_pop)
 
-    def result(self, save=False, fname=None):
+    def result(self, save=False, fname=None, delete=False):
         result = np.array(self.env.history)
         # print("result shape",result.shape)
 
@@ -208,6 +210,10 @@ class Solver(object):
                     "optimizer": self.optimizer }
                 pickle.dump(savedata, f)
         
+        if delete is True:
+            if os.path.exists(fname):
+                os.remove(fname)
+
         return result
 
     
