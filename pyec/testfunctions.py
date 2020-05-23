@@ -37,7 +37,9 @@ def rosenbrock(x):
 # M.O.
 ################################################################################
 
-def zdt1(x):
+def zdt1(x, *args):
+    if args:
+        x = [x, *args]
     n = len(x)
     if n == 1:
         return x[0], 1 - math.sqrt(x[0])
