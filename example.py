@@ -40,7 +40,7 @@ optimizer = MOEAD_DE
 n_const = 0
 
 max_epoch = 100*1
-dvsize = 5
+dvsize = 10
 
 # optimizer = C_MOEAD_DE
 # problem = Problem()
@@ -64,7 +64,7 @@ print(optimizer.name)
 
 solver = Solver(**args)
 print(solver.optimizer)
-# solver.env.weight = [1, 0.1]
+pprint(solver.env.__dict__) # for debug
 pop = solver.env.history[0]
 data = []
 for indiv in pop:
