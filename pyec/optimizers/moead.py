@@ -90,8 +90,8 @@ class MOEAD(object):
         self.ref_points = []
         self.selector = selection
         self.mating = mating
-        # self.scalar = scalar_chebyshev
-        self.scalar = scalar_weighted_sum
+        self.scalar = scalar_chebyshev
+        # self.scalar = scalar_weighted_sum
         print("scalar func is ", self.scalar)
         self.init_weight()
         
@@ -134,7 +134,7 @@ class MOEAD(object):
         for i in range(self.ksize):
             neighber_index[i] = norms_sort[i,1]
         
-        print("neighbers_index", neighber_index)
+        print(index, "neighbers_index", neighber_index)
         return neighber_index
 
     def update_reference(self, indiv:Individual):
