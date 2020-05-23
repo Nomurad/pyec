@@ -99,6 +99,7 @@ class Solver(object):
             self.env.weight = np.array(weight)
             
         #初期個体の生成
+        self.initialize()
         # if self.restart == 0:
         #     for _ in range(self.optimizer.popsize):
         #         indiv = self.env.creator()
