@@ -1,6 +1,9 @@
 import random 
 import numpy as np 
 
+class CrossoverError(Exception):
+    pass
+
 class BlendCrossover(object):
     """BLX-alpha
     """
