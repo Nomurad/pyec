@@ -116,7 +116,7 @@ class Individual(object):
             self.set_feasible(feasible)
             return res, feasible
 
-    def dominate(self, other) -> bool:
+    def dominate(self, other:"Individual") -> bool:
         """selfがotherを優越する場合 -> True
            その他の場合             -> False
         
@@ -143,7 +143,7 @@ class Individual(object):
             res = True
         return res
 
-    def feasible_dominate(self, other) -> bool:
+    def feasible_dominate(self, other:"Individual") -> bool:
         if not isinstance(other, Individual):
             return NotImplemented
         res = False 
