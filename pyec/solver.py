@@ -77,11 +77,13 @@ class Solver(object):
                 ksize = 3
             self.optimizer = MOEAD((self.env.popsize), self.nobj, 
                                     self.selector, self.mating, ksize=ksize)
+
         elif optimizer.name is "moead_de":
             if ksize is None:
                 ksize = 3
             self.optimizer = MOEAD_DE((self.env.popsize), self.nobj, self.env.pool,
                                     self.selector, self.mating, ksize=ksize)
+                                    
         elif optimizer.name is "c_moead_de":
             if ksize is None:
                 ksize = 3
@@ -171,16 +173,17 @@ class Solver(object):
                 
             self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
             self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
+            # print(len(self.optimizer.EP))
         print()
 
     def optimizing(self):
         next_pop = Population(capa=len(self.env.nowpop))
-        # print(len(self.env.history))
-
+        nowpop = copy.deepcopy(self.env.nowpop)
+        
         for i in range(len(self.env.nowpop)):
             # print(i, len(next_pop), self.optimizer.neighbers[i])
-            child = self.optimizer.get_offspring(i, self.env.nowpop, self.eval_func)
-            res = self.env.evaluate(child)
+            child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
+            # res = self.env.evaluate(child)
             next_pop.append(child)
             # print(child.value, " | ", res)
 
