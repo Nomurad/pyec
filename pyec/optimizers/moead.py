@@ -306,15 +306,25 @@ class MOEAD_DE(MOEAD):
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        if population[index] > child:
-            child = population[index]
-        
-        return child
+        # if population[index] > child:
+        #     child = population[index]
 
-        # if self.alternation is "all":
-        #     return max(population[index], child)
-        # else:
-        #     return max(*subpop, child)
+        if self.alternation is "all":
+            res = max(population[index], child)
+        else:
+            res = max(*subpop, child)
+        
+        # old_indiv = random.choice(subpop)
+        # if child > old_indiv:
+        #     child.evaluate(eval_func, child.get_design_variable())
+        #     for i, indiv in enumerate(subpop):
+        #         if old_indiv.get_id() == indiv.get_id():
+        #             population[i] = child
+        
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+
+        return res
 
 
 class C_MOEAD_DE(MOEAD_DE):
