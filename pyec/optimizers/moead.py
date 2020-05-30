@@ -6,7 +6,7 @@ from ..base.population import Population
 from ..base.environment import Pool, Normalizer
 from ..operators.initializer import UniformInitializer
 
-from ..operators.crossover import SimulatedBinaryCrossover
+from ..operators.crossover import SimulatedBinaryCrossover, DifferrentialEvolutonary_Crossover
 from ..operators.mutation import PolynomialMutation
 from ..operators.selection import TournamentSelection, TournamentSelectionStrict
 from ..operators.selection import SelectionIterator, Selector
