@@ -176,7 +176,7 @@ class Individual(object):
     def __ge__(self, other):     #greater than or equal ">="
         return not self.__lt__(other)
 
-    def __add__(self, other):
+    def __add__(self, other) -> np.ndarray:
         if isinstance(other, Individual):
             return (self.get_design_variable() + other.get_design_variable())
         elif isinstance(other, np.ndarray):
@@ -184,7 +184,7 @@ class Individual(object):
         else:
             return NotImplemented
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> np.ndarray:
         if isinstance(other, Individual):
             return (self.get_design_variable() - other.get_design_variable())
         elif isinstance(other, np.ndarray):

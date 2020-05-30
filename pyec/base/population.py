@@ -31,13 +31,13 @@ class Population(object):
                 self.capacity = capa
                 
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Individual:
         return self.pop[key]
     
     def __len__(self):
         return len(self.pop)
 
-    def __add__(self, other):
+    def __add__(self, other) -> Population:
         if not isinstance(other, Population):
             return NotImplemented
         pop = self.pop + other.pop
@@ -54,6 +54,6 @@ class Population(object):
     def sort(self, *args, **kwargs):
         self.pop.sort(*args, **kwargs)
 
-    def filled(self):
+    def filled(self) -> bool:
         return (len(self.pop) >= self.capacity)
 
