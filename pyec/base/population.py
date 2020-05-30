@@ -37,7 +37,7 @@ class Population(object):
     def __len__(self):
         return len(self.pop)
 
-    def __add__(self, other) -> Population:
+    def __add__(self, other) -> "Population":
         if not isinstance(other, Population):
             return NotImplemented
         pop = self.pop + other.pop
