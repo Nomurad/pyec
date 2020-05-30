@@ -181,9 +181,14 @@ class MOEAD(object):
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
         if self.alternation is "all":
-            return max(population[index], child)
+            res = max(population[index], child)
         else:
-            return max(*subpop, child)
+            res = max(*subpop, child)
+
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+        
+        return res
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
