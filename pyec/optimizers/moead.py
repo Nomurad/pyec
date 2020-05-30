@@ -190,6 +190,12 @@ class MOEAD(object):
         
         return res
 
+    def update_EP(self, indiv:Individual):
+        # print("EP append")
+        self.EP.append(indiv)
+        if len(self.EP) > 2:
+            self.EP = self.sorting.sort(self.EP)[0]
+
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
         """
