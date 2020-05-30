@@ -54,7 +54,7 @@ args = {
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
     "optimizer":optimizer,
     "eval_func":problem,
-    "dv_bounds":([0]*dvsize, [1]*dvsize),
+    "dv_bounds":([0]*dvsize, [1]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":[1, 1],
     "normalize": False,
     "n_constraint":n_const
