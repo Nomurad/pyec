@@ -39,7 +39,7 @@ problem = zdt1
 optimizer = MOEAD_DE
 n_const = 0
 
-max_epoch = 100*1
+max_epoch = 100*2
 dvsize = 10
 
 # optimizer = C_MOEAD_DE
@@ -105,14 +105,17 @@ print("popsize",len(pop))
 fronts = sort_func.sort(pop)
 # fronts = non_dominate_sort(pop)
 print("pareto size", len(fronts[0]), end="\n\n")
-# print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
-pareto = fronts[0]
+print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
+# pareto = fronts[0]
+pareto = solver.optimizer.EP
 pareto_val = np.array([indiv.value for indiv in pareto])
+print(pareto_val)
 
 np.savetxt("temp_data.csv", data, delimiter=",")
 np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+plt.scatter(pareto_val[:,0], pareto_val[:,1], c="red")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 print("data shape",data.shape)
