@@ -34,6 +34,9 @@ class Population(object):
     def __getitem__(self, key) -> Individual:
         return self.pop[key]
     
+    def __setitem__(self, key, indiv):
+        self.pop[key] = indiv
+    
     def __len__(self):
         return len(self.pop)
 
