@@ -90,6 +90,7 @@ class MOEAD(object):
         self.ref_points = []
         self.selector = selection
         self.mating = mating
+        self.sorting = NonDominatedSort()
         self.scalar = scalar_chebyshev
         # self.scalar = scalar_weighted_sum
         print("scalar func is ", self.scalar)
@@ -101,7 +102,8 @@ class MOEAD(object):
         self.EP = []
 
     def __call__(self, index:int, population:Population, eval_func) -> Individual:
-        return self.get_offspring(index, population, eval_func)
+        child = self.get_offspring(index, population, eval_func)
+        return child
 
     def init_weight(self):
         self.weight_vec = weight_vector_generator(self.nobj, self.popsize-1)
@@ -153,7 +155,7 @@ class MOEAD(object):
             print([self.ref_points, np.array(indiv.wvalue)])
             raise MOEADError()
 
-    def get_offspring(self, index, population:Population, eval_func) -> Individual:
+    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
         # print(self.neighbers[index])
         subpop = [population[i] for i in self.neighbers[index]]
 
@@ -258,7 +260,6 @@ class MOEAD_DE(MOEAD):
                 )
         print(self.name)
 
-        
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
         rand = random.random()
         
@@ -280,22 +281,6 @@ class MOEAD_DE(MOEAD):
         p2 = parents[0].get_genome()
         p3 = parents[1].get_genome()
         child_dv = self.crossover([p1, p2, p3])
-
-        # lower, upper = parents[0].bounds
-        # de = self.scaling_F*(parents[0]-parents[1])
-        # vi = population[index] + de
-        # child_dv = np.zeros(vi.shape)
-        # j_rand = random.randint(0,len(vi))
-        # if random.random() > self.pm:
-        #     for i,dv in enumerate(vi):
-        #         rand = random.random()
-        #         if (i==j_rand) or (rand < self.CR):
-        #             child_dv[i] = vi[i]
-        #         else:
-        #             child_dv[i] = population[index].get_design_variable()[i]
-                    
-        #         if dv < lower[i] or dv > upper[i]:
-        #             child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
 
         # print("child_dv:", (child_dv))
         child.set_genome(child_dv)
@@ -326,7 +311,7 @@ class MOEAD_DE(MOEAD):
         #     for i, indiv in enumerate(subpop):
         #         if old_indiv.get_id() == indiv.get_id():
         #             population[i] = child
-        
+
         if res.get_id() == child.get_id():
             self.update_EP(res)
 
