@@ -157,7 +157,7 @@ class MOEAD(object):
         # print(self.neighbers[index])
         subpop = [population[i] for i in self.neighbers[index]]
 
-        for i, indiv in enumerate(subpop):
+        for _, indiv in enumerate(subpop):
             self.calc_fitness_single(indiv, index)
             # fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
             # indiv.set_fitness(fit_value)
