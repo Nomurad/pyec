@@ -227,14 +227,24 @@ class MOEAD_DE(MOEAD):
     name = "moead_de"
 
     def __init__(self, popsize:int, nobj:int, pool:Pool,
-                    selection:Selector, mating:Mating, ksize=3):
+                    selection:Selector, mating:Mating, ksize=3,
+                    F=0.9, eta=20
+                ):
         super().__init__(popsize, nobj, selection, mating, ksize=3)
 
         self.pool = pool
-        self.CR = 0.9   #交叉率
+        self.CR = F   #交叉率
         self.scaling_F = 0.7    #スケーリングファクタ--->( 0<=F<=1 )
         self.pm = self.mating._mutation.rate
+        self.eta = eta
         self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
+        self.crossover = \
+            DifferrentialEvolutonary_Crossover(
+                    self.CR,
+                    self.scaling_F,
+                    self.pm,
+                    self.eta
+                )
         print(self.name)
 
         
@@ -254,25 +264,30 @@ class MOEAD_DE(MOEAD):
         parents = random.sample(subpop, 2)
         # child = Individual(np.random.rand(len(parents[0].genome)))
         child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+        
+        p1 = population[index].get_genome()
+        p2 = parents[0].get_genome()
+        p3 = parents[1].get_genome()
+        child_dv = self.crossover([p1, p2, p3])
 
-        lower, upper = parents[0].bounds
-        de = self.scaling_F*(parents[0]-parents[1])
-        vi = population[index] + de
-        child_dv = np.zeros(vi.shape)
-        j_rand = random.randint(0,len(vi))
-        if random.random() > self.pm:
-            for i,dv in enumerate(vi):
-                rand = random.random()
-                if (i==j_rand) or (rand < self.CR):
-                    child_dv[i] = vi[i]
-                else:
-                    child_dv[i] = population[index].get_design_variable()[i]
+        # lower, upper = parents[0].bounds
+        # de = self.scaling_F*(parents[0]-parents[1])
+        # vi = population[index] + de
+        # child_dv = np.zeros(vi.shape)
+        # j_rand = random.randint(0,len(vi))
+        # if random.random() > self.pm:
+        #     for i,dv in enumerate(vi):
+        #         rand = random.random()
+        #         if (i==j_rand) or (rand < self.CR):
+        #             child_dv[i] = vi[i]
+        #         else:
+        #             child_dv[i] = population[index].get_design_variable()[i]
                     
-                if dv < lower[i] or dv > upper[i]:
-                    child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
+        #         if dv < lower[i] or dv > upper[i]:
+        #             child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
 
         # print("child_dv:", (child_dv))
-        child.encode(child_dv)
+        child.set_genome(child_dv)
         child.set_boundary(parents[0].bounds)
         child.set_weight(parents[0].weight)
 
