@@ -187,9 +187,51 @@ class MOEAD(object):
         else:
             res = max(*subpop, child)
 
-        if res.get_id() == child.get_id():
-            self.update_EP(res)
+        nr = int(len(subpop))
+        res = self._alternate(child, nr, index, population, subpop)
         
+        # if res == None:
+        #     return population[index]
+            
+        # if res.get_id() == child.get_id():
+        #     self.update_EP(res)
+        #     self.n_EPupdate += 1
+        
+        return res
+
+    def _alternate(self, child, nr, index, population, subpop):
+        res = None
+
+        neighber = self.neighbers[index]
+
+        rands = list(range(len(subpop)))
+        random.shuffle(rands)
+        for c in range(nr):
+            j2 = rands[c]%self.ksize
+            j = int(neighber[j2])
+            old_indiv = population[j]
+            population[j] = max(old_indiv, child)
+            if child.get_id() == population[j].get_id():
+                res = child
+            # w = self.weight_vec[j]
+            # fit1 = self.scalar(child, w, self.ref_points)
+            # if fit1 > old_indiv.fitness.fitness:
+            #     population[j] = child
+            #     res = child
+
+        # if self.alternation is "all":
+        #     res = max(population[index], child)
+        #     population[index] = res
+        # else:
+        #     res = max(*subpop, child)
+        #     population[index] = res
+
+        # if res == child:
+        #     print("child ")
+        if res == None:
+            res = population[index]
+        # print(res.fitness.fitness, " | ", child.fitness.fitness)
+
         return res
 
     def update_EP(self, indiv:Individual):
@@ -297,23 +339,23 @@ class MOEAD_DE(MOEAD):
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        # if population[index] > child:
-        #     child = population[index]
+        # print(population)
+        nr = int(len(subpop)/2)
+        nr = 2
+        res = self._alternate(child, nr, index, population, subpop)
 
-        if self.alternation is "all":
-            res = max(population[index], child)
-        else:
-            res = max(*subpop, child)
+                # for i, indiv in enumerate(population):
+                #     if old_indiv.get_id() == indiv.get_id():
+                #         # print("replace")
+                #         population[i] = child
+                #         res.append(child)
         
-        # old_indiv = random.choice(subpop)
-        # if child > old_indiv:
-        #     child.evaluate(eval_func, child.get_design_variable())
-        #     for i, indiv in enumerate(subpop):
-        #         if old_indiv.get_id() == indiv.get_id():
-        #             population[i] = child
-
-        if res.get_id() == child.get_id():
-            self.update_EP(res)
+        # if res == None:
+        #     return population[index]
+        
+        # if res.get_id() == child.get_id():
+        #     self.update_EP(res)
+        #     self.n_EPupdate += 1
 
         return res
 
