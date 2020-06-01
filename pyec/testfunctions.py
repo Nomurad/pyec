@@ -44,8 +44,13 @@ def zdt1(x, *args):
     if n == 1:
         return x[0], 1 - math.sqrt(x[0])
 
-    g = 1 + 9 * np.sum(x[1:]) / (n - 1)
-    return x[0], g * (1 - math.sqrt(x[0] / g))
+    # g = 1 + 9 * np.sum(x[1:]) / (n - 1)
+    f1 = x[0]
+    g = 1 + 9/(n - 1) * sum(x[1:])
+    h = 1.0 - math.sqrt(f1/g)
+    f2 = g*h
+    # return x[0], g * (1 - math.sqrt(x[0] / g))
+    return f1, f2
 
 
 def zdt2(x):
