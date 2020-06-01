@@ -177,16 +177,19 @@ class Solver(object):
         print()
 
     def optimizing(self):
-        next_pop = Population(capa=len(self.env.nowpop))
+        # next_pop = Population(capa=len(self.env.nowpop))
         nowpop = copy.deepcopy(self.env.nowpop)
+        # nowpop = self.env.nowpop
         
         for i in range(len(self.env.nowpop)):
             # print(i, len(next_pop), self.optimizer.neighbers[i])
             child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
+            # print(nowpop)
             # res = self.env.evaluate(child)
-            next_pop.append(child)
+            # next_pop.append(child)
             # print(child.value, " | ", res)
 
+        next_pop = nowpop
         self.optimizer.calc_fitness(next_pop)
 
         self.env.alternate(next_pop)
