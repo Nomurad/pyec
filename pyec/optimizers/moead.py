@@ -1,5 +1,6 @@
-import numpy as np
 import random
+import copy
+import numpy as np
 
 from ..base.indiv import Individual
 from ..base.population import Population
@@ -100,6 +101,7 @@ class MOEAD(object):
         self.normalize = False
         self.normalizer = None
         self.EP = []
+        self.n_EPupdate = 0
 
     def __call__(self, index:int, population:Population, eval_func) -> Individual:
         child = self.get_offspring(index, population, eval_func)
@@ -182,10 +184,7 @@ class MOEAD(object):
             # input()
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        if self.alternation is "all":
-            res = max(population[index], child)
-        else:
-            res = max(*subpop, child)
+        # population[index] = res
 
         nr = int(len(subpop))
         res = self._alternate(child, nr, index, population, subpop)
@@ -238,7 +237,8 @@ class MOEAD(object):
         # print("EP append")
         self.EP.append(indiv)
         if len(self.EP) > 2:
-            self.EP = self.sorting.sort(self.EP)[0]
+            # self.EP = self.sorting.sort(self.EP)[0]
+            self.EP = self.sorting.output_pareto(self.EP)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
@@ -283,15 +283,16 @@ class MOEAD_DE(MOEAD):
 
     def __init__(self, popsize:int, nobj:int, pool:Pool,
                     selection:Selector, mating:Mating, ksize=3,
-                    F=0.9, eta=20
+                    CR=0.9, F=0.7, eta=20
                 ):
-        super().__init__(popsize, nobj, selection, mating, ksize=3)
+        super().__init__(popsize, nobj, selection, mating, ksize=ksize)
 
         self.pool = pool
-        self.CR = F   #交叉率
-        self.scaling_F = 0.7    #スケーリングファクタ--->( 0<=F<=1 )
+        self.CR = CR   #交叉率
+        self.scaling_F = F    #スケーリングファクタ--->( 0<=F<=1 )
         self.pm = self.mating._mutation.rate
-        self.eta = eta
+        # self.pm = 1.0/len(self.ref_points)
+        self.eta = self.mating._mutation.eta
         self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
         self.crossover = \
             DifferrentialEvolutonary_Crossover(
@@ -300,13 +301,13 @@ class MOEAD_DE(MOEAD):
                     self.pm,
                     self.eta
                 )
-        print(self.name)
 
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
-        rand = random.random()
+        rand = random.uniform(0.0, 1.0)
         
         if rand >= self.offspring_delta:
-            subpop = [population[i] for i in range(len(population))]
+            # subpop = [population[i] for i in range(len(population))]
+            subpop = list(population)
         else:
             subpop = [population[i] for i in self.neighbers[index]]
 
@@ -322,15 +323,13 @@ class MOEAD_DE(MOEAD):
         p1 = population[index].get_genome()
         p2 = parents[0].get_genome()
         p3 = parents[1].get_genome()
+        self.pm = 1.0/len(p1)
         child_dv = self.crossover([p1, p2, p3])
 
         # print("child_dv:", (child_dv))
         child.set_genome(child_dv)
         child.set_boundary(parents[0].bounds)
         child.set_weight(parents[0].weight)
-
-        mutate_genome = self.mating._mutation(child.get_genome())
-        child.set_genome(mutate_genome)
 
         child.evaluate(eval_func, (child.get_design_variable()))
         # print(child.evaluated(), child.value)
