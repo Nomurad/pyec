@@ -30,6 +30,7 @@ class Solver(object):
                         weight = None,
                         normalize = False,
                         n_constraint = 0,
+                        save=True,
                         old_pop=None
                         ):
         """solver initializer
@@ -50,6 +51,8 @@ class Solver(object):
             n_constraint {int} -- [制約条件数] (dafault: 0)
             old_pop [Population] -- [last population, Restart時に使用]
         """
+        self.flag_save = save
+
         self.restart = 0
         if old_pop is not None:
             self.restart = len(old_pop)
@@ -82,8 +85,9 @@ class Solver(object):
             if ksize is None:
                 ksize = 3
             self.optimizer = MOEAD_DE((self.env.popsize), self.nobj, self.env.pool,
-                                    self.selector, self.mating, ksize=ksize)
-                                    
+                                    self.selector, self.mating, ksize=ksize,
+                                    CR=0.9, F=0.05, eta=20)
+
         elif optimizer.name is "c_moead_de":
             if ksize is None:
                 ksize = 3
@@ -171,9 +175,12 @@ class Solver(object):
             else:
                 n_epoch = i + 1
                 
-            self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
-            self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
+            if self.flag_save == True:
+                self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
+                self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
+            print(f"EPsize:{len(self.optimizer.EP)}, Nom of update ", self.optimizer.n_EPupdate)
+            self.optimizer.n_EPupdate = 0
         print()
 
     def optimizing(self):
