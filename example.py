@@ -39,8 +39,8 @@ problem = zdt1
 optimizer = MOEAD_DE
 n_const = 0
 
-max_epoch = 100*2
-dvsize = 10
+max_epoch = 100*3
+dvsize = 5
 
 # optimizer = C_MOEAD_DE
 # problem = Problem()
@@ -54,10 +54,12 @@ args = {
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
     "optimizer":optimizer,
     "eval_func":problem,
+    "ksize":10,
     "dv_bounds":([0]*dvsize, [1]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":[1, 1],
     "normalize": False,
-    "n_constraint":n_const
+    "n_constraint":n_const,
+    "save":False
 }
 
 print(optimizer.name)
@@ -65,6 +67,7 @@ print(optimizer.name)
 solver = Solver(**args)
 print(solver.optimizer)
 pprint(solver.env.__dict__) # for debug
+pprint(solver.optimizer.__dict__)
 pop = solver.env.history[0]
 data = []
 for indiv in pop:
@@ -102,14 +105,13 @@ for i in range(1, 11):
     pop = pop + solver.env.history[-i]
 
 print("popsize",len(pop))
-fronts = sort_func.sort(pop)
 # fronts = non_dominate_sort(pop)
-print("pareto size", len(fronts[0]), end="\n\n")
-print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
-# pareto = fronts[0]
-pareto = solver.optimizer.EP
+pareto = sort_func.output_pareto(pop)
+# pareto = solver.optimizer.EP
+print("pareto size", len(pareto), end="\n\n")
+# print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
 pareto_val = np.array([indiv.value for indiv in pareto])
-print(pareto_val)
+# print(pareto_val)
 
 np.savetxt("temp_data.csv", data, delimiter=",")
 np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
