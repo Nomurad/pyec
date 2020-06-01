@@ -94,7 +94,7 @@ class DifferrentialEvolutonary_Crossover(object):
         This operator contains Mutation operator.
     """
 
-    def __init__(self, CR, F, pm, eta):
+    def __init__(self, CR=1.0, F=0.5, pm=0.1, eta=20):
         self.CR = CR 
         self.scaling_F = F
         self.pm = pm
@@ -118,27 +118,27 @@ class DifferrentialEvolutonary_Crossover(object):
 
         child_dv = np.zeros(num_dv)
         for i in range(num_dv):
-            if random.random() < self.CR:
+            if random.uniform(0.0, 1.0) < self.CR:
                 child_dv[i] = vi_genome[i]
             else:
                 child_dv[i] = p1[i]
         
         eta = self.eta
-        rand = random.random()
+        rand = random.uniform(0.0, 1.0)
         if rand < 0.5:
             delta_k = (2*rand)**(1/(eta+1)) - 1
         else:
             delta_k = 1 - (2 - 2*rand)**(1/(eta+1))
 
         for i in range(num_dv):
-            if random.random() < self.pm:
+            if random.uniform(0.0, 1.0) < self.pm:
                 a_k = 0.0
                 b_k = 1.0
                 child_dv[i] = child_dv[i] + (delta_k*(b_k - a_k))
 
         for i in range(num_dv):
             if child_dv[i] < 0.0 or child_dv[i] > 1.0:
-                child_dv[i] = random.random()
+                child_dv[i] = random.uniform(0.0, 1.0)
 
         return child_dv
 
