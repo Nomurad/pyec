@@ -174,7 +174,7 @@ class MOEAD(object):
         idx = 0
         if all(child.genome == childs[idx]):
             idx = 1
-        self.mating._pool.pop(childs[idx].get_id())
+        self.mating.pool.pop(childs[idx].get_id())
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
@@ -359,69 +359,60 @@ class MOEAD_DE(MOEAD):
         return res
 
 
-class C_MOEAD_DE(MOEAD_DE):
-    name = "c_moead_de"
+class C_MOEAD(MOEAD):
+    name = "c_moead"
 
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
         super().__init__(popsize, nobj, pool, selection, mating, ksize=3)
         self.n_constraint = n_constraint
-        self.feasible_sort = NonDominatedSort()
+        self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
 
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
-        rand = random.random()
         
-        if rand >= self.offspring_delta:
-            subpop = [population[i] for i in range(len(population))]
-        else:
-            subpop = [population[i] for i in self.neighbers[index]]
+        subpop = [population[i] for i in self.neighbers[index]]
 
         for i, indiv in enumerate(subpop):
-            fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
-            indiv.set_fitness(fit_value, self)
+            self.calc_fitness_single(subpop[i], index)
+
+        # rand = random.random()
+        # if rand >= self.offspring_delta:
+        #     subpop = [population[i] for i in range(len(population))]
+        # else:
+        #     subpop = [population[i] for i in self.neighbers[index]]
+
+        # for i, indiv in enumerate(subpop):
+        #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
+        #     indiv.set_fitness(fit_value, self)
         
-        parents = random.sample(subpop, 2)
-        feasible_sorted = self.feasible_sort.feasible_sort(subpop)
-        # print(feasible_sorted)
-        if len(feasible_sorted[0]) > 2:
-            parents = random.sample(feasible_sorted[0], 2)
-        elif len(feasible_sorted[0]) == 2:
-            parents = feasible_sorted[0]
-        else:
-            parents = [feasible_sorted[0][0]]
-            p = random.choice(feasible_sorted[1])
-            parents.append(p)
-        # child = Individual(np.random.rand(len(parents[0].genome)))
-        child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+        parents = self.selector(subpop)
+        childs = self.mating(parents)
+        
+        # solutions = parents + childs
+        c_feasibles = [s for s in childs in s.constraint_violation == 0.0]
+        # c_infeasibles = [s for s in childs in s.constraint_violation != 0.0]
+        
+        if len(c_feasibles) > 0:
+            child = random.choice(childs)
+            # solutions = parents + [child]
+            idx = 0
+            if all(child.genome == childs[idx].genome):
+                idx = 1 
+            self.mating.pool.pop(childs[idx].id)
+        
+        elif len(c_feasibles) == 0:
+            self.mating.pool.pop(childs[0].id)
+            self.mating.pool.pop(childs[1].id)
 
-        rand = random.random()
-        if rand < self.CR:
-            lower, upper = parents[0].bounds
-            de = self.scaling_F*(parents[0]-parents[1])
-            child_dv = population[index] + de
-            for i,dv in enumerate(child_dv):
-                if dv < lower[i] or dv > upper[i]:
-                    child_dv[i] = random.random()*(upper[i]-lower[i])+lower[i]
-
-            # print("child_dv:", (child_dv))
-            child.encode(child_dv)
-            child.set_boundary(parents[0].bounds)
-            child.set_weight(parents[0].weight)
-        else:
-            child = population[index]
-
-        mutate_genome = self.mating._mutation(child.get_genome())
-        child.set_genome(mutate_genome)
-
-        child.evaluate(eval_func, (child.get_design_variable()), 
-                        self.n_constraint)
-        # print(child.evaluated(), child.value)
+        # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+        child.evaluate(eval_func, (child.get_design_variable()))
+        self.update_reference(child)
         if self.normalizer is not None:
             self.normalizer.normalizing(child)
-        self.update_reference(child)
+
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        if self.alternation is "all":
-            return max(population[index], child)
-        else:
-            return max(*subpop, child)
+        nr = int(len(subpop))
+        res = self._alternate(child, nr, index, population, subpop)
+
+        return res 
