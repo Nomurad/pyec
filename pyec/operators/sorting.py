@@ -90,7 +90,7 @@ class NonDominatedSort(object):
             #     front.append(population[i])
         return front
 
-    def feasible_sort(self, population:Population, return_rank=False):
+    def constraint_violation_sort(self, population:Population, return_rank=False):
         popsize = len(population)
 
         is_dominated = np.empty((popsize, popsize), dtype=np.bool)
