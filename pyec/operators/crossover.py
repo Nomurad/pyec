@@ -169,7 +169,7 @@ class DifferrentialEvolutonary_Crossover(object):
     def _modifier_rand(self, dv):
         for i in range(len(dv)):
             if dv[i] < 0.0 or dv[i] > 1.0:
-                dv[i] = random.random()
+                dv[i] = random.uniform(0.0, 1.0)
         return dv
 
 if __name__ == "__main__":
