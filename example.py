@@ -39,7 +39,7 @@ problem = zdt1
 optimizer = MOEAD_DE
 n_const = 0
 
-max_epoch = 100*3
+max_epoch = 100*2
 dvsize = 5
 
 # optimizer = C_MOEAD_DE
