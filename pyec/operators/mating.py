@@ -1,3 +1,5 @@
+from typing import Union, List
+
 import numpy as np 
 from ..base.indiv import Individual
 from ..base.environment import Pool
@@ -18,7 +20,11 @@ class Mating(object):
         self._parents = []
         self._stored = []
 
-    def __call__(self, parents=None):
+    @property
+    def pool(self):
+        return self._pool
+
+    def __call__(self, parents=None) -> List[Individual]:
         if (parents is None) and (self._parents is None):
             raise MatingError("You should set parents.")
         elif (parents is None) and (self._parents is not None):
@@ -40,7 +46,7 @@ class Mating(object):
         
         return self._stored
 
-    def Set_parents(self, parents):
+    def set_parents(self, parents):
         self._parents = parents
 
 class PartialMatingIterator(object):
