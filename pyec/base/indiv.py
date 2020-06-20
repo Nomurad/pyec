@@ -27,7 +27,7 @@ class Individual(object):
         self.genome = genome #遺伝子
         self.value = None #評価値
         self.wvalue = None #重みづけ評価値
-        self.feasible_value = None #制約違反量(負の値=制約違反なし)
+        self.constraint_violation = None #制約違反量(負の値=制約違反なし)
         self.feasible_rank = None
         self.fitness = Fitness()
 
@@ -40,6 +40,10 @@ class Individual(object):
 
     def get_id(self):
         return self._id 
+    
+    @property
+    def id(self):
+        return self._id
 
     def set_parents_id(self, parents):
         # print("N_parents", len(parents))
@@ -96,25 +100,25 @@ class Individual(object):
         else:
             self.wvalue = self.value
 
-    def set_feasible(self, feasible):
-        self.feasible_value = feasible
+    def set_constraint_violation(self, constraint_violation):
+        self.constraint_violation = constraint_violation
 
     def evaluated(self):
         return self.value is not None 
 
-    def evaluate(self, func, funcargs, n_feasible=0):
-        # print("n_feasible:",n_feasible)
-        if n_feasible == 0:
+    def evaluate(self, func, funcargs, n_constraint=0):
+        # print("n_constraint:",n_constraint)
+        if n_constraint == 0:
             res = func(*funcargs)
             # print("indiv eval", (res))
             self.set_value(res)
             return res
 
         else:
-            res, feasible = func(*funcargs)
+            res, cv = func(*funcargs)
             self.set_value(res) 
-            self.set_feasible(feasible)
-            return res, feasible
+            self.set_constraint_violation(cv)
+            return res, cv
 
     def dominate(self, other:"Individual") -> bool:
         """selfがotherを優越する場合 -> True
@@ -143,13 +147,13 @@ class Individual(object):
             res = True
         return res
 
-    def feasible_dominate(self, other:"Individual") -> bool:
+    def constraint_violation_dominate(self, other:"Individual") -> bool:
         if not isinstance(other, Individual):
             return NotImplemented
         res = False 
 
-        if all( s <= o for s,o in zip(self.feasible_value, other.feasible_value)) and \
-            any( s != o for s,o in zip(self.feasible_value, other.feasible_value)):
+        if all( s <= o for s,o in zip(self.constraint_violation, other.constraint_violation)) and \
+            any( s != o for s,o in zip(self.constraint_violation, other.constraint_violation)):
             res = True
         return res
 
