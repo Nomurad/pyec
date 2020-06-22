@@ -8,7 +8,7 @@ from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
-from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD_DE
+from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
 from pyec.solver import Solver
 
 from pyec.testfunctions import zdt1, zdt2, zdt3, tnk

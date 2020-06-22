@@ -106,7 +106,7 @@ class Environment(object):
             indiv {Individual} -- [個体情報]
         """
         res = indiv.evaluate(self.func, indiv.get_design_variable(),
-                            n_feasible=self.feasible_size)
+                            n_constraint=self.feasible_size)
         return res 
 
     def evaluated_all(self):
