@@ -210,7 +210,7 @@ class MOEAD(object):
             j = int(neighber[j2])
             old_indiv = population[j]
             population[j] = max(old_indiv, child)
-            if child.get_id() == population[j].get_id():
+            if child.id == population[j].id:
                 res = child
             # w = self.weight_vec[j]
             # fit1 = self.scalar(child, w, self.ref_points)
