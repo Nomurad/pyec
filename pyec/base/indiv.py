@@ -42,7 +42,7 @@ class Individual(object):
         return self._id 
     
     @property
-    def id(self):
+    def id(self) -> int:
         return self._id
 
     def set_parents_id(self, parents):
