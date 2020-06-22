@@ -7,11 +7,15 @@ class Fitness(object):
     """適応度
     """
     def __init__(self):
-        self.fitness = None #適応度
+        self._fitness = None #適応度
         self.optimizer = None #NSGA-II , MOEA/D, etc...
     
+    @property
+    def fitness(self):
+        return self._fitness
+
     def set_fitness(self, value, optimizer=None):
-        self.fitness = value
+        self._fitness = value
         self.optimizer = optimizer
         
 
