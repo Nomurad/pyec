@@ -390,6 +390,9 @@ class C_MOEAD(MOEAD):
         
         parents = self.selector(subpop)
         childs = self.mating(parents)
+        child = random.choice(childs)
+        child.evaluate(eval_func, (child.get_design_variable()))
+        self.update_reference(child)
         
         # solutions = parents + childs
         c_feasibles = [s for s in childs in s.constraint_violation == 0.0]
