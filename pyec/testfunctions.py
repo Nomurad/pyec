@@ -5,6 +5,8 @@ Abstruct
 '''
 
 import math
+import random
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
@@ -15,6 +17,16 @@ PI4 = 4 * math.pi
 PI6 = 6 * math.pi
 PI10 = 10 * math.pi
 
+class TestProblem_Error(Exception):
+    pass
+class TestProblem(metaclass=ABCMeta):
+
+    def __init__(self, n_obj):
+        self.n_obj = n_obj
+
+    @abstractmethod
+    def __call__(self):
+        pass 
 
 ################################################################################
 # S.O.
@@ -93,11 +105,21 @@ def zdt6(x):
 ################################################################################
 
 def osy(x):
+    """ The Osyczka and Kundu(OSY) test problem is 
+        a six-variable problem with 2-objectives 
+        and 6 inquality constraints.
+
+        where 
+        0<=x1,x2,x6<=10,
+        1<=x3,x5<=5,
+        0<=x4<=4
+
+    """
     if len(x) == 1:
         return x[0], 1 - math.sqrt(x[0])
 
-    f1 = sum(map(lambda i, v: (-1 if i else -25) * (x[i] - v) ** 2,
-                             enumerate([2, 2, 1, 4, 1])))
+    f1 = sum(map(lambda i, v: (-1 if i else -25) * (x[i] - v)**2, 
+                range(5), ([2, 2, 1, 4, 1]) ))
     f2 = sum(map(lambda v: v ** 2, x))
     g1 = x[0] + x[1] - 2
     g2 = 6 - x[0] - x[1]
@@ -108,7 +130,7 @@ def osy(x):
     return (f1, f2), (g1, g2, g3, g4, g5, g6)
 
 def tnk(x):
-    """TNK -- n_obj=2, n_dv=2, n_feasible=2
+    """TNK -- n_obj=2, n_dv=2, n_constraint=2
     
     Arguments:
         x {[np.ndarray]} -- [ 0 <= x[0],x[1] <= PI ]
@@ -121,10 +143,110 @@ def tnk(x):
 
     return (f1, f2), (g1, g2)
 
+class Constraint_TestProblem(TestProblem):
+    def __init__(self, n_obj=2, n_const=2):
+        super().__init__(n_obj)
+        self.n_const = n_const
+    
+    @abstractmethod
+    def __call__(self):
+        pass
+
+
+class mCDTLZ(Constraint_TestProblem):
+
+    def __init__(self, n_obj=2, n_const=2, phi=0.1):
+        super().__init__(n_obj, n_const)
+        self.phi = phi
+
+    def __call__(self, x):
+        f = []
+        for i in range(len(x)):
+            f_i = (1/())
+
+class Knapsack(Constraint_TestProblem):
+
+    def __init__(self, n_obj=2, n_items=500, n_const=2, phi=0.8):
+        """ 
+            n_obj: num of objectives (m)
+            n_items: num of items (l)
+            n_const: num of knapsack (k)
+            phi: feasibility ratio for each knapsack.
+        """
+        super().__init__(n_obj, n_const)
+
+        class kp_item(object):
+            def __init__(self, 
+                            n_obj, 
+                            n_const, 
+                            rand_lower=10,
+                            rand_upper=100
+                            ):
+                self.m = n_obj  # num of obj
+                self.k = n_const    # num of knapsack(constraint)
+                self.profits = [random.randint(rand_lower, rand_upper) for i in range(n_obj)]
+                self.weights = [random.randint(rand_lower, rand_upper) for i in range(n_const)]
+
+        # phi setting
+        if not hasattr(phi, "__iter__"):
+            self.phi = [phi]*self.n_const
+        elif len(phi) == self.n_const:
+            self.phi = phi
+        else:
+            raise TestProblem_Error("phi array size is invalid.")
+        print(self.phi)
+        
+        # num of items
+        self.n_items = n_items
+        # init items
+        self.items = [kp_item(self.n_obj, self.n_const) for i in range(self.n_items)]
+        # knapsack's capacity
+        self.capa = []
+        for j in range(self.n_const):
+            c_j = self.phi[j]*sum([self.items[l].weights[j] for l in range(self.n_items)])
+            self.capa.append(c_j)
+        
+        # for debug
+        print("init knapsack")
+        print("items : ", self.items[0].__dict__)
+        print("capa : ", self.capa)
+    
+    def __call__(self, x):
+        print("callable")
+
+        if not hasattr(x, "__iter__"):
+            raise TestProblem_Error("x must be iterable.")
+        
+        f = []
+        for i in range(self.n_obj):
+            _profits = [self.items[l].profits[i] for l in range(self.n_items)]
+            _p_times_x = list(map(lambda p_li,x_l: p_li*x_l, _profits,x))
+            f_i = sum( _p_times_x )
+            f.append(f_i)
+
+        cv = []
+        for j in range(self.n_const):
+            _weights = [self.items[l].weights[j] for l in range(self.n_items)]
+            _w_times_x = list(map(lambda w_li,x_l: w_li*x_l, _weights,x))
+            v_i = sum(_w_times_x) - self.capa[j]
+            print(v_i)
+            if v_i <= 0:
+                v_i = 0
+            cv.append(v_i)
+
+        return f, cv 
+
+
+
 ################################################################################
 
 def __test__():
-    print(rastrigin([0, 0]))
+    x = [0, 1, 2, 3, 4, 5]
+    knap = Knapsack(n_const=5, phi=0.1)
+    print()
+    print(*osy(x))
+    res = knap(x)
+    print(res)
 
 
 ################################################################################
