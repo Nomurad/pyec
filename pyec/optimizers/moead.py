@@ -302,6 +302,9 @@ class MOEAD_DE(MOEAD):
                     self.eta
                 )
 
+    def _set_parents(self):
+        pass
+
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
         rand = random.uniform(0.0, 1.0)
         
