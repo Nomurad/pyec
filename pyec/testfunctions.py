@@ -212,7 +212,7 @@ class Knapsack(Constraint_TestProblem):
         print("capa : ", self.capa)
     
     def __call__(self, x):
-        print("callable")
+        # print("callable")
 
         if not hasattr(x, "__iter__"):
             raise TestProblem_Error("x must be iterable.")
@@ -229,7 +229,7 @@ class Knapsack(Constraint_TestProblem):
             _weights = [self.items[l].weights[j] for l in range(self.n_items)]
             _w_times_x = list(map(lambda w_li,x_l: w_li*x_l, _weights,x))
             v_i = sum(_w_times_x) - self.capa[j]
-            print(v_i)
+            print(self.capa[j], v_i)
             if v_i <= 0:
                 v_i = 0
             cv.append(v_i)
@@ -242,11 +242,13 @@ class Knapsack(Constraint_TestProblem):
 
 def __test__():
     x = [0, 1, 2, 3, 4, 5]
+    print(*osy(x))
+
+    x = [10, 11, 12, 13, 14, 15]
     knap = Knapsack(n_const=5, phi=0.1)
     print()
-    print(*osy(x))
     res = knap(x)
-    print(res)
+    print(*res)
 
 
 ################################################################################
