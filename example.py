@@ -39,8 +39,8 @@ problem = zdt1
 optimizer = MOEAD_DE
 n_const = 0
 
-max_epoch = 100*1
-dvsize = 5
+max_epoch = 100*2
+dvsize = 3
 
 # optimizer = C_MOEAD_DE
 # problem = Problem()
