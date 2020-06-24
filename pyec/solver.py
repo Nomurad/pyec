@@ -84,7 +84,7 @@ class Solver(object):
         elif optimizer.name is "moead_de":
             if ksize is None:
                 ksize = 3
-            self.optimizer = MOEAD_DE((self.env.popsize), self.nobj, self.env.pool,
+            self.optimizer = MOEAD_DE((self.env.popsize), self.nobj,
                                     self.selector, self.mating, ksize=ksize,
                                     CR=0.75, F=0.5, eta=20)
 
