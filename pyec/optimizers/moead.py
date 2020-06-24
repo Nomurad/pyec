@@ -281,15 +281,15 @@ class MOEAD(object):
 class MOEAD_DE(MOEAD):
     name = "moead_de"
 
-    def __init__(self, popsize:int, nobj:int, pool:Pool,
+    def __init__(self, popsize:int, nobj:int,
                     selection:Selector, mating:Mating, ksize=3,
                     CR=0.9, F=0.7, eta=20
                 ):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
 
-        self.pool = pool
+        self.pool = mating.pool
         self.CR = CR   #交叉率
-        self.scaling_F = F    #スケーリングファクタ--->( 0<=F<=1 )
+        self.scaling_F = F    #スケーリングファクタ ->( 0<=F<=1 )
         self.pm = self.mating._mutation.rate
         # self.pm = 1.0/len(self.ref_points)
         self.eta = self.mating._mutation.eta
@@ -321,11 +321,18 @@ class MOEAD_DE(MOEAD):
         # parents = self.selector(subpop)
         parents = random.sample(subpop, 2)
         # child = Individual(np.random.rand(len(parents[0].genome)))
-        child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+        child = self.mating.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
         
         p1 = population[index].get_genome()
         p2 = parents[0].get_genome()
         p3 = parents[1].get_genome()
+        # if (parents[0].dominate(parents[1])):
+        #     p2 = parents[0].get_genome()
+        #     p3 = parents[1].get_genome()
+        # else:
+        #     p2 = parents[1].get_genome()
+        #     p3 = parents[0].get_genome()
+            
         self.pm = 1.0/len(p1)
         child_dv = self.crossover([p1, p2, p3])
 
@@ -367,7 +374,7 @@ class C_MOEAD(MOEAD):
 
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
-        super().__init__(popsize, nobj, pool, selection, mating, ksize=3)
+        super().__init__(popsize, nobj, selection, mating, ksize=3)
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
 
@@ -394,7 +401,7 @@ class C_MOEAD(MOEAD):
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
         
-        # solutions = parents + childs
+        # feasible child solutions
         c_feasibles = [s for s in childs in s.constraint_violation == 0.0]
         # c_infeasibles = [s for s in childs in s.constraint_violation != 0.0]
         
