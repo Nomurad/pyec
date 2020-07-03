@@ -229,10 +229,13 @@ class Knapsack(Constraint_TestProblem):
             _weights = [self.items[l].weights[j] for l in range(self.n_items)]
             _w_times_x = list(map(lambda w_li,x_l: w_li*x_l, _weights,x))
             v_i = sum(_w_times_x) - self.capa[j]
-            print(self.capa[j], v_i)
+            # for debug
+            # print(self.capa[j], v_i)
+
             if v_i <= 0:
                 v_i = 0
             cv.append(v_i)
+            print(f, cv)
 
         return f, cv 
 
