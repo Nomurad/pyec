@@ -402,7 +402,7 @@ class C_MOEAD(MOEAD):
         self.update_reference(child)
         
         # feasible child solutions
-        c_feasibles = [s for s in childs in s.constraint_violation == 0.0]
+        c_feasibles = [s for s in childs if s.constraint_violation == 0.0]
         # c_infeasibles = [s for s in childs in s.constraint_violation != 0.0]
         
         if len(c_feasibles) > 0:
@@ -414,8 +414,16 @@ class C_MOEAD(MOEAD):
             self.mating.pool.pop(childs[idx].id)
         
         elif len(c_feasibles) == 0:
-            self.mating.pool.pop(childs[0].id)
-            self.mating.pool.pop(childs[1].id)
+            # try:
+            #     self.mating.pool.pop(childs[0].id)
+            #     self.mating.pool.pop(childs[1].id)
+            # except:
+            #     print("childs id")
+            #     print(childs[0].id)
+            #     print(childs[1].id)
+            #     raise MOEADError("error")
+            child = random.choice(parents)
+            self.mating.pool.append(child)
 
         # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
         child.evaluate(eval_func, (child.get_design_variable()))
