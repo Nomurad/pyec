@@ -11,7 +11,7 @@ from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
 from pyec.solver import Solver
 
-from pyec.testfunctions import zdt1, zdt2, zdt3, tnk
+from pyec.testfunctions import zdt1, zdt2, zdt3, tnk, mCDTLZ, Knapsack
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,8 +38,10 @@ class Problem():
 problem = zdt1 
 optimizer = MOEAD_DE
 n_const = 0
+# problem = Knapsack(n_const=n_const ,phi=0.5)
+# optimizer = C_MOEAD
 
-max_epoch = 100*2
+max_epoch = 100*1
 dvsize = 3
 
 # optimizer = C_MOEAD_DE
@@ -95,6 +97,7 @@ for epoch, pop in enumerate(result):
         data.append([epoch]+list(indiv.value)+list(indiv.wvalue))
 
 data = np.array(data)
+print(data)
 # plt.scatter(data[-1,0], data[-1,1])
 print(f"ref_points={solver.optimizer.ref_points}")
 print(f"pool size={len(solver.env.pool)}")
@@ -106,18 +109,18 @@ for i in range(1, 11):
 
 print("popsize",len(pop))
 # fronts = non_dominate_sort(pop)
-pareto = sort_func.output_pareto(pop)
+# pareto = sort_func.output_pareto(pop)
 # pareto = solver.optimizer.EP
-print("pareto size", len(pareto), end="\n\n")
+# print("pareto size", len(pareto), end="\n\n")
 # print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
-pareto_val = np.array([indiv.value for indiv in pareto])
+# pareto_val = np.array([indiv.value for indiv in pareto])
 # print(pareto_val)
 
-np.savetxt("temp_data.csv", data, delimiter=",")
-np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
+# np.savetxt("temp_data.csv", data, delimiter=",")
+# np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-plt.scatter(pareto_val[:,0], pareto_val[:,1], c="red")
+# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="red")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 print("data shape",data.shape)
