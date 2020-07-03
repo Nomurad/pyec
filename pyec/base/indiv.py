@@ -112,14 +112,15 @@ class Individual(object):
 
     def evaluate(self, func, funcargs, n_constraint=0):
         # print("n_constraint:",n_constraint)
+
         if n_constraint == 0:
-            res = func(*funcargs)
+            res = func(funcargs)
             # print("indiv eval", (res))
             self.set_value(res)
             return res
 
         else:
-            res, cv = func(*funcargs)
+            res, cv = func(funcargs)
             self.set_value(res) 
             self.set_constraint_violation(cv)
             return res, cv
