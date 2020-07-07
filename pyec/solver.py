@@ -160,8 +160,10 @@ class Solver(object):
             self.env.alternate()
 
     def run(self, iter, nextline=None):
-        if nextline is None:
+        if (nextline is None) and iter > 10:
             nextline = int(iter/10)
+        else:
+            nextline = 1
 
         for i in range(iter):
             if i%nextline == 0:
