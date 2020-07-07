@@ -426,7 +426,7 @@ class C_MOEAD(MOEAD):
             self.mating.pool.append(child)
 
         # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
-        child.evaluate(eval_func, (child.get_design_variable()))
+        child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
         self.update_reference(child)
         if self.normalizer is not None:
             self.normalizer.normalizing(child)
