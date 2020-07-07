@@ -18,6 +18,9 @@ import matplotlib.pyplot as plt
 import time
 from pprint import pprint
 
+MAXIMIZE = -1
+MINIMIZE = 1
+
 
 n_const = 2
 # problem = Knapsack(n_const=n_const ,phi=0.5)
@@ -25,7 +28,7 @@ problem = Circle_problem()
 n_const = problem.n_const
 optimizer = C_MOEAD
 
-max_epoch = 2
+max_epoch = 100*1
 dvsize = 2
 
 args = {
@@ -38,7 +41,7 @@ args = {
     "eval_func":problem,
     "ksize":10,
     "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
-    "weight":[1, 1],
+    "weight":[MAXIMIZE, MAXIMIZE],
     "normalize": False,
     "n_constraint":n_const,
     "save":False
@@ -64,6 +67,9 @@ data = np.array(data)
 st_time = time.time()
 solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
+print("num of feasible indivs: ", len(solver.env.feasible_indivs))
+# for indiv in solver.env.feasible_indivs:
+#     print(indiv.id)
 
 result = solver.result(save=True)
 
@@ -74,9 +80,11 @@ cm = plt.get_cmap("Blues")
 data = []
 for epoch, pop in enumerate(result):
     for i, indiv in enumerate(pop):
-        data.append([epoch]+list(indiv.value)+list(indiv.wvalue))
+        data.append([epoch]+list(indiv.value)+list(indiv.wvalue)
+                    +list([indiv.constraint_violation]))
 
 data = np.array(data)
+# np.set_printoptions(threshold=np.inf)
 print(data)
 # plt.scatter(data[-1,0], data[-1,1])
 print(f"ref_points={solver.optimizer.ref_points}")
@@ -100,7 +108,10 @@ print("popsize",len(pop))
 # np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="red")
+feasible_dat = data[data[:,0] == max_epoch]
+# print(data[data[:,0] == 1])
+# print(feasible_dat)
+plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c="red")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 print("data shape",data.shape)
