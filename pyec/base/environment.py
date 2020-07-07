@@ -55,7 +55,7 @@ class Environment(object):
                         optimizer,
                         eval_func=None, 
                         dv_bounds:tuple=(0,1), #設計変数の上下限値
-                        feasible_size=0, #制約条件の数
+                        n_constraint=0, #制約条件の数
                         normalize=False,
                         old_pop=None
                         ):
@@ -79,7 +79,8 @@ class Environment(object):
         #設計変数の上下限値 # None or (low, up) or ([low], [up])
         self.dv_bounds = dv_bounds
 
-        self.feasible_size = feasible_size
+        self.n_constraint = n_constraint
+        self.feasible_indivs = []
 
         #initializerの設定
         self.initializer = UniformInitializer(dv_size) 
@@ -106,7 +107,7 @@ class Environment(object):
             indiv {Individual} -- [個体情報]
         """
         res = indiv.evaluate(self.func, indiv.get_design_variable(),
-                            n_constraint=self.feasible_size)
+                            n_constraint=self.n_constraint)
         return res 
 
     def evaluated_all(self):
