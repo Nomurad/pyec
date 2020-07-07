@@ -152,6 +152,19 @@ class Constraint_TestProblem(TestProblem):
     def __call__(self):
         pass
 
+class Circle_problem(Constraint_TestProblem):
+    def __init__(self):
+        super().__init__(2, 2)
+
+    def __call__(self, x):
+        if len(x) != 2:
+            raise TestProblem_Error("len(x) != 2.")
+
+        value = list(x)
+        violation = np.sqrt(x[0]**2 + x[1]**2) - 1
+
+        return (value, violation)
+
 
 class mCDTLZ(Constraint_TestProblem):
 
@@ -247,10 +260,16 @@ def __test__():
     x = [0, 1, 2, 3, 4, 5]
     print(*osy(x))
 
-    x = [10, 11, 12, 13, 14, 15]
-    knap = Knapsack(n_const=5, phi=0.1)
-    print()
-    res = knap(x)
+    # x = [10, 11, 12, 13, 14, 15]
+    # knap = Knapsack(n_const=5, phi=0.1)
+    # print()
+    # res = knap(x)
+
+    x = [np.cos(np.pi/4.0), np.sin(np.pi/4.0)]
+    circle = Circle_problem()
+    res = circle(x)
+
+    # response
     print(*res)
 
 
