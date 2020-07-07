@@ -33,15 +33,15 @@ class Solver(object):
                         save=True,
                         old_pop=None
                         ):
-        """solver initializer
+        """ solver initializer
         
         Arguments:
-            popsize {int} -- [個体数]
-            dv_size {int} -- [設計変数の数]
+            popsize {int} -- [num of individual]
+            dv_size {int} -- [num of design variable]
             selector      -- [selector]
             mating        -- [crossover,mutation]
-            optimizer     -- [進化計算手法] 
-            eval_func {[type]} -- [目的関数(評価関数)]
+            optimizer     -- [EA method] 
+            eval_func {[type]} -- [objective function(evaluating function)]
         
         Keyword Arguments:
             ksize {int}       -- [近傍サイズ] (default: None)
@@ -96,44 +96,21 @@ class Solver(object):
 
         self.optimizer.normalize = normalize
 
-        #moea/dの場合, popsizeが更新されるので，修正する
+        # When running MOEA/D, updated popsize, so modify self.env.popsize.
         self.env.popsize = self.optimizer.popsize 
         self.env.nowpop.capacity = self.env.popsize
         # print("opt popsize", self.optimizer.popsize)
 
         if weight is not None:
-            # print("set weight", weight)
             self.env.weight = np.array(weight)
             
-        #初期個体の生成
+        # Creating initial individuals.
         self.initialize()
-        # if self.restart == 0:
-        #     for _ in range(self.optimizer.popsize):
-        #         indiv = self.env.creator()
-                
-        #         indiv.set_id(self.env.current_id)
-        #         # print(type(indiv))
-        #         indiv.set_boundary(self.env.dv_bounds)
-        #         indiv.set_weight(self.env.weight)
-                
-        #         self.env.nowpop.append(indiv)
-
-        #     for indiv in self.env.nowpop:
-        #         #目的関数値を計算
-        #         # print("func:", self.eval_func.__dict__)
-        #         res = self.env.evaluate(indiv)
-        #     # print("res", res)
-
-        #     #適応度計算
-        #     self.optimizer.calc_fitness(self.env.nowpop)
-                
-        #     #初期個体を世代履歴に保存
-        #     self.env.alternate()
 
     def __call__(self, iter):
         self.run(iter)
 
-    #初期個体の生成
+    # Creating initial individuals.
     def initialize(self):
         if self.restart == 0:
             for _ in range(self.optimizer.popsize):
@@ -151,6 +128,10 @@ class Solver(object):
                 #目的関数値を計算
                 # print("func:", self.eval_func.__dict__)
                 res = self.env.evaluate(indiv)
+                if self.env.n_constraint > 0:
+                    _, vioration = res 
+                    if sum([vioration]) < 0:
+                        self.env.feasible_indivs.append(indiv)
             # print("res", res)
 
             #適応度計算
@@ -181,8 +162,9 @@ class Solver(object):
                 self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
                 self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
-            print(f"EPsize:{len(self.optimizer.EP)}, Nom of update ", self.optimizer.n_EPupdate)
+            print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate)
             self.optimizer.n_EPupdate = 0
+            print("ref point:", self.optimizer.ref_points)
         print()
 
     def optimizing(self):
@@ -191,12 +173,12 @@ class Solver(object):
         # nowpop = self.env.nowpop
         
         for i in range(len(self.env.nowpop)):
-            # print(i, len(next_pop), self.optimizer.neighbers[i])
             child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
-            # print(nowpop)
-            # res = self.env.evaluate(child)
-            # next_pop.append(child)
-            # print(child.value, " | ", res)
+            if self.env.n_constraint > 0:
+                vioration = child.constraint_violation
+                if sum([vioration]) < 0:
+                    self.env.feasible_indivs.append(child)
+                    # print("feasible append")
 
         next_pop = nowpop
         self.optimizer.calc_fitness(next_pop)
@@ -205,13 +187,7 @@ class Solver(object):
 
     def result(self, save=False, fname=None, delete=False):
         result = np.array(self.env.history)
-        # print("result shape",result.shape)
-
-        # for i, pop in enumerate(result):
-        #     print()
-        #     for indiv in pop:
-        #         print(f"{i}, {indiv._id:>10} \t{indiv.value}")
-        # np.savetxt(path, res, delimiter=",")
+        
         if fname is None:
             fname = "opt_result.pkl"
 
