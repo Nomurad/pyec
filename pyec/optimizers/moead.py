@@ -377,6 +377,7 @@ class C_MOEAD(MOEAD):
         super().__init__(popsize, nobj, selection, mating, ksize=3)
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
+        self.fesible_indivs = []
 
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
         
@@ -398,35 +399,32 @@ class C_MOEAD(MOEAD):
         parents = self.selector(subpop)
         childs = self.mating(parents)
         child = random.choice(childs)
-        child.evaluate(eval_func, (child.get_design_variable()))
+        res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
+        try:
+            if len(cv) >= 2:
+                child.set_constraint_violation(sum(cv))
+        except:
+            pass
         self.update_reference(child)
         
         # feasible child solutions
-        c_feasibles = [s for s in childs if s.constraint_violation == 0.0]
+        # p_feasibles = [p for p in parents if p.constraint_violation <= 0.0]
+        # c_feasibles = [s for s in childs if s.constraint_violation <= 0.0]
         # c_infeasibles = [s for s in childs in s.constraint_violation != 0.0]
         
-        if len(c_feasibles) > 0:
-            child = random.choice(childs)
-            # solutions = parents + [child]
-            idx = 0
-            if all(child.genome == childs[idx].genome):
-                idx = 1 
-            self.mating.pool.pop(childs[idx].id)
+        parent = population[index]
+        if child.constraint_violation <= 0:
+            pass
         
-        elif len(c_feasibles) == 0:
-            # try:
-            #     self.mating.pool.pop(childs[0].id)
-            #     self.mating.pool.pop(childs[1].id)
-            # except:
-            #     print("childs id")
-            #     print(childs[0].id)
-            #     print(childs[1].id)
-            #     raise MOEADError("error")
-            child = random.choice(parents)
-            self.mating.pool.append(child)
+        else:
+            if child.constraint_violation < parent.constraint_violation:
+                pass
+            else:
+                child = parent
+               
 
         # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
-        child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
+        # child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
         self.update_reference(child)
         if self.normalizer is not None:
             self.normalizer.normalizing(child)
