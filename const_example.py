@@ -28,7 +28,7 @@ problem = Circle_problem()
 n_const = problem.n_const
 optimizer = C_MOEAD
 
-max_epoch = 100*1
+max_epoch = 100*10
 dvsize = 2
 
 args = {
