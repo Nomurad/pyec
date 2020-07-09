@@ -30,6 +30,12 @@ def scalar_chebyshev(indiv, weight, ref_point):
     res = -np.max(weight * np.abs(indiv.wvalue - ref_point))
     return res
 
+def scalar_chebyshev_for_maximize(indiv, weight, ref_point):
+    if not indiv.evaluated():
+        raise ScalarError("indiv not evaluated.")
+    res = np.min(weight * np.abs(indiv.wvalue - ref_point))
+    return res
+
 def scalar_boundaryintersection(indiv, weight, ref_point):
     ''' norm(weight) == 1
     '''
@@ -375,6 +381,7 @@ class C_MOEAD(MOEAD):
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
         super().__init__(popsize, nobj, selection, mating, ksize=3)
+        self.scalar = scalar_chebyshev_for_maximize
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
         self.fesible_indivs = []
@@ -414,24 +421,26 @@ class C_MOEAD(MOEAD):
         
         parent = population[index]
         if child.constraint_violation <= 0:
-            pass
-        
+            if parent.constraint_violation <= 0:
+                self.update_reference(child)
+                if self.normalizer is not None:
+                    self.normalizer.normalizing(child)
+
+                child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+                # nr = int(len(subpop))
+                nr = int(len(subpop)/2)
+                res = self._alternate(child, nr, index, population, subpop)
+            else:
+                res = child
         else:
             if child.constraint_violation < parent.constraint_violation:
-                pass
+                res = child 
             else:
-                child = parent
+                res = parent
                
 
         # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
         # child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
-        self.update_reference(child)
-        if self.normalizer is not None:
-            self.normalizer.normalizing(child)
-
-        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
-
-        nr = int(len(subpop))
-        res = self._alternate(child, nr, index, population, subpop)
 
         return res 
