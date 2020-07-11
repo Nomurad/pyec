@@ -19,7 +19,6 @@ from ..operators.scalaring import *
 
 ################################################################################
 def weight_vector_generator(nobj, divisions, coeff=1):
-    import copy
     
     if coeff:
         divisions = divisions*coeff
