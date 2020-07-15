@@ -424,3 +424,17 @@ class C_MOEAD_DMA(C_MOEAD):
                     selection, mating, ksize)
         self.archives = []*len(self.weight_vec)
         
+    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
+        subpop = [population[i] for i in self.neighbers[index]]
+        
+        parents = []
+        # select x^i as a parent
+        parents.append(population[index])
+
+        archive_size = len(self.archives[index])
+        if (parents[0].constraint_violation < 0) and (archive_size > 0):
+            pb_idx = random.randint(0, archive_size)
+            parents.append(self.archives[pb_idx])
+        else:
+            pb_idx = random.randint(0, len(self.neighbers[index]))
+            parents.append(subpop[pb_idx])
