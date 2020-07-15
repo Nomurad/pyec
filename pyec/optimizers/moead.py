@@ -417,7 +417,7 @@ class C_MOEAD(MOEAD):
 class Solution_archive(list):
         def __init__(self, n_wvec, size):
             self.limit_size = size 
-            self._archives = [[] for _ in len(n_wvec)]
+            self._archives = [[] for _ in range(n_wvec)]
 
         def __getitem__(self, key):
             return self._archives[key]
@@ -431,16 +431,19 @@ class Solution_archive(list):
 
         def append(self, indiv:Individual, index:int):
             self._archives[index].append(indiv)
-            if len(self._archives[index]) > self.limit_size:
+            if self.get_archive_size(index) > self.limit_size:
                 self._archives[index].sort()
                 self._archives[index].pop(0)
+
+        def get_archive_size(self, index):
+            return len(self._archives[index])
 
         def clear(self, index):
             self._archives[index].clear()
 
 
 class C_MOEAD_DMA(C_MOEAD):
-    name = "cmoead_dma"
+    name = "c_moead_dma"
 
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3, alpha=4):
@@ -452,6 +455,11 @@ class C_MOEAD_DMA(C_MOEAD):
 
         self.archive_size = alpha
         self.archives = Solution_archive(len(self.weight_vec), self.archive_size)
+        # self.scalar = scalar_chebyshev_for_maximize
+
+        # default cmoea/d-dma's crossover operator & mutation operator
+        self.mating._crossover = SimulatedBinaryCrossover(0.9, 20)
+        self.mating._mutation = PolynomialMutation(0.1, 20)
 
     def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
         subpop = [population[i] for i in self.neighbers[index]]
@@ -460,13 +468,18 @@ class C_MOEAD_DMA(C_MOEAD):
         # select x^i as a parent
         parents.append(population[index])
 
-        archive_size = len(self.archives[index])
+        archive_size = self.archives.get_archive_size(index)
+        # print("archive size", archive_size)
         if (parents[0].constraint_violation < 0) and (archive_size > 0):
-            pb_idx = random.randint(0, archive_size)
-            parents.append(self.archives[pb_idx])
+            pb_idx = random.randint(0, archive_size-1)
+            parents.append(self.archives[index][pb_idx])
         else:
-            pb_idx = random.randint(0, len(self.neighbers[index]))
-            parents.append(subpop[pb_idx])
+            pb_idx = random.randint(0, len(self.neighbers[index])-2)
+            subpop2 = subpop.copy()
+            subpop2.pop(0)
+            parents.append(subpop2[pb_idx])
+
+        # print("Pa and Pb:",[i.id for i in parents])
 
         childs = self.mating(parents)
         child = random.choice(childs)
@@ -476,6 +489,13 @@ class C_MOEAD_DMA(C_MOEAD):
         
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        res = self.update_archives_and_alternate(child, index, subpop, population)
+        if res.id != parents[0].id:
+            # print(res.constraint_violation)
+            population[index] = res
+
+        return res
 
         
     def update_archives_and_alternate(self, child:Individual, 
