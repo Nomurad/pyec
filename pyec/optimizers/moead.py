@@ -350,7 +350,7 @@ class C_MOEAD(MOEAD):
 
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
-        super().__init__(popsize, nobj, selection, mating, ksize=3)
+        super().__init__(popsize, nobj, selection, mating, ksize=ksize)
         self.scalar = scalar_chebyshev_for_maximize
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
