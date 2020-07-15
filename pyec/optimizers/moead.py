@@ -436,3 +436,10 @@ class C_MOEAD_DMA(C_MOEAD):
         else:
             pb_idx = random.randint(0, len(self.neighbers[index]))
             parents.append(subpop[pb_idx])
+
+        childs = self.mating(parents)
+        child = random.choice(childs)
+        res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
+        if hasattr(cv, "__len__"):
+            child.set_constraint_violation(sum(cv))
+        
