@@ -1,3 +1,8 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+from pprint import pprint
+
 from pyec.base.indiv import Individual, Fitness
 from pyec.base.population import Population
 from pyec.base.environment import Environment
@@ -12,11 +17,6 @@ from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
 from pyec.solver import Solver
 
 from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
-
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from pprint import pprint
 
 MAXIMIZE = -1
 MINIMIZE = 1
