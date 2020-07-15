@@ -13,7 +13,7 @@ from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
-from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
+from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA
 from pyec.solver import Solver
 
 from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
@@ -27,8 +27,9 @@ n_const = 2
 problem = Circle_problem()
 n_const = problem.n_const
 optimizer = C_MOEAD
+optimizer = C_MOEAD_DMA
 
-max_epoch = 100*3
+max_epoch = 100*1
 dvsize = 2
 
 args = {
@@ -39,7 +40,7 @@ args = {
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":7,
+    "ksize":5,
     "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":[MAXIMIZE, MAXIMIZE],
     "normalize": False,
@@ -75,8 +76,6 @@ result = solver.result(save=True)
 
 ###############################################################################
 
-cm = plt.get_cmap("Blues")
-
 data = []
 for epoch, pop in enumerate(result):
     for i, indiv in enumerate(pop):
@@ -106,12 +105,15 @@ print("popsize",len(pop))
 
 # np.savetxt("temp_data.csv", data, delimiter=",")
 # np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
-
+cm = plt.get_cmap("Blues")
 plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-feasible_dat = data[data[:,0] == max_epoch]
+feasible_dat = data[data[:,-1] > 0]
 # print(data[data[:,0] == 1])
 # print(feasible_dat)
-plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c="red")
+cm = plt.get_cmap("Reds")
+plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm)
+data0 = data[data[:,0] == 1]
+# plt.scatter(data0[:,1], data0[:,2], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 print("data shape",data.shape)
