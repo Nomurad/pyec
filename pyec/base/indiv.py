@@ -157,6 +157,11 @@ class Individual(object):
             return NotImplemented
         res = False 
 
+        if not hasattr(self.constraint_violation, "__len__"):
+            if self.constraint_violation < other.constraint_violation:
+                res = True
+            return res
+
         if all( s <= o for s,o in zip(self.constraint_violation, other.constraint_violation)) and \
             any( s != o for s,o in zip(self.constraint_violation, other.constraint_violation)):
             res = True
