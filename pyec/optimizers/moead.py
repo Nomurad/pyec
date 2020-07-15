@@ -1,5 +1,6 @@
 import random
 import copy
+from typing import List
 import numpy as np
 
 from ..base.indiv import Individual
@@ -413,15 +414,45 @@ class C_MOEAD(MOEAD):
 
         return res 
 
+class Solution_archive(list):
+        def __init__(self, n_wvec, size):
+            self.limit_size = size 
+            self._archives = [[] for _ in len(n_wvec)]
+
+        def __getitem__(self, key):
+            return self._archives[key]
+
+        def __len__(self):
+            return len(self._archives)
+
+        @property
+        def archives(self):
+            return self._archives
+
+        def append(self, indiv:Individual, index:int):
+            self._archives[index].append(indiv)
+            if len(self._archives[index]) > self.limit_size:
+                self._archives[index].sort()
+                self._archives[index].pop(0)
+
+        def clear(self, index):
+            self._archives[index].clear()
+
 
 class C_MOEAD_DMA(C_MOEAD):
     name = "cmoead_dma"
+
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
-                    selection:Selector, mating:Mating, ksize=3):
+                    selection:Selector, mating:Mating, ksize=3, alpha=4):
+        """ alpha is archive size(int).
+        """
+        
         super().__init__(popsize, nobj, pool, n_constraint,
                     selection, mating, ksize)
-        self.archives = []*len(self.weight_vec)
-        
+
+        self.archive_size = alpha
+        self.archives = Solution_archive(len(self.weight_vec), self.archive_size)
+
     def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
         subpop = [population[i] for i in self.neighbers[index]]
         
@@ -443,3 +474,53 @@ class C_MOEAD_DMA(C_MOEAD):
         if hasattr(cv, "__len__"):
             child.set_constraint_violation(sum(cv))
         
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        
+    def update_archives_and_alternate(self, child:Individual, 
+                                            index:int, 
+                                            subpop:List[Individual],
+                                            population:Population):
+        """ update archives & solution alternating.
+
+        """
+
+        res = population[index] # parent
+
+        c_fit = child.fitness.fitness
+        xj_fits = [0]*len(subpop)
+        for j, xj in enumerate(subpop):
+            xj_fits[j] = self.scalar(xj, self.weight_vec[index], self.ref_points)
+
+        for j, xj in enumerate(subpop):
+            # x^j is feasible & y is feasible.
+            if (xj.constraint_violation <= 0) and (child.constraint_violation <= 0):
+                xj_fit = xj_fits[j]
+                if c_fit > xj_fit:
+                    res = child
+                    self.archives.clear(index)
+                    for j2, xj2 in enumerate(subpop):
+                        if xj_fits[j2] > c_fit:
+                            self.archives.append(subpop[j2], index)
+
+            # x^j is feasible & y is infeasible.
+            elif (xj.constraint_violation <= 0) and (child.constraint_violation > 0):
+                if c_fit > xj_fits[j]:
+                    self.archives.append(child, index)
+            
+            # x^j is infeasible & y is feasible.
+            elif (xj.constraint_violation > 0) and (child.constraint_violation <= 0):
+                res = child
+
+            # x^j is infeasible & y is infeasible.
+            elif (xj.constraint_violation > 0) and (child.constraint_violation > 0):
+                if child.constraint_violation_dominate(xj):
+                    res = child
+                elif not child.constraint_violation_dominate(xj):
+                    pass 
+                else:
+                    if c_fit > xj_fits[j]:
+                        res = child
+            
+        return res
