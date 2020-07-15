@@ -3,6 +3,7 @@ test.py
 temp*.csv
 *.pkl
 gen000_pop_objs_eval.txt
+*opt_result.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
