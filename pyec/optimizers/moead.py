@@ -414,3 +414,13 @@ class C_MOEAD(MOEAD):
         # child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
 
         return res 
+
+
+class C_MOEAD_DMA(C_MOEAD):
+    name = "cmoead_dma"
+    def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
+                    selection:Selector, mating:Mating, ksize=3):
+        super().__init__(popsize, nobj, pool, n_constraint,
+                    selection, mating, ksize)
+        self.archives = []*len(self.weight_vec)
+        
