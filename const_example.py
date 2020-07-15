@@ -29,7 +29,7 @@ n_const = problem.n_const
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
-max_epoch = 100*1
+max_epoch = 100*3
 dvsize = 2
 
 args = {
@@ -40,7 +40,7 @@ args = {
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":5,
+    "ksize":3,
     "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":[MAXIMIZE, MAXIMIZE],
     "normalize": False,
@@ -84,6 +84,7 @@ for epoch, pop in enumerate(result):
 
 data = np.array(data)
 # np.set_printoptions(threshold=np.inf)
+np.set_printoptions(precision=5, suppress=True)
 print(data)
 # plt.scatter(data[-1,0], data[-1,1])
 print(f"ref_points={solver.optimizer.ref_points}")
@@ -116,6 +117,7 @@ data0 = data[data[:,0] == 1]
 # plt.scatter(data0[:,1], data0[:,2], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
+np.savetxt("const_opt_result.csv", data, delimiter=",", fmt="%.5f")
 print("data shape",data.shape)
 
 ### 以下，制約条件ありで行う場合使用
