@@ -158,7 +158,7 @@ class Constraint_TestProblem(TestProblem):
 
 class Circle_problem(Constraint_TestProblem):
     def __init__(self):
-        super().__init__(2, 2)
+        super().__init__(2, 1)
 
     def __call__(self, x):
         if len(x) != 2:
