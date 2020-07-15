@@ -29,7 +29,7 @@ n_const = problem.n_const
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
-max_epoch = 100*3
+max_epoch = 100*2
 dvsize = 2
 
 args = {
@@ -41,7 +41,7 @@ args = {
     "optimizer":optimizer,
     "eval_func":problem,
     "ksize":3,
-    "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
+    "dv_bounds":([0.0]*dvsize, [1.5]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":[MAXIMIZE, MAXIMIZE],
     "normalize": False,
     "n_constraint":n_const,
@@ -114,10 +114,15 @@ feasible_dat = data[data[:,-1] > 0]
 cm = plt.get_cmap("Reds")
 plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm)
 data0 = data[data[:,0] == 1]
+data_end = data[data[:,0] == max_epoch]
 # plt.scatter(data0[:,1], data0[:,2], c="green")
+plt.scatter(data_end[:,1], data_end[:,2], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
-np.savetxt("const_opt_result.csv", data, delimiter=",", fmt="%.5f")
+
+headers = "epoch, value1, value2, wvalue1, wvalue2, CV"
+fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f"]
+np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
 
 ### 以下，制約条件ありで行う場合使用
