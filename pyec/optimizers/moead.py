@@ -352,6 +352,7 @@ class C_MOEAD(MOEAD):
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
+        # self.scalar = scalar_chebyshev
         self.scalar = scalar_chebyshev_for_maximize
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
@@ -484,13 +485,12 @@ class C_MOEAD_DMA(C_MOEAD):
 
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        if (parents[0].is_feasible()) and (archive_size > 0):
+        if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<0.7):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
             pb_idx = random.randint(0, len(self.neighbers[index])-2)
-            subpop2 = subpop.copy()
-            subpop2.pop(0)
+            subpop2 = [p for p in subpop if p.id != parents[0].id]
             parents.append(subpop2[pb_idx])
 
         # print("Pa and Pb:",[i.id for i in parents])
