@@ -21,9 +21,9 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
-max_epoch = 100*5
+max_epoch = 100*50
 n_obj = 2
-alpha = 7
+alpha = 6
 
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
@@ -33,26 +33,31 @@ optimizer = C_MOEAD_DMA
 dvsize = n_obj
 bmax = 2.0
 problem = Circle_problem()
+weights = [MAXIMIZE]*n_obj
 
-dvsize = n_obj*10
-bmax = 1.0
-problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+dvsize = 750
+problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=0.5)
+weights = [MAXIMIZE]*n_obj
+
+# dvsize = n_obj*10
+# bmax = 1.0
+# problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+# weights = [MINIMIZE]*n_obj
 
 n_const = problem.n_const
 
 cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
 mutate = PolynomialMutation(rate=1/dvsize, eta=20)
-weights = [MAXIMIZE]*n_obj
 
 args = {
-    "popsize":50,
+    "popsize":201,
     "dv_size":dvsize,
     "nobj":n_obj,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[cross, mutate],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":5,
+    "ksize":20,
     "alpha":alpha,
     "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
