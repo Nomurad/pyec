@@ -106,13 +106,15 @@ print("popsize",len(pop))
 
 # np.savetxt("temp_data.csv", data, delimiter=",")
 # np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
-cm = plt.get_cmap("Blues")
-plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-feasible_dat = data[data[:,-1] > 0]
+feasible_dat = data[data[:,-1] < 0]
+infeasible_dat = data[data[:,-1] > 0]
 # print(data[data[:,0] == 1])
 # print(feasible_dat)
-cm = plt.get_cmap("Reds")
+# plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+cm = plt.get_cmap("Blues")
 plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm)
+cm = plt.get_cmap("Reds")
+plt.scatter(infeasible_dat[:,1], infeasible_dat[:,2], c=infeasible_dat[:,0], cmap=cm)
 data0 = data[data[:,0] == 1]
 data_end = data[data[:,0] == max_epoch]
 # plt.scatter(data0[:,1], data0[:,2], c="green")
