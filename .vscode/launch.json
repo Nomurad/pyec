@@ -11,8 +11,16 @@
             "program": "${workspaceRoot}/const_example.py",
             "logToFile": false,
             // "console": "externalTerminal"
-            "console": "integratedTerminal"
-        },        
+            "console":"internalConsole"
+        },
+        {
+            "name": "Python: [external]const example",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/const_example.py",
+            "logToFile": false,
+            "console": "externalTerminal"
+        },
         {
             "name": "Python: Current File (Integrated Terminal)",
             "type": "python",
