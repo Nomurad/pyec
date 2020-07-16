@@ -498,8 +498,7 @@ class C_MOEAD_DMA(C_MOEAD):
         childs = self.mating(parents)
         child = random.choice(childs)
         res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
-        if hasattr(cv, "__len__"):
-            child.set_constraint_violation(sum(cv))
+        child.set_constraint_violation(cv)
         
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
@@ -551,7 +550,7 @@ class C_MOEAD_DMA(C_MOEAD):
             elif (not xj.is_feasible()) and (not child.is_feasible()):
                 if child.constraint_violation_dominate(xj):
                     res = child
-                elif not child.constraint_violation_dominate(xj):
+                elif xj.constraint_violation_dominate(child):
                     pass 
                 else:
                     if c_fit > xj_fits[j]:
