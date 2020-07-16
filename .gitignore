@@ -1,5 +1,8 @@
+/.vscode/*
+
+!/.vscode/*.json
+
 test.py
-.vscode
 temp*.csv
 *.pkl
 gen000_pop_objs_eval.txt
