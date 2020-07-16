@@ -21,19 +21,21 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
+max_epoch = 100*2
+n_obj = 2
+alpha = 15
 
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
-max_epoch = 100*1
-n_obj = 2
 # problem = Knapsack(n_const=n_const ,phi=0.5)
 
-dvsize = n_obj
-problem = Circle_problem()
+# dvsize = n_obj
+# problem = Circle_problem()
 
-# dvsize = n_obj*10
-# problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+dvsize = n_obj*10
+problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+
 n_const = problem.n_const
 
 cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
@@ -48,8 +50,9 @@ args = {
     "mating":[cross, mutate],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":3,
-    "dv_bounds":([0.0]*dvsize, [1.5]*dvsize),   #(lowerbounds_list, upperbounds_list)
+    "ksize":5,
+    "alpha":alpha,
+    "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
     "normalize": False,
     "n_constraint":n_const,
@@ -120,7 +123,7 @@ infeasible_dat = data[data[:,-1] > 0]
 # print(feasible_dat)
 # plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
 cm = plt.get_cmap("Blues")
-plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm)
+sc = plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm)
 cm = plt.get_cmap("Reds")
 plt.scatter(infeasible_dat[:,1], infeasible_dat[:,2], c=infeasible_dat[:,0], cmap=cm)
 data0 = data[data[:,0] == 1]
@@ -154,5 +157,5 @@ print("data shape",data.shape)
 #         dom += (indiv.dominate(other))
 #     if dom != 0:
 #         print("dominate:",i, dom)
-
+plt.colorbar(sc)
 plt.show()
