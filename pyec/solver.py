@@ -25,7 +25,8 @@ class Solver(object):
                         mating,
                         optimizer,
                         eval_func, 
-                        ksize: int= None,
+                        ksize: int= 0,
+                        alpha: int= 0,
                         dv_bounds: tuple = (0,1), #設計変数の上下限値
                         weight = None,
                         normalize = False,
@@ -76,28 +77,29 @@ class Solver(object):
 
         print("set optimizer:", optimizer.name)
         if optimizer.name is "moead":
-            if ksize is None:
+            if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.nobj, 
                                     self.selector, self.mating, ksize=ksize)
 
         elif optimizer.name is "moead_de":
-            if ksize is None:
+            if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.nobj,
                                     self.selector, self.mating, ksize=ksize,
                                     CR=0.75, F=0.5, eta=20)
 
         elif optimizer.name is "c_moead":
-            if ksize is None:
+            if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.nobj, self.env.pool,
                             n_constraint, self.selector, self.mating, ksize=ksize)
         
         elif optimizer.name is "c_moead_dma":
-            if ksize is None:
+            if ksize == 0:
                 ksize = 3
-            alpha = 4
+            if alpha == 0:
+                alpha = 4
             self.optimizer = optimizer((self.env.popsize), self.nobj, self.env.pool,
                             n_constraint, self.selector, self.mating, ksize=ksize,
                             alpha=alpha)
