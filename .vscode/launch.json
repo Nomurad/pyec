@@ -5,6 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: run const ex",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/const_example.py",
+            "logToFile": false,
+            // "console": "externalTerminal"
+            "console": "integratedTerminal"
+        },        
+        {
             "name": "Python: Current File (Integrated Terminal)",
             "type": "python",
             "request": "launch",

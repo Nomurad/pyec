@@ -172,14 +172,53 @@ class Circle_problem(Constraint_TestProblem):
 
 class mCDTLZ(Constraint_TestProblem):
 
-    def __init__(self, n_obj=2, n_const=2, phi=0.1):
+    def __init__(self, n_obj=2, n_const=2):
         super().__init__(n_obj, n_const)
-        self.phi = phi
+        self.n_dv = None
+
 
     def __call__(self, x):
-        f = []
-        for i in range(len(x)):
-            f_i = (1/())
+        if not hasattr(x, "__len__"):
+            raise TestProblem_Error("dv size error.")
+        
+        if self.n_dv is None:
+            self.n_dv = len(x)
+            self.n_bar_m = int(self.n_dv/self.n_obj)
+
+        # n = self.n_dv  # num of design variable
+        # m = self.n_obj #num of objective function
+        
+        f = [0]*self.n_obj
+        g = [0]*self.n_obj
+
+        for i in range(self.n_obj-1):
+            # calc objective func 
+            f[i] = self.calc_objfunc(x, i)
+        
+        for i in range(self.n_obj-1):
+            # calc constraint violation
+            g[i] = self.calc_constfunc(x, f, i)
+
+        return f, g
+
+    def calc_objfunc(self, x, i):
+        n_bar_m = self.n_bar_m
+        st = int((i-1)*n_bar_m)
+        fin = int(i*n_bar_m) - 1
+        if i == 0:
+            st = 0
+            fin = n_bar_m - 1
+        res = (1/n_bar_m)*sum([xl**0.5 for xl in x[st:fin]])
+        return res
+
+    def calc_constfunc(self, x, f, i):
+        # g_fin = self.n_obj-1
+        # g_st = 0
+        lis = [f[l]**2 - 1 for l in range(self.n_obj-1) if l is not i]
+        res = f[i]**2 + 4*(sum(lis))
+        return -res
+
+
 
 class Knapsack(Constraint_TestProblem):
 
@@ -261,20 +300,20 @@ class Knapsack(Constraint_TestProblem):
 ################################################################################
 
 def __test__():
-    x = [0, 1, 2, 3, 4, 5]
-    print(*osy(x))
+    # x = [0, 1, 2, 3, 4, 5]
+    # print(*osy(x))
 
-    # x = [10, 11, 12, 13, 14, 15]
-    # knap = Knapsack(n_const=5, phi=0.1)
-    # print()
-    # res = knap(x)
+    # x = [np.cos(np.pi/4.0), np.sin(np.pi/4.0)]
+    # circle = Circle_problem()
+    # res = circle(x)
 
-    x = [np.cos(np.pi/4.0), np.sin(np.pi/4.0)]
-    circle = Circle_problem()
-    res = circle(x)
+    x = [0.4, 1.0]*10
+    cdtlz = mCDTLZ(n_obj=2, n_const=2)
+    res = cdtlz(x)
 
     # response
-    print(*res)
+    print(x)
+    print(res)
 
 
 ################################################################################

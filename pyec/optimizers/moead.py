@@ -357,6 +357,20 @@ class C_MOEAD(MOEAD):
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
         self.fesible_indivs = []
 
+    def CVcheck(self, indiv:Individual)-> bool:
+        """ if indiv is feasible => True
+            else => False
+        """
+        
+        cv = indiv.constraint_violation
+        if hasattr(cv, "__len__"):
+            cv = sum(cv)
+        
+        if cv <= 0.0:
+            return True
+        else:
+            return False
+
     def get_offspring(self, index, population:Population, eval_func) -> Individual:
         
         subpop = [population[i] for i in self.neighbers[index]]
@@ -470,7 +484,7 @@ class C_MOEAD_DMA(C_MOEAD):
 
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        if (parents[0].constraint_violation < 0) and (archive_size > 0):
+        if (parents[0].is_feasible()) and (archive_size > 0):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
@@ -515,7 +529,7 @@ class C_MOEAD_DMA(C_MOEAD):
 
         for j, xj in enumerate(subpop):
             # x^j is feasible & y is feasible.
-            if (xj.constraint_violation <= 0) and (child.constraint_violation <= 0):
+            if xj.is_feasible() and child.is_feasible():
                 xj_fit = xj_fits[j]
                 if c_fit > xj_fit:
                     res = child
@@ -525,16 +539,16 @@ class C_MOEAD_DMA(C_MOEAD):
                             self.archives.append(subpop[j2], index)
 
             # x^j is feasible & y is infeasible.
-            elif (xj.constraint_violation <= 0) and (child.constraint_violation > 0):
+            elif xj.is_feasible() and (not child.is_feasible()):
                 if c_fit > xj_fits[j]:
                     self.archives.append(child, index)
             
             # x^j is infeasible & y is feasible.
-            elif (xj.constraint_violation > 0) and (child.constraint_violation <= 0):
+            elif (not xj.is_feasible()) and child.is_feasible():
                 res = child
 
             # x^j is infeasible & y is infeasible.
-            elif (xj.constraint_violation > 0) and (child.constraint_violation > 0):
+            elif (not xj.is_feasible()) and (not child.is_feasible()):
                 if child.constraint_violation_dominate(xj):
                     res = child
                 elif not child.constraint_violation_dominate(xj):

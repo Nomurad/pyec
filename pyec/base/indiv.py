@@ -106,6 +106,19 @@ class Individual(object):
 
     def set_constraint_violation(self, constraint_violation):
         self.constraint_violation = constraint_violation
+        if hasattr(constraint_violation, "__len__"):
+            self.cv_sum = sum(constraint_violation)
+        else:
+            self.cv_sum = constraint_violation
+
+    def is_feasible(self)-> bool:
+        """ if all constraint violation value is under 0.0 => True
+            else => False
+        """
+        if self.cv_sum <= 0.0:
+            return True
+        else:
+            return False
 
     def evaluated(self):
         return self.value is not None 
@@ -158,7 +171,7 @@ class Individual(object):
         res = False 
 
         if not hasattr(self.constraint_violation, "__len__"):
-            if self.constraint_violation < other.constraint_violation:
+            if self.cv_sum < other.cv_sum:
                 res = True
             return res
 

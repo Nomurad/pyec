@@ -22,27 +22,33 @@ MAXIMIZE = -1
 MINIMIZE = 1
 
 
-n_const = 2
-# problem = Knapsack(n_const=n_const ,phi=0.5)
-problem = Circle_problem()
-n_const = problem.n_const
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
 max_epoch = 100*2
-dvsize = 2
+n_obj = 2
+dvsize = n_obj*10
+# n_const = 2
+# problem = Knapsack(n_const=n_const ,phi=0.5)
+# problem = Circle_problem()
+problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+n_const = problem.n_const
+
+cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
+mutate = PolynomialMutation(rate=1/dvsize, eta=20)
+weights = [MAXIMIZE]*n_obj
 
 args = {
     "popsize":50,
     "dv_size":dvsize,
-    "nobj":2,
+    "nobj":n_obj,
     "selector":Selector(TournamentSelectionStrict),
-    "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
+    "mating":[cross, mutate],
     "optimizer":optimizer,
     "eval_func":problem,
     "ksize":3,
-    "dv_bounds":([0.0]*dvsize, [1.5]*dvsize),   #(lowerbounds_list, upperbounds_list)
-    "weight":[MAXIMIZE, MAXIMIZE],
+    "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
+    "weight":weights,
     "normalize": False,
     "n_constraint":n_const,
     "save":False
@@ -80,7 +86,7 @@ data = []
 for epoch, pop in enumerate(result):
     for i, indiv in enumerate(pop):
         data.append([epoch]+list(indiv.value)+list(indiv.wvalue)
-                    +list([indiv.constraint_violation]))
+                    +list(*[indiv.constraint_violation]))
 
 data = np.array(data)
 # np.set_printoptions(threshold=np.inf)
@@ -123,7 +129,7 @@ plt.scatter(data_end[:,1], data_end[:,2], c="green")
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 
 headers = "epoch, value1, value2, wvalue1, wvalue2, CV"
-fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f"]
+fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f","%.5f"]
 np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
 
