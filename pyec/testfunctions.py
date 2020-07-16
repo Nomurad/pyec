@@ -191,11 +191,11 @@ class mCDTLZ(Constraint_TestProblem):
         f = [0]*self.n_obj
         g = [0]*self.n_obj
 
-        for i in range(self.n_obj-1):
+        for i in range(self.n_obj):
             # calc objective func 
             f[i] = self.calc_objfunc(x, i)
         
-        for i in range(self.n_obj-1):
+        for i in range(self.n_obj):
             # calc constraint violation
             g[i] = self.calc_constfunc(x, f, i)
 
@@ -203,18 +203,16 @@ class mCDTLZ(Constraint_TestProblem):
 
     def calc_objfunc(self, x, i):
         n_bar_m = self.n_bar_m
-        st = int((i-1)*n_bar_m)
-        fin = int(i*n_bar_m) - 1
-        if i == 0:
-            st = 0
-            fin = n_bar_m - 1
-        res = (1/n_bar_m)*sum([xl**0.5 for xl in x[st:fin]])
+        st = int((i)*n_bar_m)
+        fin = int((i+1)*n_bar_m) - 1
+            
+        res = (1/n_bar_m)*sum([xl**0.5 for xl in x[st:fin+1]])
         return res
 
     def calc_constfunc(self, x, f, i):
         # g_fin = self.n_obj-1
         # g_st = 0
-        lis = [f[l]**2 - 1 for l in range(self.n_obj-1) if l is not i]
+        lis = [f[l]**2 - 1 for l in range(self.n_obj) if l is not i]
         res = f[i]**2 + 4*(sum(lis))
         return -res
 
@@ -307,8 +305,10 @@ def __test__():
     # circle = Circle_problem()
     # res = circle(x)
 
-    x = [0.4, 1.0]*10
-    cdtlz = mCDTLZ(n_obj=2, n_const=2)
+    n_obj = 3
+    random.seed(3)
+    x = [random.random()for _ in range(n_obj*10)]
+    cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
     res = cdtlz(x)
 
     # response
