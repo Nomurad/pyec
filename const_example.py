@@ -21,19 +21,21 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
-max_epoch = 100*2
+max_epoch = 100*5
 n_obj = 2
-alpha = 15
+alpha = 7
 
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
 # problem = Knapsack(n_const=n_const ,phi=0.5)
 
-# dvsize = n_obj
-# problem = Circle_problem()
+dvsize = n_obj
+bmax = 2.0
+problem = Circle_problem()
 
 dvsize = n_obj*10
+bmax = 1.0
 problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
 
 n_const = problem.n_const
@@ -52,7 +54,7 @@ args = {
     "eval_func":problem,
     "ksize":5,
     "alpha":alpha,
-    "dv_bounds":([0.0]*dvsize, [1.0]*dvsize),   #(lowerbounds_list, upperbounds_list)
+    "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
     "normalize": False,
     "n_constraint":n_const,
