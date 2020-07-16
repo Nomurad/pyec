@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: run const ex",
+            "name": "Python: const example",
             "type": "python",
             "request": "launch",
             "program": "${workspaceRoot}/const_example.py",

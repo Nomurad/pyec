@@ -403,8 +403,8 @@ class C_MOEAD(MOEAD):
         # c_infeasibles = [s for s in childs in s.constraint_violation != 0.0]
         
         parent = population[index]
-        if child.constraint_violation <= 0:
-            if parent.constraint_violation <= 0:
+        if child.is_feasible():
+            if parent.is_feasible():
                 self.update_reference(child)
                 if self.normalizer is not None:
                     self.normalizer.normalizing(child)
@@ -417,7 +417,7 @@ class C_MOEAD(MOEAD):
             else:
                 res = child
         else:
-            if child.constraint_violation < parent.constraint_violation:
+            if child.cv_sum < parent.cv_sum:
                 res = child 
             else:
                 res = parent
