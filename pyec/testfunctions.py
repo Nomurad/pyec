@@ -289,7 +289,7 @@ class Knapsack(Constraint_TestProblem):
             if v_i <= 0:
                 v_i = 0
             cv.append(v_i)
-            print(f, cv)
+            # print(f, cv)
 
         return f, cv 
 
