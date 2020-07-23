@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import json
 from pprint import pprint
 
 from pyec.base.indiv import Individual, Fitness
@@ -21,25 +22,24 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
-max_epoch = 100*50
+max_epoch = 100*1
 n_obj = 2
-alpha = 6
+alpha = 8
 
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
-# problem = Knapsack(n_const=n_const ,phi=0.5)
-
 dvsize = n_obj
-bmax = 2.0
+bmax = 2.5
 problem = Circle_problem()
 weights = [MAXIMIZE]*n_obj
 
-dvsize = 750
-problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=0.5)
-weights = [MAXIMIZE]*n_obj
+# dvsize = 500
+# bmax = 1.0
+# problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=0.3)
+# weights = [MAXIMIZE]*n_obj
 
-# dvsize = n_obj*10
+# dvsize = n_obj*5
 # bmax = 1.0
 # problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
 # weights = [MINIMIZE]*n_obj
@@ -50,14 +50,14 @@ cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
 mutate = PolynomialMutation(rate=1/dvsize, eta=20)
 
 args = {
-    "popsize":201,
+    "popsize":100,
     "dv_size":dvsize,
     "nobj":n_obj,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[cross, mutate],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":20,
+    "ksize":10,
     "alpha":alpha,
     "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
@@ -72,6 +72,7 @@ solver = Solver(**args)
 print(solver.optimizer)
 pprint(solver.env.__dict__) # for debug
 pprint(solver.optimizer.__dict__)
+
 pop = solver.env.history[0]
 data = []
 for indiv in pop:
@@ -86,11 +87,17 @@ data = np.array(data)
 st_time = time.time()
 solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
-print("num of feasible indivs: ", len(solver.env.feasible_indivs))
+print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
+# print(solver.optimizer.mating.__repr__())
 # for indiv in solver.env.feasible_indivs:
 #     print(indiv.id)
 
 result = solver.result(save=True)
+
+print(solver.optimizer.__dict__)
+with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
+#     json.dump(solver.optimizer.__dict__, f, indent=4)
+    pprint(solver.optimizer.__dict__, stream=f)
 
 ###############################################################################
 
@@ -110,33 +117,35 @@ print(f"pool size={len(solver.env.pool)}")
 
 sort_func = NonDominatedSort()
 pop = solver.env.history[-1]
-for i in range(1, 11):
+for i in range(1, 100):
     pop = pop + solver.env.history[-i]
 
 print("popsize",len(pop))
 # fronts = non_dominate_sort(pop)
 # pareto = sort_func.output_pareto(pop)
-# pareto = solver.optimizer.EP
 # print("pareto size", len(pareto), end="\n\n")
 # print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
-# pareto_val = np.array([indiv.value for indiv in pareto])
+pareto = solver.optimizer.EP
+pareto_val = np.array([indiv.value for indiv in pareto])
 # print(pareto_val)
-
 # np.savetxt("temp_data.csv", data, delimiter=",")
-# np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
+np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
+
 feasible_dat = data[data[:,-1] < 0]
 infeasible_dat = data[data[:,-1] > 0]
-# print(data[data[:,0] == 1])
-# print(feasible_dat)
-# plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
+fig = plt.figure(figsize=(10,7))
+
+
 cm = plt.get_cmap("Blues")
 sc = plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm)
 cm = plt.get_cmap("Reds")
 plt.scatter(infeasible_dat[:,1], infeasible_dat[:,2], c=infeasible_dat[:,0], cmap=cm)
 data0 = data[data[:,0] == 1]
 data_end = data[data[:,0] == max_epoch]
+# data_end = pareto_val
 # plt.scatter(data0[:,1], data0[:,2], c="green")
-plt.scatter(data_end[:,1], data_end[:,2], c="green")
+# plt.scatter(data_end[:,1], data_end[:,2], c="yellow")
+# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 
@@ -144,6 +153,8 @@ headers = "epoch, value1, value2, wvalue1, wvalue2, CV"
 fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f"]
 np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
+print("solver\n")
+print(solver)
 
 ### 以下，制約条件ありで行う場合使用
 # data = []
@@ -165,4 +176,5 @@ print("data shape",data.shape)
 #     if dom != 0:
 #         print("dominate:",i, dom)
 plt.colorbar(sc)
+plt.tight_layout()
 plt.show()
