@@ -70,6 +70,8 @@ class NonDominatedSort(object):
         # for i in range(popsize):
         #     for j in range(popsize):
         for i, j in itertools.product(range(popsize), range(popsize)):
+                if not population[j].is_feasible():
+                    continue
                 # if i == j:
                 #     continue
                 #iがjに優越されている -> True
@@ -145,6 +147,9 @@ def non_dominate_sort(population:Population, return_rank=False):
 
     for i in range(popsize):
         for j in range(popsize):
+            if not population[j].is_feasible():
+                continue
+            
             # if i == j:
             #     continue
             #iがjに優越されている -> True
