@@ -138,7 +138,7 @@ class MOEAD(object):
         # print(self.neighbers[index])
         subpop = [population[i] for i in self.neighbers[index]]
 
-        for i, indiv in enumerate(subpop):
+        for i, _ in enumerate(subpop):
             self.calc_fitness_single(subpop[i], index)
             # fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
             # indiv.set_fitness(fit_value)
@@ -212,10 +212,27 @@ class MOEAD(object):
 
     def update_EP(self, indiv:Individual):
         # print("EP append")
+        if not indiv.is_feasible():
+            return
+
         self.EP.append(indiv)
+        tmpEP = copy.deepcopy(self.EP)
+        poplist = [-1]*len(self.EP)
         if len(self.EP) > 2:
+            # print(tmpEP)
+            for i in range(len(tmpEP)):
+                if tmpEP[i].dominate(indiv):
+                    self.EP.pop()
+                    return
+
+                if indiv.id != tmpEP[i].id and indiv.dominate(tmpEP[i]):
+                    poplist[i] = (tmpEP[i].id)
             # self.EP = self.sorting.sort(self.EP)[0]
-            self.EP = self.sorting.output_pareto(self.EP)
+            # self.EP = self.sorting.output_pareto(self.EP)
+        for i in reversed(range(len(self.EP))):
+            # print(i)
+            if self.EP[i].id == poplist[i]:
+                self.EP.pop()
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
@@ -352,8 +369,8 @@ class C_MOEAD(MOEAD):
     def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
                     selection:Selector, mating:Mating, ksize=3):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
-        # self.scalar = scalar_chebyshev
-        self.scalar = scalar_chebyshev_for_maximize
+        self.scalar = scalar_chebyshev
+        # self.scalar = scalar_chebyshev_for_maximize
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
         self.fesible_indivs = []
@@ -376,7 +393,7 @@ class C_MOEAD(MOEAD):
         
         subpop = [population[i] for i in self.neighbers[index]]
 
-        for i, indiv in enumerate(subpop):
+        for i, _ in enumerate(subpop):
             self.calc_fitness_single(subpop[i], index)
 
         # rand = random.random()
@@ -416,9 +433,11 @@ class C_MOEAD(MOEAD):
                 nr = int(len(subpop)/2)
                 res = self._alternate(child, nr, index, population, subpop)
             else:
+                population[index] = child
                 res = child
         else:
             if child.cv_sum < parent.cv_sum:
+                population[index] = child
                 res = child 
             else:
                 res = parent
@@ -426,6 +445,10 @@ class C_MOEAD(MOEAD):
 
         # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
         # child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
+
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+            self.n_EPupdate += 1
 
         return res 
 
@@ -482,21 +505,27 @@ class C_MOEAD_DMA(C_MOEAD):
         parents = []
         # select x^i as a parent
         parents.append(population[index])
+        
 
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<0.7):
+        if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<1.0):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
             pb_idx = random.randint(0, len(self.neighbers[index])-2)
-            subpop2 = [p for p in subpop if p.id != parents[0].id]
+            subpop2 = [p for p in subpop]
+            subpop2.pop(0)
             parents.append(subpop2[pb_idx])
 
         # print("Pa and Pb:",[i.id for i in parents])
 
         childs = self.mating(parents)
-        child = random.choice(childs)
+        child:Individual = random.choice(childs)
+        idx = 0
+        if all(child.genome == childs[idx]):
+            idx = 1
+        self.mating.pool.pop(childs[idx].get_id())
         res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
         child.set_constraint_violation(cv)
         
@@ -504,9 +533,12 @@ class C_MOEAD_DMA(C_MOEAD):
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
         res = self.update_archives_and_alternate(child, index, subpop, population)
-        if res.id != parents[0].id:
-            # print(res.constraint_violation)
-            population[index] = res
+        # if res.id != parents[0].id:
+        #     # print(res.constraint_violation)
+        #     population[index] = res
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+            self.n_EPupdate += 1
 
         return res
 
@@ -520,6 +552,7 @@ class C_MOEAD_DMA(C_MOEAD):
         """
 
         res = population[index] # parent
+        neighber = self.neighbers[index]
 
         c_fit = child.fitness.fitness
         xj_fits = [0]*len(subpop)
@@ -531,11 +564,15 @@ class C_MOEAD_DMA(C_MOEAD):
             if xj.is_feasible() and child.is_feasible():
                 xj_fit = xj_fits[j]
                 if c_fit > xj_fit:
+                    population[neighber[j]] = child
                     res = child
-                    self.archives.clear(index)
-                    for j2, xj2 in enumerate(subpop):
-                        if xj_fits[j2] > c_fit:
-                            self.archives.append(subpop[j2], index)
+                    if len(self.archives[index]) > 0:
+                        now_archives = copy.deepcopy(self.archives[index])
+                        # print(now_archives)
+                        self.archives.clear(index)
+                        for _, a in enumerate(now_archives):
+                            if self.scalar(a, self.weight_vec[neighber[j]], self.ref_points) > c_fit:
+                                self.archives.append(a, index)
 
             # x^j is feasible & y is infeasible.
             elif xj.is_feasible() and (not child.is_feasible()):
@@ -544,16 +581,19 @@ class C_MOEAD_DMA(C_MOEAD):
             
             # x^j is infeasible & y is feasible.
             elif (not xj.is_feasible()) and child.is_feasible():
+                population[neighber[j]] = child
                 res = child
 
             # x^j is infeasible & y is infeasible.
             elif (not xj.is_feasible()) and (not child.is_feasible()):
                 if child.constraint_violation_dominate(xj):
+                    population[neighber[j]] = child
                     res = child
                 elif xj.constraint_violation_dominate(child):
                     pass 
                 else:
                     if c_fit > xj_fits[j]:
+                        population[neighber[j]] = child
                         res = child
             
         return res
