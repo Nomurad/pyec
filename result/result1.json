@@ -1,0 +1,6 @@
+{
+    "optimizer": "c_moead_dma",
+    "popsize" : 10000,
+    "num_of_feasible_indiv": 9961,
+    "pareto_size": 2039
+}
