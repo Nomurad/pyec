@@ -80,7 +80,7 @@ class Environment(object):
         self.dv_bounds = dv_bounds
 
         self.n_constraint = n_constraint
-        self.feasible_indivs = []
+        self.feasible_indivs_id = []
 
         #initializerの設定
         self.initializer = UniformInitializer(dv_size) 
