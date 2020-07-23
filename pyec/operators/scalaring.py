@@ -14,7 +14,8 @@ def scalar_weighted_sum(indiv, weight, ref_point):
     return -np.sum(weight * np.abs(indiv.wvalue - ref_point))
 
 def scalar_chebyshev(indiv:Individual, weight, ref_point):
-    return scalar_chebyshev_for_minimize(indiv, weight, ref_point)
+    # return scalar_chebyshev_for_minimize(indiv, weight, ref_point)
+    return scalar_chebyshev_for_maximize(indiv, weight, ref_point)
 
 def scalar_chebyshev_for_minimize(indiv, weight, ref_point):
     if not indiv.evaluated():
