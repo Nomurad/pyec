@@ -143,7 +143,7 @@ class Solver(object):
                     if not hasattr(vioration, "__len__"):
                         vioration = [vioration]
                     if sum(vioration) < 0:
-                        self.env.feasible_indivs.append(indiv)
+                        self.env.feasible_indivs_id.append(indiv.id)
             # print("res", res)
 
             #適応度計算
@@ -174,7 +174,7 @@ class Solver(object):
                 self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
                 self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
-            print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate)
+            print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
             self.optimizer.n_EPupdate = 0
             print("ref point:", self.optimizer.ref_points)
         print()
@@ -191,7 +191,7 @@ class Solver(object):
                 if not hasattr(vioration, "__len__"):
                         vioration = [vioration]
                 if sum(vioration) < 0:
-                    self.env.feasible_indivs.append(child)
+                    self.env.feasible_indivs_id.append(child.id)
                     # print("feasible append")
 
         next_pop = nowpop
