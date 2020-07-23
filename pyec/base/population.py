@@ -1,3 +1,5 @@
+from typing import List
+
 from .indiv import Individual
 
 class PopulationError(Exception):
@@ -21,23 +23,25 @@ class Population(object):
         
         else:
             if indivs is not None:
-                self.pop = indivs
+                self.pop:List[Individual] = indivs
             else:
-                self.pop = []
+                self.pop:List[Individual] = []
 
             if capa is None:
                 raise Exception("You should set population capacity.")
             else:
                 self.capacity = capa
                 
-
-    def __getitem__(self, key) -> Individual:
+    def get_inviv(self, key:int) -> Individual:
         return self.pop[key]
+
+    def __getitem__(self, key:int) -> Individual:
+        return self.get_inviv(key)
     
-    def __setitem__(self, key, indiv):
+    def __setitem__(self, key:int, indiv:Individual):
         self.pop[key] = indiv
     
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pop)
 
     def __add__(self, other) -> "Population":
