@@ -204,9 +204,9 @@ class mCDTLZ(Constraint_TestProblem):
     def calc_objfunc(self, x, i):
         n_bar_m = self.n_bar_m
         st = int((i)*n_bar_m)
-        fin = int((i+1)*n_bar_m) - 1
+        fin = int((i+1)*n_bar_m)
             
-        res = (1/n_bar_m)*sum([xl**0.5 for xl in x[st:fin+1]])
+        res = (1/n_bar_m)*sum([xl**0.5 for xl in x[st:fin]])
         return res
 
     def calc_constfunc(self, x, f, i):
@@ -222,10 +222,12 @@ class Knapsack(Constraint_TestProblem):
 
     def __init__(self, n_obj=2, n_items=500, n_const=2, phi=0.8):
         """ 
-            n_obj: num of objectives (m)
-            n_items: num of items (l)
-            n_const: num of knapsack (k)
+            n_obj: num of objectives (m),
+            n_items: num of items (l),
+            n_const: num of knapsack (k),
             phi: feasibility ratio for each knapsack.
+
+            dv range = [0.0~0.1]
         """
         super().__init__(n_obj, n_const)
 
@@ -271,24 +273,28 @@ class Knapsack(Constraint_TestProblem):
         if not hasattr(x, "__iter__"):
             raise TestProblem_Error("x must be iterable.")
         
-        f = []
+        f = [0]*(self.n_obj)
         for i in range(self.n_obj):
-            _profits = [self.items[l].profits[i] for l in range(self.n_items)]
-            _p_times_x = list(map(lambda p_li,x_l: p_li*x_l, _profits,x))
+            _profits = np.array([self.items[l].profits[i] for l in range(self.n_items)])
+            # _p_times_x = list(map(lambda p_li,x_l: p_li*x_l, _profits,x))
+            _p_times_x = _profits*np.array(x)
             f_i = sum( _p_times_x )
-            f.append(f_i)
+            # f.append(f_i)
+            f[i] = f_i
 
-        cv = []
+        cv = [0]*self.n_const
         for j in range(self.n_const):
-            _weights = [self.items[l].weights[j] for l in range(self.n_items)]
-            _w_times_x = list(map(lambda w_li,x_l: w_li*x_l, _weights,x))
+            _weights = np.array([self.items[l].weights[j] for l in range(self.n_items)])
+            # _w_times_x = list(map(lambda w_li,x_l: w_li*x_l, _weights,x))
+            _w_times_x = _weights*np.array(x)
             v_i = sum(_w_times_x) - self.capa[j]
             # for debug
             # print(self.capa[j], v_i)
 
-            if v_i <= 0:
-                v_i = 0
-            cv.append(v_i)
+            # if v_i <= 0:
+            #     v_i = 0
+            # cv.append(v_i)
+            cv[j] = v_i
             # print(f, cv)
 
         return f, cv 
@@ -305,15 +311,18 @@ def __test__():
     # circle = Circle_problem()
     # res = circle(x)
 
-    n_obj = 3
+    n_obj = 2
+    dv_size = n_obj
     random.seed(3)
-    x = [random.random()for _ in range(n_obj*10)]
+    x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
     cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
     res = cdtlz(x)
+    # mk_kp = Knapsack(n_obj=n_obj, n_items=dv_size, n_const=n_obj, phi=0.8)
+    # res = mk_kp(x)
 
     # response
-    print(x)
-    print(res)
+    print("dv: ", x, "\n")
+    print("return: ", res)
 
 
 ################################################################################
