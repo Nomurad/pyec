@@ -376,6 +376,7 @@ class C_MOEAD(MOEAD):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
         self.scalar = scalar_chebyshev
         # self.scalar = scalar_chebyshev_for_maximize
+        # self.scalar = scalar_weighted_sum
         self.n_constraint = n_constraint
         self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
         self.fesible_indivs = []
@@ -507,21 +508,19 @@ class C_MOEAD_DMA(C_MOEAD):
     def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
         subpop = [population[i] for i in self.neighbers[index]]
         
-        parents = []
         # select x^i as a parent
-        parents.append(population[index])
+        parents = [population[index]]
         
-
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<1.0):
+        if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<0.5):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
-            pb_idx = random.randint(0, len(self.neighbers[index])-2)
-            subpop2 = [p for p in subpop]
-            subpop2.pop(0)
-            parents.append(subpop2[pb_idx])
+            pb_idx = random.randint(1, len(self.neighbers[index])-1)
+            # subpop2 = [p for p in subpop]
+            # subpop2.pop(0)
+            parents.append(subpop[pb_idx])
 
         # print("Pa and Pb:",[i.id for i in parents])
 
@@ -534,6 +533,8 @@ class C_MOEAD_DMA(C_MOEAD):
         res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
         child.set_constraint_violation(cv)
         
+        if self.normalizer is not None:
+            self.normalizer.normalizing(child)
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
@@ -602,3 +603,4 @@ class C_MOEAD_DMA(C_MOEAD):
                         res = child
             
         return res
+
