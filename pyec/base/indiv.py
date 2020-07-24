@@ -105,20 +105,28 @@ class Individual(object):
             self.wvalue = self.value
 
     def set_constraint_violation(self, constraint_violation):
-        self.constraint_violation = constraint_violation
         if hasattr(constraint_violation, "__len__"):
+            self.constraint_violation = list(constraint_violation)
+            # print(self.constraint_violation)
             self.cv_sum = sum(constraint_violation)
         else:
+            self.constraint_violation = [constraint_violation]
             self.cv_sum = constraint_violation
 
     def is_feasible(self)-> bool:
         """ if all constraint violation value is under 0.0 => True
             else => False
         """
-        if self.cv_sum <= 0.0:
-            return True
+        if hasattr(self.constraint_violation, "__len__"):
+            cv_s = np.array(self.constraint_violation)
+            if all(cv_s <= 0.0):
+                return True
         else:
-            return False
+            cv_s = self.cv_sum
+            if cv_s <= 0.0:
+                return True
+        
+        return False
 
     def evaluated(self):
         return self.value is not None 

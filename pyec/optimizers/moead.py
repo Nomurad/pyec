@@ -416,8 +416,6 @@ class C_MOEAD(MOEAD):
         childs = self.mating(parents)
         child = random.choice(childs)
         res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
-        if hasattr(cv, "__len__"):
-            child.set_constraint_violation(sum(cv))
 
         self.update_reference(child)
         

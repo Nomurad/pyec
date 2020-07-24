@@ -139,10 +139,7 @@ class Solver(object):
                 # print("func:", self.eval_func.__dict__)
                 res = self.env.evaluate(indiv)
                 if self.env.n_constraint > 0:
-                    _, vioration = res 
-                    if not hasattr(vioration, "__len__"):
-                        vioration = [vioration]
-                    if sum(vioration) < 0:
+                    if indiv.is_feasible():
                         self.env.feasible_indivs_id.append(indiv.id)
             # print("res", res)
 
@@ -187,10 +184,8 @@ class Solver(object):
         for i in range(len(self.env.nowpop)):
             child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
             if self.env.n_constraint > 0:
-                vioration = child.constraint_violation
-                if not hasattr(vioration, "__len__"):
-                        vioration = [vioration]
-                if sum(vioration) < 0:
+                # vioration = child.constraint_violation
+                if child.is_feasible():
                     self.env.feasible_indivs_id.append(child.id)
                     # print("feasible append")
 
