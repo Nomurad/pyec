@@ -66,6 +66,7 @@ class MOEAD(object):
         self.nobj = nobj
         self.ksize = ksize
         self.ref_points = []
+        self.min_or_max = np.zeros(nobj, dtype=int)
         self.selector = selection
         self.mating = mating
         self.sorting = NonDominatedSort()
@@ -119,20 +120,21 @@ class MOEAD(object):
         return neighber_index
 
     def update_reference(self, indiv:Individual):
-        try:
-            if self.normalize is not None:
+
+        if self.normalize is not False:
+            if self.min_or_max[0] == 0:
+                self.min_or_max = np.array([int(wval/abs(wval)) for wval in indiv.wvalue], dtype=int)
                 self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
-            else:
-                self.ref_points = np.min([self.ref_points, np.array(indiv.wvalue)],axis=0)
-            # print("update ref point = ", self.ref_point)
-        except:
-            print("\n Error")
-            print(self.ref_points.dtype)
-            print(self.ref_points)
-            print(np.array(indiv.wvalue).dtype)
-            print(np.array(indiv.wvalue))
-            print([self.ref_points, np.array(indiv.wvalue)])
-            raise MOEADError()
+                self.ref_points[self.ref_points > self.min_or_max] = 1.0
+                self.ref_points[self.ref_points <= self.min_or_max] = 0.0
+            # for i in range(len(self.ref_points)):
+            #     if self.min_or_max[i] < 0:
+            #         self.ref_points[i] = 1.0
+        else:
+            wvals = np.array(indiv.wvalue)
+            self.ref_points = np.min([self.ref_points, wvals],axis=0)
+        # print("update ref point = ", self.ref_point)
+
 
     def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
         # print(self.neighbers[index])
