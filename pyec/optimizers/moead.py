@@ -217,24 +217,27 @@ class MOEAD(object):
         if not indiv.is_feasible():
             return
 
-        self.EP.append(indiv)
-        tmpEP = copy.deepcopy(self.EP)
-        poplist = [-1]*len(self.EP)
         if len(self.EP) > 2:
-            # print(tmpEP)
-            for i in range(len(tmpEP)):
-                if tmpEP[i].dominate(indiv):
-                    self.EP.pop()
+            for i in reversed(range(len(self.EP))):
+                if self.EP[i].dominate(indiv):
+                    # self.EP.pop()
                     return
-
+            
+            self.EP.append(indiv)
+            tmpEP = copy.deepcopy(self.EP)
+            poplist = [-1]*len(self.EP)
+            for i in reversed(range(len(tmpEP))):
                 if indiv.id != tmpEP[i].id and indiv.dominate(tmpEP[i]):
                     poplist[i] = (tmpEP[i].id)
             # self.EP = self.sorting.sort(self.EP)[0]
             # self.EP = self.sorting.output_pareto(self.EP)
-        for i in reversed(range(len(self.EP))):
-            # print(i)
-            if self.EP[i].id == poplist[i]:
-                self.EP.pop()
+            for i in reversed(range(len(self.EP))):
+                # print(i)
+                if self.EP[i].id == poplist[i]:
+                    self.EP.pop(i)
+        else:
+            self.EP.append(indiv)
+        
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
