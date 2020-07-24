@@ -208,7 +208,7 @@ class mCDTLZ(Constraint_TestProblem):
         st = int((i)*n_bar_m)
         fin = int((i+1)*n_bar_m)
         
-        lis = [xl**0.5 for xl in x[st:fin]]
+        lis = [math.sqrt(xl) for xl in x[st:fin]]
         # print("st, fin =",i, st, fin)
         # print("list = ", lis, "\n")
         res = (1/n_bar_m)*sum(lis)
