@@ -59,17 +59,17 @@ class Solver(object):
             self.restart = len(old_pop)
             print(f"start epoch is {self.restart}")
             # print("oldpop", old_pop[-1].__dict__)
-            self.env = Environment(popsize, dv_size, optimizer,
+            self.env = Environment(popsize, dv_size, nobj, optimizer,
                             eval_func, dv_bounds, n_constraint, 
                             old_pop=old_pop[-1])
             self.env.history.extend(old_pop)
             # print("history", len(self.env.history))
         else:
-            self.env = Environment(popsize, dv_size, optimizer,
+            self.env = Environment(popsize, dv_size, nobj, optimizer,
                             eval_func, dv_bounds, n_constraint)
         self.eval_func = eval_func
 
-        self.nobj = nobj
+        self.nobj = self.env.n_obj
         # self.nobj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("nobj:",self.nobj)
         self.selector = selector
