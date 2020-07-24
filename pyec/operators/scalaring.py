@@ -14,8 +14,8 @@ def scalar_weighted_sum(indiv, weight, ref_point):
     return -np.sum(weight * np.abs(indiv.wvalue - ref_point))
 
 def scalar_chebyshev(indiv:Individual, weight, ref_point):
-    # return scalar_chebyshev_for_minimize(indiv, weight, ref_point)
-    return scalar_chebyshev_for_maximize(indiv, weight, ref_point)
+    return scalar_chebyshev_for_minimize(indiv, weight, ref_point)
+    # return scalar_chebyshev_for_maximize(indiv, weight, ref_point)
 
 def scalar_chebyshev_for_minimize(indiv, weight, ref_point):
     if not indiv.evaluated():
@@ -27,6 +27,7 @@ def scalar_chebyshev_for_maximize(indiv, weight, ref_point):
     if not indiv.evaluated():
         raise ScalarError("indiv not evaluated.")
     res = np.min(weight * np.abs(indiv.wvalue - ref_point))
+    # res = -1.0/np.max(weight * np.abs(indiv.wvalue - ref_point))
     return res
 
 def scalar_boundaryintersection(indiv, weight, ref_point):
