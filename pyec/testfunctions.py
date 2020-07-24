@@ -317,22 +317,34 @@ def __test__():
     # circle = Circle_problem()
     # res = circle(x)
 
-    # x = np.linspace(start=0.0, stop=1.0, num=101)
-    # y = np.linspace(start=0.0, stop=1.0, num=101)
-    # xx, yy = np.meshgrid(x,y)
-
+    div = 21
     n_obj = 2
-    dv_size = 4
+    dv_size = 2
     random.seed(10)
     cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
     # res = cdtlz(x)
-    res2 = []
 
-    for i in range(200000):
+    res2 = []
+    for i in range(300000):
         x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
         # x = [0]
-
         res2.append(cdtlz(x))
+
+    # res2 = []
+    # xs = [0]*dv_size
+    # for i in range(dv_size):
+    #     xs[i] = np.linspace(0.0, 1.0, div)
+
+    # xss = np.meshgrid(*xs)
+
+    # for i in range(dv_size):
+    #     xss[i] = xss[i].ravel()
+
+    # for i, _xs in enumerate(zip(*xss)):
+    #     x = _xs
+    #     if i%10000 == 0:
+    #         print("_xs: ",_xs)
+    #     res2.append(cdtlz(x))
     
     # mk_kp = Knapsack(n_obj=n_obj, n_items=dv_size, n_const=n_obj, phi=0.8)
     # res = mk_kp(x)

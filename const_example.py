@@ -22,7 +22,7 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
-max_epoch = 100*1
+max_epoch = 100*2
 n_obj = 2
 alpha = 4
 
@@ -39,7 +39,7 @@ weights = [MAXIMIZE]*n_obj
 # problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=0.3)
 # weights = [MAXIMIZE]*n_obj
 
-dvsize = n_obj*2
+dvsize = n_obj
 bmax = 1.0
 problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
 weights = [MINIMIZE]*n_obj
@@ -50,18 +50,18 @@ cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
 mutate = PolynomialMutation(rate=1/dvsize, eta=20)
 
 args = {
-    "popsize":200,
+    "popsize":100,
     "dv_size":dvsize,
     "nobj":n_obj,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[cross, mutate],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":7,
+    "ksize":17,
     "alpha":alpha,
     "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
-    "normalize": False,
+    "normalize": True,
     "n_constraint":n_const,
     "save":False
 }
@@ -104,13 +104,12 @@ with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
 data = []
 for epoch, pop in enumerate(result):
     for i, indiv in enumerate(pop):
-        data.append([epoch]+list(indiv.value)+list(indiv.wvalue)
-                    +list([indiv.cv_sum]))
+        data.append([epoch]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
 
 data = np.array(data)
+print("data :", data)
 # np.set_printoptions(threshold=np.inf)
 np.set_printoptions(precision=5, suppress=True)
-print(data)
 # plt.scatter(data[-1,0], data[-1,1])
 print(f"ref_points={solver.optimizer.ref_points}")
 print(f"pool size={len(solver.env.pool)}")
@@ -150,7 +149,8 @@ plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 
 headers = "epoch, value1, value2, wvalue1, wvalue2, CV"
-fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f"]
+fmts = "%5f"
+# fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f", "%.5f"]
 np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
 print("solver\n")
