@@ -52,6 +52,7 @@ class Environment(object):
     
     def __init__(self,  popsize:int, #1世代あたりの個体数
                         dv_size:int, #設計変数の数
+                        n_obj:int,
                         optimizer,
                         eval_func=None, 
                         dv_bounds:tuple=(0,1), #設計変数の上下限値
@@ -63,6 +64,7 @@ class Environment(object):
         self.current_id = 0
         self.popsize = popsize
         self.dv_size = dv_size
+        self.n_obj = n_obj
         if old_pop is None:
             print("Start EA.")
             self.nowpop = Population(capa=popsize)
