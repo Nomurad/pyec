@@ -184,12 +184,14 @@ class mCDTLZ(Constraint_TestProblem):
         if self.n_dv is None:
             self.n_dv = len(x)
             self.n_bar_m = int(self.n_dv/self.n_obj)
+            print("n/m = ", self.n_bar_m)
 
         # n = self.n_dv  # num of design variable
         # m = self.n_obj #num of objective function
         
         f = [0]*self.n_obj
         g = [0]*self.n_obj
+
 
         for i in range(self.n_obj):
             # calc objective func 
@@ -205,15 +207,18 @@ class mCDTLZ(Constraint_TestProblem):
         n_bar_m = self.n_bar_m
         st = int((i)*n_bar_m)
         fin = int((i+1)*n_bar_m)
-            
-        res = (1/n_bar_m)*sum([xl**0.5 for xl in x[st:fin]])
+        
+        lis = [xl**0.5 for xl in x[st:fin]]
+        # print("st, fin =",i, st, fin)
+        # print("list = ", lis, "\n")
+        res = (1/n_bar_m)*sum(lis)
         return res
 
     def calc_constfunc(self, x, f, i):
         # g_fin = self.n_obj-1
         # g_st = 0
-        lis = [f[l]**2 - 1 for l in range(self.n_obj) if l is not i]
-        res = f[i]**2 + 4*(sum(lis))
+        lis = [f[l]**2 for l in range(self.n_obj) if l != i]
+        res = f[i]**2 + 4*(sum(lis)) - 1
         return -res
 
 
@@ -304,6 +309,7 @@ class Knapsack(Constraint_TestProblem):
 ################################################################################
 
 def __test__():
+    import matplotlib.pyplot as plt
     # x = [0, 1, 2, 3, 4, 5]
     # print(*osy(x))
 
@@ -311,18 +317,43 @@ def __test__():
     # circle = Circle_problem()
     # res = circle(x)
 
+    # x = np.linspace(start=0.0, stop=1.0, num=101)
+    # y = np.linspace(start=0.0, stop=1.0, num=101)
+    # xx, yy = np.meshgrid(x,y)
+
     n_obj = 2
-    dv_size = n_obj
-    random.seed(3)
-    x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
+    dv_size = 4
+    random.seed(10)
     cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
-    res = cdtlz(x)
+    # res = cdtlz(x)
+    res2 = []
+
+    for i in range(200000):
+        x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
+        # x = [0]
+
+        res2.append(cdtlz(x))
+    
     # mk_kp = Knapsack(n_obj=n_obj, n_items=dv_size, n_const=n_obj, phi=0.8)
     # res = mk_kp(x)
+    res2 = np.array(res2)
 
     # response
-    print("dv: ", x, "\n")
-    print("return: ", res)
+    print("\ndv: ", x)
+    # print("return: ", res2[:,:,:])
+
+    res3 = res2[res2[:,1,0]<=0]
+    res3 = res3[res3[:,1,1]<=0]
+
+    infeasible = res2[res2[:,1,0] > 0]
+    infeasible2 = res2[res2[:,1,1] > 0]
+    
+    plt.scatter(res3[:,0,0], res3[:,0,1])
+    plt.scatter(infeasible[:,0,0], infeasible[:,0,1], c="red")
+    plt.scatter(infeasible2[:,0,0], infeasible2[:,0,1], c="red")
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.0])
+    plt.show()
 
 
 ################################################################################
