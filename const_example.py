@@ -22,7 +22,7 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
-max_epoch = 100*2
+max_epoch = 100*1
 n_obj = 2
 alpha = 4
 
@@ -39,10 +39,10 @@ weights = [MAXIMIZE]*n_obj
 # problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=0.3)
 # weights = [MAXIMIZE]*n_obj
 
-# dvsize = n_obj*5
-# bmax = 1.0
-# problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
-# weights = [MINIMIZE]*n_obj
+dvsize = n_obj*2
+bmax = 1.0
+problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+weights = [MINIMIZE]*n_obj
 
 n_const = problem.n_const
 
@@ -61,7 +61,7 @@ args = {
     "alpha":alpha,
     "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
-    "normalize": True,
+    "normalize": False,
     "n_constraint":n_const,
     "save":False
 }
@@ -144,7 +144,7 @@ data0 = data[data[:,0] == 1]
 data_end = data[data[:,0] == max_epoch]
 # data_end = pareto_val
 # plt.scatter(data0[:,1], data0[:,2], c="green")
-# plt.scatter(data_end[:,1], data_end[:,2], c="yellow")
+plt.scatter(data0[:,1], data0[:,2], c="yellow")
 plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
@@ -176,5 +176,7 @@ print("solver\n")
 #     if dom != 0:
 #         print("dominate:",i, dom)
 plt.colorbar(sc)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.0])
 plt.tight_layout()
 plt.show()
