@@ -35,7 +35,7 @@ class Problem():
         return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
 # problem = Problem()
-problem = zdt2
+problem = zdt1
 optimizer = MOEAD_DE
 n_const = 0
 # problem = Knapsack(n_const=n_const ,phi=0.5)

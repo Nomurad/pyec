@@ -22,15 +22,15 @@ from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
 MAXIMIZE = -1
 MINIMIZE = 1
 
-max_epoch = 100*1
+max_epoch = 100*2
 n_obj = 2
-alpha = 8
+alpha = 4
 
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 
 dvsize = n_obj
-bmax = 2.5
+bmax = 2.0
 problem = Circle_problem()
 weights = [MAXIMIZE]*n_obj
 
@@ -50,18 +50,18 @@ cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
 mutate = PolynomialMutation(rate=1/dvsize, eta=20)
 
 args = {
-    "popsize":100,
+    "popsize":200,
     "dv_size":dvsize,
     "nobj":n_obj,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[cross, mutate],
     "optimizer":optimizer,
     "eval_func":problem,
-    "ksize":10,
+    "ksize":7,
     "alpha":alpha,
     "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
-    "normalize": False,
+    "normalize": True,
     "n_constraint":n_const,
     "save":False
 }
@@ -94,7 +94,7 @@ print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 
 result = solver.result(save=True)
 
-print(solver.optimizer.__dict__)
+# print(solver.optimizer.__dict__)
 with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
 #     json.dump(solver.optimizer.__dict__, f, indent=4)
     pprint(solver.optimizer.__dict__, stream=f)
@@ -145,7 +145,7 @@ data_end = data[data[:,0] == max_epoch]
 # data_end = pareto_val
 # plt.scatter(data0[:,1], data0[:,2], c="green")
 # plt.scatter(data_end[:,1], data_end[:,2], c="yellow")
-# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
+plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 
@@ -154,7 +154,7 @@ fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f"]
 np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
 print("solver\n")
-print(solver)
+# print(solver)
 
 ### 以下，制約条件ありで行う場合使用
 # data = []
