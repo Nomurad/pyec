@@ -26,6 +26,7 @@ MINIMIZE = 1
 
 max_epoch = 100*2
 n_obj = 2
+dvsize = n_obj
 alpha = 4
 phi = 0.3
 
@@ -36,15 +37,17 @@ def problem_set(prob:str):
     global dvsize, bmax, problem, weights, phi
     print("problem name is ", prob)
     if prob == "mCDTLZ":
-        dvsize = n_obj
+        # dvsize = n_obj
         bmax = 1.0
         problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
         weights = [MINIMIZE]*n_obj
+
     elif prob == "Knapsack":
-        dvsize = 500
+        # dvsize = 500
         bmax = 1.0
         problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=phi)
         weights = [MAXIMIZE]*n_obj
+
     elif prob == "Circle":
         dvsize = n_obj
         bmax = 2.0
@@ -84,9 +87,13 @@ if os.path.exists(inpfile):
         if argskey in inpdict:
             args[argskey] = inpdict.get(argskey)
         
+    dvsize = args["dv_size"]
+    n_const = args["n_constraint"]
+    mutate.rate = 1/dvsize
     problem_set(inpdict["problem"])
     print((inpdict["problem"]))
     args["eval_func"] = problem
+    args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
 
     pprint(inpdict)
     print()
