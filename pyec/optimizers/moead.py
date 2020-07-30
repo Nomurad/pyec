@@ -602,3 +602,10 @@ class C_MOEAD_DMA(C_MOEAD):
             
         return res
 
+
+class C_MOEAD_DEDMA(C_MOEAD_DMA):
+    name = "c_moead_dedma"
+
+    def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
+                    selection:Selector, mating:Mating, ksize=3, alpha=4):
+        super().__init__(popsize, nobj, pool, n_constraint, selection, mating, ksize, alpha)

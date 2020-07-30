@@ -95,7 +95,8 @@ class Solver(object):
             self.optimizer = optimizer((self.env.popsize), self.nobj, self.env.pool,
                             n_constraint, self.selector, self.mating, ksize=ksize)
         
-        elif optimizer.name is "c_moead_dma":
+        # elif optimizer.name is "c_moead_dma":
+        elif optimizer is C_MOEAD_DMA:
             if ksize == 0:
                 ksize = 3
             if alpha == 0:

@@ -1,0 +1,15 @@
+{
+    "problem": "Circle",
+
+    "popsize": 100,
+    "dv_size": 12,
+    "n_obj": 2,
+    "n_constraint": 2,
+
+    "ksize": 11,
+    "alpha": 8,
+    "d_bounds": [0.0, 0.0],
+    "u_bounds": [1.0, 1.0],
+
+    "save": false
+}
