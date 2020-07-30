@@ -91,7 +91,7 @@ if os.path.exists(inpfile):
     pprint(inpdict)
     print()
     pprint(args)
-    input()
+    # input()
 
 print(optimizer.name)
 
