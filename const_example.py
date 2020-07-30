@@ -74,7 +74,7 @@ args = {
     "alpha":alpha,
     "dv_bounds":([0.0]*dvsize, [bmax]*dvsize),   #(lowerbounds_list, upperbounds_list)
     "weight":weights,
-    "normalize": True,
+    "normalize": False,
     "n_constraint":n_const,
     "save":False
 }
@@ -89,15 +89,18 @@ if os.path.exists(inpfile):
         
     dvsize = args["dv_size"]
     n_const = args["n_constraint"]
+    max_epoch = inpdict["Genelation"]
+    print("set total num of genelation is ", max_epoch)
     mutate.rate = 1/dvsize
+
     problem_set(inpdict["problem"])
     print((inpdict["problem"]))
     args["eval_func"] = problem
     args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
 
-    pprint(inpdict)
-    print()
-    pprint(args)
+    # pprint(inpdict)
+    # print()
+    # pprint(args)
     # input()
 
 print(optimizer.name)
@@ -128,7 +131,7 @@ print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 
 result = solver.result(save=True)
 
-# print(solver.optimizer.__dict__)
+os.makedirs("result", exist_ok=True)
 with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
 #     json.dump(solver.optimizer.__dict__, f, indent=4)
     pprint(solver.optimizer.__dict__, stream=f)

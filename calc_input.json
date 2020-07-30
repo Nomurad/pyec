@@ -1,6 +1,7 @@
 {
     "problem": "mCDTLZ",
 
+    "Genelation": 100,
     "popsize": 100,
     "dv_size": 12,
     "n_obj": 2,
