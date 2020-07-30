@@ -87,6 +87,7 @@ if os.path.exists(inpfile):
         if argskey in inpdict:
             args[argskey] = inpdict.get(argskey)
         
+    args["dv_size"] = n_obj*10
     dvsize = args["dv_size"]
     n_const = args["n_constraint"]
     max_epoch = inpdict["Genelation"]
@@ -216,4 +217,6 @@ plt.colorbar(sc)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.0])
 plt.tight_layout()
-plt.show()
+plt.savefig("result/fig.png", dpi=600)
+plt.savefig("result/fig.svg")
+# plt.show()
