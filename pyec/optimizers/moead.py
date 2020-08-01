@@ -371,8 +371,8 @@ class MOEAD_DE(MOEAD):
 class C_MOEAD(MOEAD):
     name = "c_moead"
 
-    def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
-                    selection:Selector, mating:Mating, ksize=3):
+    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
+                    pool:Pool, n_constraint:int, ksize=3):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
         self.scalar = scalar_chebyshev
         # self.scalar = scalar_chebyshev_for_maximize
@@ -487,8 +487,8 @@ class Solution_archive(list):
 class C_MOEAD_DMA(C_MOEAD):
     name = "c_moead_dma"
 
-    def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
-                    selection:Selector, mating:Mating, ksize=3, alpha=4):
+    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
+                    pool:Pool, n_constraint:int, ksize=3, alpha=4):
         """ alpha is archive size(int).
         """
         
@@ -500,8 +500,11 @@ class C_MOEAD_DMA(C_MOEAD):
         # self.scalar = scalar_chebyshev_for_maximize
 
         # default cmoea/d-dma's crossover operator & mutation operator
-        self.mating._crossover = SimulatedBinaryCrossover(0.9, 20)
-        self.mating._mutation = PolynomialMutation(0.1, 20)
+        rate_cross = self.mating._crossover.rate
+        rate_mutate = self.mating._mutation.rate
+        self.mating._crossover = SimulatedBinaryCrossover(rate_cross, 20)
+        self.mating._mutation = PolynomialMutation(rate_mutate, 20)
+        print("init ", C_MOEAD_DMA.name)
 
     def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
         subpop = [population[i] for i in self.neighbers[index]]
@@ -511,7 +514,8 @@ class C_MOEAD_DMA(C_MOEAD):
         
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<0.5):
+        # if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<0.5):
+        if (parents[0].is_feasible()) and (archive_size > 0):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
@@ -606,6 +610,94 @@ class C_MOEAD_DMA(C_MOEAD):
 class C_MOEAD_DEDMA(C_MOEAD_DMA):
     name = "c_moead_dedma"
 
-    def __init__(self, popsize:int, nobj:int, pool:Pool, n_constraint:int,
-                    selection:Selector, mating:Mating, ksize=3, alpha=4):
-        super().__init__(popsize, nobj, pool, n_constraint, selection, mating, ksize, alpha)
+    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
+                    pool:Pool, n_constraint:int, ksize=3, alpha=4,
+                    CR=0.9, F=0.7, eta=20
+                    ):
+        mros = C_MOEAD_DEDMA.mro()
+        # print("mro", (mros))
+
+        super(mros[0], self).__init__(
+            popsize, nobj, pool, n_constraint, selection, mating, ksize, alpha
+        )
+        print("name is ",super(mros[0], self).name)
+
+        #DE settings
+        self.CR = CR   #交叉率
+        self.scaling_F = F    #スケーリングファクタ ->( 0<=F<=1 )
+        self.pm = self.mating._mutation.rate
+        # self.pm = 1.0/len(self.ref_points)
+        self.eta = self.mating._mutation.eta
+        self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
+        self.crossover = \
+            DifferrentialEvolutonary_Crossover(
+                    self.CR,
+                    self.scaling_F,
+                    self.pm,
+                    self.eta
+                )
+
+        # print(self.__dict__)
+        # input()
+
+    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
+        # rand = random.uniform(0.0, 1.0)
+        
+        # if rand >= self.offspring_delta:
+        #     # subpop = [population[i] for i in range(len(population))]
+        #     subpop = list(population)
+        # else:
+        #     subpop = [population[i] for i in self.neighbers[index]]
+        subpop = [population[i] for i in self.neighbers[index]]
+
+        parents = [population[index]]
+        archive_size = self.archives.get_archive_size(index)
+        if (parents[0].is_feasible()) and (archive_size > 0):
+            pb_idx = random.randint(0, archive_size-1)
+            parents.append(self.archives[index][pb_idx])
+        else:
+            pb_idx = random.randint(1, len(self.neighbers[index])-1 )
+            parents.append(subpop[pb_idx])
+
+        # for i, indiv in enumerate(subpop):
+        #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
+        #     subpop[i].set_fitness(fit_value)
+        
+        # parents = random.sample(subpop, 2)
+        p1 = population[index].get_genome()
+        p2 = parents[0].get_genome()
+        p3 = parents[1].get_genome()
+        # if (parents[0].dominate(parents[1])):
+        #     p2 = parents[0].get_genome()
+        #     p3 = parents[1].get_genome()
+        # else:
+        #     p2 = parents[1].get_genome()
+        #     p3 = parents[0].get_genome()
+            
+        self.pm = 1.0/len(p1)
+        child_dv = self.crossover([p1, p2, p3])
+
+        # print("child_dv:", (child_dv))
+        child = self.mating.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+        child.set_genome(child_dv)
+        child.set_boundary(parents[0].bounds)
+        child.set_weight(parents[0].weight)
+
+        child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
+        # print(child.evaluated(), child.value)
+        if self.normalizer is not None:
+            self.normalizer.normalizing(child)
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        # print(population)
+        nr = int(len(subpop)/2)
+        nr = 2
+        # res = self._alternate(child, nr, index, population, subpop)
+        res = self.update_archives_and_alternate(child, index, subpop, population)
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+            self.n_EPupdate += 1
+
+
+        return res
