@@ -12,7 +12,7 @@ from .operators.mutation import PolynomialMutation as PM
 from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
 
-from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA
+from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA
 
 class Solver(object):
     """進化計算ソルバー    
@@ -92,8 +92,9 @@ class Solver(object):
         elif optimizer.name is "c_moead":
             if ksize == 0:
                 ksize = 3
-            self.optimizer = optimizer((self.env.popsize), self.nobj, self.env.pool,
-                            n_constraint, self.selector, self.mating, ksize=ksize)
+            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+                                        self.selector, self.mating,
+                                        self.env.pool, n_constraint, ksize=ksize)
         
         # elif optimizer.name is "c_moead_dma":
         elif optimizer is C_MOEAD_DMA:
@@ -101,9 +102,20 @@ class Solver(object):
                 ksize = 3
             if alpha == 0:
                 alpha = 4
-            self.optimizer = optimizer((self.env.popsize), self.nobj, self.env.pool,
-                            n_constraint, self.selector, self.mating, ksize=ksize,
-                            alpha=alpha)
+            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+                                        self.selector, self.mating,
+                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha)
+        
+        elif optimizer is C_MOEAD_DEDMA:
+            if ksize == 0:
+                ksize = 3
+            if alpha == 0:
+                alpha = 4
+            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+                                        self.selector, self.mating,
+                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha)
+            print(C_MOEAD_DEDMA.mro())
+            # input()
 
         self.optimizer.normalize = normalize
 
@@ -150,7 +162,7 @@ class Solver(object):
             #初期個体を世代履歴に保存
             self.env.alternate()
 
-    def run(self, iter, nextline=None):
+    def run(self, iter, savepath=None, nextline=None):
         if (nextline is None) and iter > 10:
             nextline = int(iter/10)
         else:
@@ -175,7 +187,12 @@ class Solver(object):
             print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
             self.optimizer.n_EPupdate = 0
             print("ref point:", self.optimizer.ref_points)
+            
+            if savepath is not None:
+                self.save_current_generation(savepath)
+
         print()
+
 
     def optimizing(self):
         # next_pop = Population(capa=len(self.env.nowpop))
@@ -217,4 +234,25 @@ class Solver(object):
 
         return result
 
-    
+    def save_current_generation(self, path):
+        nowpop = self.env.nowpop
+        gene = len(self.env.history)-1
+        if gene < 1:
+            gene = 0
+        fname = os.path.join(path, f"gen_{gene}.pkl")
+        print("save name = ", fname)
+        with open(fname, "wb") as f:
+            savedata = {
+                "nowpop": nowpop,
+                "env": (
+                    self.env.initializer,
+                    self.env.weight,
+                    self.env.dv_bounds,
+                    self.env.dv_size,
+                    # self.env.feasible_indivs_id,
+                    self.env.func
+                    ),
+                "optimizer": self.optimizer
+            }
+            pickle.dump(savedata, f)
+
