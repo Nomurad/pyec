@@ -34,6 +34,8 @@ optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
 optimizer = C_MOEAD_DEDMA
 
+optimizer = eval("C_MOEAD_DMA")
+
 def problem_set(prob:str):
     global dvsize, bmax, problem, weights, phi
     print("problem name is ", prob)
@@ -99,6 +101,7 @@ if os.path.exists(inpfile):
     print((inpdict["problem"]))
     args["eval_func"] = problem
     args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
+    args["optimizer"] = eval(inpdict["optimizer"])
 
     # pprint(inpdict)
     # print()
