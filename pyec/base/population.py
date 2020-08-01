@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, overload
 
 from .indiv import Individual
 
@@ -35,8 +35,14 @@ class Population(object):
     def get_inviv(self, key:int) -> Individual:
         return self.pop[key]
 
-    def __getitem__(self, key:int) -> Individual:
-        return self.get_inviv(key)
+    @overload
+    def __getitem__(self, key:int) -> Individual: ...
+
+    @overload
+    def __getitem__(self, s:slice) -> List[Individual]: ...
+
+    def __getitem__(self, key):
+        return self.pop[key]
     
     def __setitem__(self, key:int, indiv:Individual):
         self.pop[key] = indiv

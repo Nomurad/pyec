@@ -16,7 +16,7 @@ from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
-from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA
+from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA
 from pyec.solver import Solver
 
 from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
@@ -32,6 +32,7 @@ phi = 0.3
 
 optimizer = C_MOEAD
 optimizer = C_MOEAD_DMA
+optimizer = C_MOEAD_DEDMA
 
 def problem_set(prob:str):
     global dvsize, bmax, problem, weights, phi
@@ -122,8 +123,9 @@ data = np.array(data)
 #         plt.scatter(data[:,0], data[:,1], c="Red")
 # plt.show()
 
+os.makedirs("result", exist_ok=True)
 st_time = time.time()
-solver.run(max_epoch)
+solver.run(max_epoch, savepath="result")
 print("calc time: ", time.time()-st_time)
 print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 # print(solver.optimizer.mating.__repr__())
@@ -132,7 +134,6 @@ print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 
 result = solver.result(save=True)
 
-os.makedirs("result", exist_ok=True)
 with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
 #     json.dump(solver.optimizer.__dict__, f, indent=4)
     pprint(solver.optimizer.__dict__, stream=f)
