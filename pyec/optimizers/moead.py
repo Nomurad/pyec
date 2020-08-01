@@ -618,7 +618,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         # print("mro", (mros))
 
         super(mros[0], self).__init__(
-            popsize, nobj, pool, n_constraint, selection, mating, ksize, alpha
+            popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha
         )
         print("name is ",super(mros[0], self).name)
 
