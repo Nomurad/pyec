@@ -1,10 +1,19 @@
 import random 
+from abc import ABC, ABCMeta, abstractmethod
 import numpy as np 
 
 class CrossoverError(Exception):
     pass
 
-class BlendCrossover(object):
+class AbstractCrossover(metaclass=ABCMeta):
+    def __init__(self, rate):
+        self.rate = rate
+
+    @abstractmethod
+    def __call__(self, genomes):
+        pass
+
+class BlendCrossover(AbstractCrossover):
     """BLX-alpha
     """
     def __init__(self, rate=0.9, alpha=0.5, oneout=False):
@@ -17,8 +26,7 @@ class BlendCrossover(object):
 
         if random.random() > self.rate:
             return x1, x2
-
-        gamma = (1 + 2 * self.alpha) * np.random.random(x1.shape) - self.alpha
+        gamma = (1 + 2 * self.alpha) * np.random.rand(x1.shape) - self.alpha
 
         if self.oneout:
             y = (1 - gamma) * x1 + gamma * x2
@@ -29,7 +37,7 @@ class BlendCrossover(object):
             return y1, y2
 
 
-class SimulatedBinaryCrossover(object):
+class SimulatedBinaryCrossover(AbstractCrossover):
     """Simulated Binary Crossover(SBX)
     """
     def __init__(self, rate=0.9, eta=20, oneout=False):

@@ -5,6 +5,7 @@ from ..base.indiv import Individual
 from ..base.environment import Pool
 
 from .selection import TournamentSelection, TournamentSelectionStrict
+from .crossover import AbstractCrossover
 from .crossover import BlendCrossover, SimulatedBinaryCrossover
 from .mutation import PolynomialMutation
 
@@ -13,7 +14,7 @@ class MatingError(Exception):
 
 class Mating(object):
     
-    def __init__(self, crossover, mutation, pool:Pool):
+    def __init__(self, crossover:AbstractCrossover, mutation:PolynomialMutation, pool:Pool):
         self._crossover = crossover
         self._mutation = mutation
         self._pool = pool
