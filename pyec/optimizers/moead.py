@@ -492,8 +492,8 @@ class C_MOEAD_DMA(C_MOEAD):
         """ alpha is archive size(int).
         """
         
-        super().__init__(popsize, nobj, pool, n_constraint,
-                    selection, mating, ksize)
+        super().__init__(popsize, nobj, selection, mating, 
+                            pool, n_constraint, ksize)
 
         self.archive_size = alpha
         self.archives = Solution_archive(len(self.weight_vec), self.archive_size)
