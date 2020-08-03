@@ -197,7 +197,7 @@ fmts = "%5f"
 np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
 print("solver\n")
-# print(solver)
+print(solver.optimizer.name)
 
 ### 以下，制約条件ありで行う場合使用
 # data = []
@@ -222,6 +222,6 @@ plt.colorbar(sc)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.0])
 plt.tight_layout()
-plt.savefig("result/fig.png", dpi=600)
-plt.savefig("result/fig.svg")
+plt.savefig("result/fig.png", dpi=1200)
+# plt.savefig("result/fig.svg")
 # plt.show()
