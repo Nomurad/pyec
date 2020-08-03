@@ -2,8 +2,8 @@
     "problem": "mCDTLZ",
     "optimizer": "C_MOEAD_DEDMA",
 
-    "Genelation": 100,
-    "popsize": 100,
+    "Genelation": 200,
+    "popsize": 220,
     "dv_size": 12,
     "n_obj": 2,
     "n_constraint": 2,
