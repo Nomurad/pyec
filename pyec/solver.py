@@ -32,6 +32,7 @@ class Solver(object):
                         normalize = False,
                         n_constraint = 0,
                         save=True,
+                        savepath=None,
                         old_pop=None
                         ):
         """ solver initializer
@@ -54,6 +55,7 @@ class Solver(object):
         """
         self.flag_save = save
 
+        self.n_epoch = 0
         self.restart = 0
         if old_pop is not None:
             self.restart = len(old_pop)
@@ -114,7 +116,7 @@ class Solver(object):
             self.optimizer = optimizer((self.env.popsize), self.nobj, 
                                         self.selector, self.mating,
                                         self.env.pool, n_constraint, ksize=ksize, alpha=alpha)
-            print(C_MOEAD_DEDMA.mro())
+            # print(C_MOEAD_DEDMA.mro())
             # input()
 
         self.optimizer.normalize = normalize
@@ -128,13 +130,13 @@ class Solver(object):
             self.env.weight = np.array(weight)
             
         # Creating initial individuals.
-        self.initialize()
+        self.initialize(savepath)
 
     def __call__(self, iter):
         self.run(iter)
 
     # Creating initial individuals.
-    def initialize(self):
+    def initialize(self, savepath=None):
         if self.restart == 0:
             for _ in range(self.optimizer.popsize):
                 indiv = self.env.creator()
@@ -161,6 +163,8 @@ class Solver(object):
                 
             #初期個体を世代履歴に保存
             self.env.alternate()
+            self.save_current_generation(savepath)
+
 
     def run(self, iter, savepath=None, nextline=None):
         if (nextline is None) and iter > 10:
@@ -168,21 +172,26 @@ class Solver(object):
         else:
             nextline = 1
 
+        # n_epoch = self.n_epoch
+        if self.restart != 0:
+            self.n_epoch = self.restart
+
         for i in range(iter):
+            self.n_epoch += 1
             if i%nextline == 0:
                 print()
-            print(f"iter:{i+1:>5d}", end="\r\n")
+            print(f"iter:{self.n_epoch:>5d}", end="\r\n")
             # for indiv in self.env.nowpop:
             #     print(indiv.get_id(), end=" ")
             self.optimizing()
-            if self.restart > 0:
-                n_epoch = i + self.restart
-            else:
-                n_epoch = i + 1
+            # if self.restart > 0:
+            #     self.n_epoch = i + self.restart
+            # else:
+            #     self.n_epoch = i + 1
                 
             if self.flag_save == True:
-                self.result(save=True, fname=f"opt_result_epoch{n_epoch}.pkl")
-                self.result(delete=True, fname=f"opt_result_epoch{n_epoch-1}.pkl")
+                self.result(save=True, fname=f"opt_result_epoch{self.n_epoch}.pkl")
+                self.result(delete=True, fname=f"opt_result_epoch{self.n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
             print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
             self.optimizer.n_EPupdate = 0
@@ -235,24 +244,31 @@ class Solver(object):
         return result
 
     def save_current_generation(self, path):
+        if path is None:
+            return
+
         nowpop = self.env.nowpop
         gene = len(self.env.history)-1
         if gene < 1:
             gene = 0
         fname = os.path.join(path, f"gen_{gene}.pkl")
         print("save name = ", fname)
-        with open(fname, "wb") as f:
-            savedata = {
+        savedata = {
                 "nowpop": nowpop,
-                "env": (
-                    self.env.initializer,
-                    self.env.weight,
-                    self.env.dv_bounds,
-                    self.env.dv_size,
-                    # self.env.feasible_indivs_id,
-                    self.env.func
-                    ),
-                "optimizer": self.optimizer
+                "epoch": self.n_epoch
             }
+        if self.n_epoch == 0:
+            fname == os.path.join(path, f"gen_0.pkl")
+            savedata["optimizer"] = self.optimizer
+            savedata["env"] = (
+                        self.env.initializer,
+                        self.env.weight,
+                        self.env.dv_bounds,
+                        self.env.dv_size,
+                        # self.env.feasible_indivs_id,
+                        self.env.func
+                    )
+
+        with open(fname, "wb") as f:
             pickle.dump(savedata, f)
 
