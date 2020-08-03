@@ -488,7 +488,7 @@ class C_MOEAD_DMA(C_MOEAD):
     name = "c_moead_dma"
 
     def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
-                    pool:Pool, n_constraint:int, ksize=3, alpha=4):
+                    pool:Pool, n_constraint:int, ksize=3, alpha=4, **kwargs):
         """ alpha is archive size(int).
         """
         
@@ -500,6 +500,7 @@ class C_MOEAD_DMA(C_MOEAD):
         # self.scalar = scalar_chebyshev_for_maximize
 
         # default cmoea/d-dma's crossover operator & mutation operator
+        self.cross_rate_dm = 1.0
         rate_cross = self.mating._crossover.rate
         rate_mutate = self.mating._mutation.rate
         self.mating._crossover = SimulatedBinaryCrossover(rate_cross, 20)
@@ -514,8 +515,8 @@ class C_MOEAD_DMA(C_MOEAD):
         
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        # if (parents[0].is_feasible()) and (archive_size > 0) and (random.random()<0.5):
-        if (parents[0].is_feasible()) and (archive_size > 0):
+        if (parents[0].is_feasible()) and (archive_size > 0) \
+            and (random.random() <= self.cross_rate_dm):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
@@ -650,14 +651,17 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         #     subpop = [population[i] for i in self.neighbers[index]]
         subpop = [population[i] for i in self.neighbers[index]]
 
-        parents = [population[index]]
+        # parents = [population[index]]
+        parents = [random.choice(subpop[1:])]
         archive_size = self.archives.get_archive_size(index)
-        if (parents[0].is_feasible()) and (archive_size > 0):
-            pb_idx = random.randint(0, archive_size-1)
-            parents.append(self.archives[index][pb_idx])
-        else:
-            pb_idx = random.randint(1, len(self.neighbers[index])-1 )
-            parents.append(subpop[pb_idx])
+        # if (parents[0].is_feasible()) and (archive_size > 0):
+        #     pb_idx = random.randint(0, archive_size-1)
+        #     parents.append(self.archives[index][pb_idx])
+        # else:
+        #     pb_idx = random.randint(1, len(self.neighbers[index])-1 )
+        #     parents.append(subpop[pb_idx])
+        subpop2 = subpop + self.archives
+        parents = random.sample(subpop2, 2)
 
         # for i, indiv in enumerate(subpop):
         #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
