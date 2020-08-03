@@ -79,7 +79,8 @@ args = {
     "weight":weights,
     "normalize": False,
     "n_constraint":n_const,
-    "save":False
+    "save":False,
+    "savepath": "result"
 }
 
 inpfile = "calc_input.json"
@@ -107,6 +108,7 @@ if os.path.exists(inpfile):
     # print()
     # pprint(args)
     # input()
+os.makedirs("result", exist_ok=True)
 
 print(optimizer.name)
 
@@ -126,7 +128,6 @@ data = np.array(data)
 #         plt.scatter(data[:,0], data[:,1], c="Red")
 # plt.show()
 
-os.makedirs("result", exist_ok=True)
 st_time = time.time()
 solver.run(max_epoch, savepath="result")
 print("calc time: ", time.time()-st_time)
