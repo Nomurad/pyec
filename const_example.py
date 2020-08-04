@@ -103,6 +103,7 @@ if os.path.exists(inpfile):
     args["eval_func"] = problem
     args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
     args["optimizer"] = eval(inpdict["optimizer"])
+    args["cross_rate_dm"] = inpdict.get("cross_rate_dm", 1.0)
 
     # pprint(inpdict)
     # print()
@@ -114,8 +115,8 @@ print(optimizer.name)
 
 solver = Solver(**args)
 print(solver.optimizer)
-pprint(solver.env.__dict__) # for debug
-pprint(solver.optimizer.__dict__)
+# pprint(solver.env.__dict__) # for debug
+# pprint(solver.optimizer.__dict__)
 
 pop = solver.env.history[0]
 data = []

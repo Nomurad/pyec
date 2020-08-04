@@ -33,7 +33,8 @@ class Solver(object):
                         n_constraint = 0,
                         save=True,
                         savepath=None,
-                        old_pop=None
+                        old_pop=None,
+                        **kwargs
                         ):
         """ solver initializer
         
@@ -106,7 +107,8 @@ class Solver(object):
                 alpha = 4
             self.optimizer = optimizer((self.env.popsize), self.nobj, 
                                         self.selector, self.mating,
-                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha)
+                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
+                                        **kwargs)
         
         elif optimizer is C_MOEAD_DEDMA:
             if ksize == 0:
@@ -115,7 +117,8 @@ class Solver(object):
                 alpha = 4
             self.optimizer = optimizer((self.env.popsize), self.nobj, 
                                         self.selector, self.mating,
-                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha)
+                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
+                                        **kwargs)
             # print(C_MOEAD_DEDMA.mro())
             # input()
 

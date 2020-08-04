@@ -116,7 +116,7 @@ class MOEAD(object):
         for i in range(self.ksize):
             neighber_index[i] = norms_sort[i,1]
         
-        print(index, "neighbers_index", neighber_index)
+        # print(index, "neighbers_index", neighber_index)
         return neighber_index
 
     def update_reference(self, indiv:Individual):
@@ -223,11 +223,12 @@ class MOEAD(object):
                     # self.EP.pop()
                     return
             
-            self.EP.append(indiv)
+            # self.EP.append(indiv)
             tmpEP = copy.deepcopy(self.EP)
             poplist = [-1]*len(self.EP)
             for i in reversed(range(len(tmpEP))):
-                if indiv.id != tmpEP[i].id and indiv.dominate(tmpEP[i]):
+                # if indiv.id != tmpEP[i].id and indiv.dominate(tmpEP[i]):
+                if indiv.dominate(tmpEP[i]):
                     poplist[i] = (tmpEP[i].id)
             # self.EP = self.sorting.sort(self.EP)[0]
             # self.EP = self.sorting.output_pareto(self.EP)
@@ -235,6 +236,8 @@ class MOEAD(object):
                 # print(i)
                 if self.EP[i].id == poplist[i]:
                     self.EP.pop(i)
+            self.EP.append(indiv)
+            
         else:
             self.EP.append(indiv)
         
@@ -500,7 +503,10 @@ class C_MOEAD_DMA(C_MOEAD):
         # self.scalar = scalar_chebyshev_for_maximize
 
         # default cmoea/d-dma's crossover operator & mutation operator
-        self.cross_rate_dm = 1.0
+        # if "cross_rate_dm" in kwargs:
+        #     self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
+        print("in moead cross_rate_dm:", kwargs)
+        self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
         rate_cross = self.mating._crossover.rate
         rate_mutate = self.mating._mutation.rate
         self.mating._crossover = SimulatedBinaryCrossover(rate_cross, 20)
@@ -613,15 +619,16 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
 
     def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
                     pool:Pool, n_constraint:int, ksize=3, alpha=4,
-                    CR=0.9, F=0.7, eta=20
+                    CR=0.9, F=0.7, eta=20, **kwargs
                     ):
         mros = C_MOEAD_DEDMA.mro()
         # print("mro", (mros))
 
-        super(mros[0], self).__init__(
-            popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha
+        super().__init__(
+            popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
         )
         print("name is ",super(mros[0], self).name)
+        print("cross_rate_dm", self.cross_rate_dm)
 
         #DE settings
         self.CR = CR   #交叉率
@@ -652,16 +659,21 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         subpop = [population[i] for i in self.neighbers[index]]
 
         # parents = [population[index]]
-        parents = [random.choice(subpop[1:])]
         archive_size = self.archives.get_archive_size(index)
-        # if (parents[0].is_feasible()) and (archive_size > 0):
-        #     pb_idx = random.randint(0, archive_size-1)
-        #     parents.append(self.archives[index][pb_idx])
+        subpop2 = subpop + self.archives[index]
+        parents = [subpop[random.randint(1, len(subpop)-1)]]
+        if (population[index].is_feasible()) and (archive_size > 0) \
+            and (random.random() <= self.cross_rate_dm):
+            pb_idx = random.randint(0, archive_size-1)
+            parents.append(self.archives[index][pb_idx])
+        else:
+            parents = random.sample(subpop2[1:], 2)
+        
+        # if random.random() <= self.cross_rate_dm:
+        #     # parents = np.random.choice(subpop2, 2, replace=False)
+        #     parents = random.sample(subpop2, 2)
         # else:
-        #     pb_idx = random.randint(1, len(self.neighbers[index])-1 )
-        #     parents.append(subpop[pb_idx])
-        subpop2 = subpop + self.archives
-        parents = random.sample(subpop2, 2)
+        #     parents = random.sample(subpop, 2)
 
         # for i, indiv in enumerate(subpop):
         #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
