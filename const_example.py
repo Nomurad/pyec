@@ -107,10 +107,10 @@ if os.path.exists(inpfile):
     args["optimizer"] = eval(inpdict["optimizer"])
     args["cross_rate_dm"] = inpdict.get("cross_rate_dm", 1.0)
 
-    pprint(inpdict)
-    print()
-    pprint(args)
-    input()
+    # pprint(inpdict)
+    # print()
+    # pprint(args)
+    # input()
 os.makedirs("result", exist_ok=True)
 
 print(optimizer.name)
