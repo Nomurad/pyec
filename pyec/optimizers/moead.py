@@ -218,24 +218,29 @@ class MOEAD(object):
             return
 
         if len(self.EP) > 2:
+            # tmpEP = []
             for i in reversed(range(len(self.EP))):
-                if self.EP[i].dominate(indiv):
-                    # self.EP.pop()
-                    return
-            
-            # self.EP.append(indiv)
-            tmpEP = copy.deepcopy(self.EP)
-            poplist = [-1]*len(self.EP)
-            for i in reversed(range(len(tmpEP))):
-                # if indiv.id != tmpEP[i].id and indiv.dominate(tmpEP[i]):
-                if indiv.dominate(tmpEP[i]):
-                    poplist[i] = (tmpEP[i].id)
-            # self.EP = self.sorting.sort(self.EP)[0]
-            # self.EP = self.sorting.output_pareto(self.EP)
-            for i in reversed(range(len(self.EP))):
-                # print(i)
-                if self.EP[i].id == poplist[i]:
+                if indiv.dominate(self.EP[i]):
                     self.EP.pop(i)
+                elif self.EP[i].dominate(indiv):
+                    return
+                # else:
+                #     tmpEP = self.EP.pop(i)
+            
+
+            # self.EP.append(indiv)
+            # tmpEP = copy.deepcopy(self.EP)
+            # poplist = [-1]*len(self.EP)
+            # for i in reversed(range(len(tmpEP))):
+            #     # if indiv.id != tmpEP[i].id and indiv.dominate(tmpEP[i]):
+            #     if indiv.dominate(tmpEP[i]):
+            #         poplist[i] = (tmpEP[i].id)
+            # # self.EP = self.sorting.sort(self.EP)[0]
+            # # self.EP = self.sorting.output_pareto(self.EP)
+            # for i in reversed(range(len(self.EP))):
+            #     # print(i)
+            #     if self.EP[i].id == poplist[i]:
+            #         self.EP.pop(i)
             self.EP.append(indiv)
             
         else:
@@ -418,7 +423,7 @@ class C_MOEAD(MOEAD):
         parents = self.selector(subpop)
         childs = self.mating(parents)
         child = random.choice(childs)
-        res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
+        res, _ = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
 
         self.update_reference(child)
         
@@ -707,8 +712,8 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
         # print(population)
-        nr = int(len(subpop)/2)
-        nr = 2
+        # nr = int(len(subpop)/2)
+        # nr = 2
         # res = self._alternate(child, nr, index, population, subpop)
         res = self.update_archives_and_alternate(child, index, subpop, population)
         if res.get_id() == child.get_id():
