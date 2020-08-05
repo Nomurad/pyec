@@ -68,7 +68,7 @@ mutate = PolynomialMutation(rate=1/dvsize, eta=20)
 args = {
     "popsize":100,
     "dv_size":dvsize,
-    "nobj":n_obj,
+    "n_obj":n_obj,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[cross, mutate],
     "optimizer":optimizer,
@@ -98,17 +98,19 @@ if os.path.exists(inpfile):
     print("set total num of genelation is ", max_epoch)
     mutate.rate = 1/dvsize
 
+    n_obj = inpdict["n_obj"]
     problem_set(inpdict["problem"])
     print((inpdict["problem"]))
+    args["weight"] = weights
     args["eval_func"] = problem
     args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
     args["optimizer"] = eval(inpdict["optimizer"])
     args["cross_rate_dm"] = inpdict.get("cross_rate_dm", 1.0)
 
-    # pprint(inpdict)
-    # print()
-    # pprint(args)
-    # input()
+    pprint(inpdict)
+    print()
+    pprint(args)
+    input()
 os.makedirs("result", exist_ok=True)
 
 print(optimizer.name)

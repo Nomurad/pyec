@@ -20,7 +20,7 @@ class Solver(object):
 
     def __init__(self,  popsize: int, #1世代あたりの個体数
                         dv_size: int, #設計変数の数
-                        nobj: int, #目的関数の数
+                        n_obj: int, #目的関数の数
                         selector,
                         mating,
                         optimizer,
@@ -62,19 +62,19 @@ class Solver(object):
             self.restart = len(old_pop)
             print(f"start epoch is {self.restart}")
             # print("oldpop", old_pop[-1].__dict__)
-            self.env = Environment(popsize, dv_size, nobj, optimizer,
+            self.env = Environment(popsize, dv_size, n_obj, optimizer,
                             eval_func, dv_bounds, n_constraint, 
                             old_pop=old_pop[-1])
             self.env.history.extend(old_pop)
             # print("history", len(self.env.history))
         else:
-            self.env = Environment(popsize, dv_size, nobj, optimizer,
+            self.env = Environment(popsize, dv_size, n_obj, optimizer,
                             eval_func, dv_bounds, n_constraint)
         self.eval_func = eval_func
 
-        self.nobj = self.env.n_obj
-        # self.nobj = len(eval_func( dummy_indiv.get_design_variable() ))
-        print("nobj:",self.nobj)
+        self.n_obj = self.env.n_obj
+        # self.n_obj = len(eval_func( dummy_indiv.get_design_variable() ))
+        print("n_obj:",self.n_obj)
         self.selector = selector
         self.mating = Mating(mating[0], mating[1], self.env.pool)
 
@@ -82,20 +82,20 @@ class Solver(object):
         if optimizer.name is "moead":
             if ksize == 0:
                 ksize = 3
-            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+            self.optimizer = optimizer((self.env.popsize), self.n_obj, 
                                     self.selector, self.mating, ksize=ksize)
 
         elif optimizer.name is "moead_de":
             if ksize == 0:
                 ksize = 3
-            self.optimizer = optimizer((self.env.popsize), self.nobj,
+            self.optimizer = optimizer((self.env.popsize), self.n_obj,
                                     self.selector, self.mating, ksize=ksize,
                                     CR=0.75, F=0.5, eta=20)
 
         elif optimizer.name is "c_moead":
             if ksize == 0:
                 ksize = 3
-            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+            self.optimizer = optimizer((self.env.popsize), self.n_obj, 
                                         self.selector, self.mating,
                                         self.env.pool, n_constraint, ksize=ksize)
         
@@ -105,7 +105,7 @@ class Solver(object):
                 ksize = 3
             if alpha == 0:
                 alpha = 4
-            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+            self.optimizer = optimizer((self.env.popsize), self.n_obj, 
                                         self.selector, self.mating,
                                         self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
                                         **kwargs)
@@ -115,7 +115,7 @@ class Solver(object):
                 ksize = 3
             if alpha == 0:
                 alpha = 4
-            self.optimizer = optimizer((self.env.popsize), self.nobj, 
+            self.optimizer = optimizer((self.env.popsize), self.n_obj, 
                                         self.selector, self.mating,
                                         self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
                                         **kwargs)
