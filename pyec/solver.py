@@ -90,7 +90,7 @@ class Solver(object):
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj,
                                     self.selector, self.mating, ksize=ksize,
-                                    CR=0.75, F=0.5, eta=20)
+                                    CR=0.75, F=0.75, eta=20)
 
         elif optimizer.name is "c_moead":
             if ksize == 0:
@@ -256,8 +256,10 @@ class Solver(object):
             gene = 0
         fname = os.path.join(path, f"gen_{gene}.pkl")
         print("save name = ", fname)
+        EP_id = [p.id for p in self.optimizer.EP]
         savedata = {
                 "nowpop": nowpop,
+                "EP_id": EP_id,
                 "epoch": self.n_epoch
             }
         if self.n_epoch == 0:

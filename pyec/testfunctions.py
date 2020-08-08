@@ -221,8 +221,30 @@ class mCDTLZ(Constraint_TestProblem):
         res = f[i]**2 + 4*(sum(lis)) - 1
         return -res
 
+class WaterProblem(Constraint_TestProblem):
+    def __init__(self, n_obj=5, n_const=7):
+        super().__init__(5, 7)
+    
+    def __call__(self, x):
+        if not hasattr(x, "__len__"):
+            raise TestProblem_Error("dv size error.")
 
+        x1 = x[0]; x2 = x[1]; x3 = x[2]
 
+        f1 = 106780.37*(x2+x3)+61704.67
+        f2 = 3000.0*x1
+        f3 = 30570*0.022890*x2/(0.06*2289.0)**0.65
+        f4 = 250.0*2289.0*math.exp(-39.75*x2+9.9*x3+2.74)
+        f5 = 25.0*((1.39/(x1*x2)) + 4940.0*x3-80.0)
+        g1 = -1 + (0.00139/(x1*x2)+4.94*x3-0.08)
+        g2 = -1 + (0.000306/(x1*x2)+1.082*x3-0.0986)
+        g3 = -50000 + (12.307/(x1*x2)+49408.24*x3+4051.02)
+        g4 = -16000 + (2.098/(x1*x2)+8046.33*x3-696.71)
+        g5 = -10000 + (2.138/(x1*x2)+7883.39*x3-705.04)
+        g6 = -2000 + (0.417*(x1*x2)+1721.26*x3-136.54)
+        g7 = -550 + (0.164/(x1*x2)+631.13*x3-54.48)
+
+        return [f1,f2,f3,f4,f5],[g1,g2,g3,g4,g5,g6,g7]
 class Knapsack(Constraint_TestProblem):
 
     def __init__(self, n_obj=2, n_items=500, n_const=2, phi=0.8):
@@ -320,52 +342,43 @@ def __test__():
     div = 21
     n_obj = 2
     dv_size = 2
-    random.seed(10)
+    # random.seed(10)
     cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+    wp = WaterProblem()
+    x = [
+        random.uniform(0.01,0.45),
+        random.uniform(0.01,0.1),
+        random.uniform(0.01,0.1)
+    ]
+    res = wp(x)
+    print(x)
+    print(res)
     # res = cdtlz(x)
 
-    res2 = []
-    for i in range(300000):
-        x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
-        # x = [0]
-        res2.append(cdtlz(x))
-
     # res2 = []
-    # xs = [0]*dv_size
-    # for i in range(dv_size):
-    #     xs[i] = np.linspace(0.0, 1.0, div)
-
-    # xss = np.meshgrid(*xs)
-
-    # for i in range(dv_size):
-    #     xss[i] = xss[i].ravel()
-
-    # for i, _xs in enumerate(zip(*xss)):
-    #     x = _xs
-    #     if i%10000 == 0:
-    #         print("_xs: ",_xs)
+    # for i in range(300000):
+    #     x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
+    #     # x = [0]
     #     res2.append(cdtlz(x))
+
+    # res2 = np.array(res2)
+
+    # # response
+    # print("\ndv: ", x)
+    # # print("return: ", res2[:,:,:])
+
+    # res3 = res2[res2[:,1,0]<=0]
+    # res3 = res3[res3[:,1,1]<=0]
+
+    # infeasible = res2[res2[:,1,0] > 0]
+    # infeasible2 = res2[res2[:,1,1] > 0]
     
-    # mk_kp = Knapsack(n_obj=n_obj, n_items=dv_size, n_const=n_obj, phi=0.8)
-    # res = mk_kp(x)
-    res2 = np.array(res2)
-
-    # response
-    print("\ndv: ", x)
-    # print("return: ", res2[:,:,:])
-
-    res3 = res2[res2[:,1,0]<=0]
-    res3 = res3[res3[:,1,1]<=0]
-
-    infeasible = res2[res2[:,1,0] > 0]
-    infeasible2 = res2[res2[:,1,1] > 0]
-    
-    plt.scatter(res3[:,0,0], res3[:,0,1])
-    plt.scatter(infeasible[:,0,0], infeasible[:,0,1], c="red")
-    plt.scatter(infeasible2[:,0,0], infeasible2[:,0,1], c="red")
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.0])
-    plt.show()
+    # plt.scatter(res3[:,0,0], res3[:,0,1])
+    # plt.scatter(infeasible[:,0,0], infeasible[:,0,1], c="red")
+    # plt.scatter(infeasible2[:,0,0], infeasible2[:,0,1], c="red")
+    # plt.xlim([0.0, 1.0])
+    # plt.ylim([0.0, 1.0])
+    # plt.show()
 
 
 ################################################################################

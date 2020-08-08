@@ -572,26 +572,38 @@ class C_MOEAD_DMA(C_MOEAD):
         """
 
         res = population[index] # parent
-        neighber = self.neighbers[index]
+        neighber = list(self.neighbers[index].copy())
+        random.shuffle(neighber)
+        # neighber = random.sample(self.neighbers[index], self.ksize)
 
         c_fit = child.fitness.fitness
         xj_fits = [0]*len(subpop)
+        # for j, xj in enumerate(subpop):
+        nr = int(len(subpop)/2)
         for j, xj in enumerate(subpop):
+            if j > nr:
+                break
+
+            if len(subpop) < len(population):
+                nei_idx = neighber[j]
+            else:
+                nei_idx = j
+
+            xj = population[nei_idx]
             xj_fits[j] = self.scalar(xj, self.weight_vec[index], self.ref_points)
 
-        for j, xj in enumerate(subpop):
             # x^j is feasible & y is feasible.
             if xj.is_feasible() and child.is_feasible():
                 xj_fit = xj_fits[j]
                 if c_fit > xj_fit:
-                    population[neighber[j]] = child
+                    population[nei_idx] = child
                     res = child
                     if len(self.archives[index]) > 0:
                         now_archives = copy.deepcopy(self.archives[index])
                         # print(now_archives)
                         self.archives.clear(index)
                         for _, a in enumerate(now_archives):
-                            if self.scalar(a, self.weight_vec[neighber[j]], self.ref_points) > c_fit:
+                            if self.scalar(a, self.weight_vec[nei_idx], self.ref_points) > c_fit:
                                 self.archives.append(a, index)
 
             # x^j is feasible & y is infeasible.
@@ -601,19 +613,19 @@ class C_MOEAD_DMA(C_MOEAD):
             
             # x^j is infeasible & y is feasible.
             elif (not xj.is_feasible()) and child.is_feasible():
-                population[neighber[j]] = child
+                population[nei_idx] = child
                 res = child
 
             # x^j is infeasible & y is infeasible.
             elif (not xj.is_feasible()) and (not child.is_feasible()):
                 if child.constraint_violation_dominate(xj):
-                    population[neighber[j]] = child
+                    population[nei_idx] = child
                     res = child
                 elif xj.constraint_violation_dominate(child):
                     pass 
                 else:
                     if c_fit > xj_fits[j]:
-                        population[neighber[j]] = child
+                        population[nei_idx] = child
                         res = child
             
         return res
@@ -654,18 +666,21 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         # input()
 
     def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
-        # rand = random.uniform(0.0, 1.0)
         
+        archive_size = self.archives.get_archive_size(index)
+        rand = random.uniform(0.0, 1.0)
         # if rand >= self.offspring_delta:
         #     # subpop = [population[i] for i in range(len(population))]
         #     subpop = list(population)
+        #     subpop2 = subpop.copy()
+        #     for arc in self.archives:
+        #         subpop2 = subpop2 + arc
         # else:
         #     subpop = [population[i] for i in self.neighbers[index]]
         subpop = [population[i] for i in self.neighbers[index]]
+        subpop2 = subpop + self.archives[index]
 
         # parents = [population[index]]
-        archive_size = self.archives.get_archive_size(index)
-        subpop2 = subpop + self.archives[index]
         parents = [subpop[random.randint(1, len(subpop)-1)]]
         if (population[index].is_feasible()) and (archive_size > 0) \
             and (random.random() <= self.cross_rate_dm):
@@ -697,6 +712,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
             
         self.pm = 1.0/len(p1)
         child_dv = self.crossover([p1, p2, p3])
+        # child_dv = self.mating._mutation(child_dv)
 
         # print("child_dv:", (child_dv))
         child = self.mating.pool.indiv_creator(np.random.rand(len(parents[0].genome)))

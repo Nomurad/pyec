@@ -19,7 +19,7 @@ from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA
 from pyec.solver import Solver
 
-from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem
+from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, WaterProblem
 
 MAXIMIZE = -1
 MINIMIZE = 1
@@ -37,7 +37,7 @@ optimizer = C_MOEAD_DEDMA
 optimizer = eval("C_MOEAD_DMA")
 
 def problem_set(prob:str):
-    global dvsize, bmax, problem, weights, phi
+    global n_obj, dvsize, bmax, problem, weights, phi
     print("problem name is ", prob)
     if prob == "mCDTLZ":
         # dvsize = n_obj
@@ -56,10 +56,18 @@ def problem_set(prob:str):
         bmax = 2.0
         problem = Circle_problem()
         weights = [MAXIMIZE]*n_obj
+    
+    elif prob == "WaterProblem":
+        dvsize = 3
+        bmax = 0.45
+        problem = WaterProblem()
+        n_obj = problem.n_obj
+        n_const = problem.n_const
+        weights = [MINIMIZE]*n_obj
     print("problem is ", problem)
 
 problem_set("mCDTLZ")
-
+n_obj = problem.n_obj
 n_const = problem.n_const
 
 cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
@@ -79,6 +87,8 @@ args = {
     "weight":weights,
     "normalize": False,
     "n_constraint":n_const,
+    "CR":1.0,
+    "F":0.8,
     "save":False,
     "savepath": "result"
 }
@@ -107,6 +117,14 @@ if os.path.exists(inpfile):
     args["optimizer"] = eval(inpdict["optimizer"])
     args["cross_rate_dm"] = inpdict.get("cross_rate_dm", 1.0)
 
+    if inpdict["problem"] == "WaterProblem":
+        args["dv_bounds"] = ([0.01]*dvsize, [0.45,0.1,0.1])
+        n_obj = problem.n_obj
+        n_const = problem.n_const
+        args["n_obj"] = 5
+        args["n_constraint"] = 7
+        args["dv_size"] = 3
+        args["weight"] = weights
     # pprint(inpdict)
     # print()
     # pprint(args)
