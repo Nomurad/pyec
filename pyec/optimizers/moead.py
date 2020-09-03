@@ -538,19 +538,7 @@ class C_MOEAD_DMA(C_MOEAD):
 
         # print("Pa and Pb:",[i.id for i in parents])
 
-        childs = self.mating(parents)
-        child:Individual = random.choice(childs)
-        idx = 0
-        if all(child.genome == childs[idx]):
-            idx = 1
-        self.mating.pool.pop(childs[idx].get_id())
-        res, cv = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
-        child.set_constraint_violation(cv)
-        
-        if self.normalizer is not None:
-            self.normalizer.normalizing(child)
-        self.update_reference(child)
-        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+        child = self._SBXmating(parents, eval_func, index)
 
         res = self.update_archives_and_alternate(child, index, subpop, population)
         # if res.id != parents[0].id:
@@ -562,6 +550,29 @@ class C_MOEAD_DMA(C_MOEAD):
 
         return res
 
+    def _SBXmating(self, parents, eval_func, index) -> Individual:
+        childs = self.mating(parents)
+        idx = random.randint(0, 1)
+        child = childs[idx]
+        # child:Individual = random.choice(childs)
+        if idx == 0:
+            idx = 1
+        else:
+            idx = 0
+        self.mating.pool.pop(childs[idx].get_id())
+
+        child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
+
+        child = self._child_normalize(child)
+        self.update_reference(child)
+        child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
+
+        return child
+
+    def _child_normalize(self, child) -> Individual:
+        if self.normalizer is not None:
+            self.normalizer.normalizing(child)
+        return child
         
     def update_archives_and_alternate(self, child:Individual, 
                                             index:int, 
@@ -698,35 +709,42 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         # for i, indiv in enumerate(subpop):
         #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
         #     subpop[i].set_fitness(fit_value)
-        
-        # parents = random.sample(subpop, 2)
-        p1 = population[index].get_genome()
-        p2 = parents[0].get_genome()
-        p3 = parents[1].get_genome()
-        # if (parents[0].dominate(parents[1])):
-        #     p2 = parents[0].get_genome()
-        #     p3 = parents[1].get_genome()
-        # else:
-        #     p2 = parents[1].get_genome()
-        #     p3 = parents[0].get_genome()
-            
-        self.pm = 1.0/len(p1)
-        child_dv = self.crossover([p1, p2, p3])
-        # child_dv = self.mating._mutation(child_dv)
+        parents = [population[index]] + parents
+        child = self._DEmating(parents, eval_func, index)
 
-        # print("child_dv:", (child_dv))
-        child = self.mating.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
+        # print(population)
+        # nr = int(len(subpop)/2)
+        # nr = 2
+        # res = self._alternate(child, nr, index, population, subpop)
+        res = self.update_archives_and_alternate(child, index, subpop, population)
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+            self.n_EPupdate += 1
+
+
+        return res
+
+    def _DEmating(self, parents, eval_func, index) -> Individual:
+        p1 = parents[0].get_genome()
+        p2 = parents[1].get_genome()
+        p3 = parents[2].get_genome()
+        self.pm = 1.0/len(p1)
+        # generating child dv
+        child_dv = self.crossover([p1, p2, p3])
+
+        # make child indiv
+        child = self.mating.pool.indiv_creator(np.random.rand(len(p1)))
         child.set_genome(child_dv)
         child.set_boundary(parents[0].bounds)
         child.set_weight(parents[0].weight)
 
         child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
-        # print(child.evaluated(), child.value)
-        if self.normalizer is not None:
-            self.normalizer.normalizing(child)
+        
+        child = self._child_normalize(child)
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
+        return child
 
 
 class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
