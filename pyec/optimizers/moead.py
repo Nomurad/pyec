@@ -727,14 +727,46 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
-        # print(population)
-        # nr = int(len(subpop)/2)
-        # nr = 2
-        # res = self._alternate(child, nr, index, population, subpop)
+
+
+class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
+    """ 
+    """
+    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
+                    pool:Pool, n_constraint:int, ksize=3, alpha=4,
+                    CR=0.9, F=0.7, eta=20, **kwargs
+                    ):
+        super().__init__(
+            popsize, nobj, selection, mating, pool,
+            n_constraint, ksize, alpha, CR, F, eta, **kwargs
+            )
+
+    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
+
+        archive_size = self.archives.get_archive_size(index)
+        
+        subpop = [population[i] for i in self.neighbers[index]]
+        subpop2 = subpop + self.archives[index]
+
+        if  (population[index].is_feasible()) and (archive_size > 0) \
+            and (random.random() <= self.cross_rate_dm):
+            # direct mating 
+            parents = [subpop[random.randint(1, len(subpop)-1)], None]
+            pb_idx = random.randint(0, archive_size-1)
+            parents[-1] = self.archives[index][pb_idx]
+            child = self._SBXmating(parents, eval_func, index)
+
+        else:
+            # neighberhood mating
+            parents = [population[index]] + random.sample(subpop, 2)
+            child = self._DEmating(parents, eval_func, index)
+        
         res = self.update_archives_and_alternate(child, index, subpop, population)
         if res.get_id() == child.get_id():
             self.update_EP(res)
             self.n_EPupdate += 1
 
-
         return res
+
+    
+
