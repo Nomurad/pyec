@@ -1,20 +1,20 @@
 {
     "problem": "mCDTLZ",
-    "optimizer": "C_MOEAD_DEDMA",
+    "optimizer": "C_MOEAD_DMA",
 
     "Genelation": 100,
-    "popsize": 200,
+    "popsize": 100,
     "dv_size": 3,
     "n_obj": 2,
     "n_constraint": 2,
 
-    "ksize": 20,
+    "ksize": 11,
     "alpha": 4,
     "d_bounds": [0.0, 0.0],
     "u_bounds": [1.0, 1.0],
     "CR":1.0,
-    "F":0.5,
-    "cross_rate_dm": 0.5,
+    "F":0.8,
+    "cross_rate_dm": 0.8,
 
     "save": false
 }
