@@ -16,7 +16,7 @@ from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
-from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA
+from pyec.optimizers.moead import *
 from pyec.solver import Solver
 
 from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, WaterProblem

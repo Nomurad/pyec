@@ -12,7 +12,7 @@ from .operators.mutation import PolynomialMutation as PM
 from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
 
-from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA
+from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
 
 class Solver(object):
     """進化計算ソルバー    
@@ -121,6 +121,16 @@ class Solver(object):
                                         **kwargs)
             # print(C_MOEAD_DEDMA.mro())
             # input()
+
+        elif optimizer is C_MOEAD_HXDMA:
+            if ksize == 0:
+                ksize = 3
+            if alpha == 0:
+                alpha = 4
+            self.optimizer = optimizer((self.env.popsize), self.n_obj, 
+                                        self.selector, self.mating,
+                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
+                                        **kwargs)
 
         self.optimizer.normalize = normalize
 
