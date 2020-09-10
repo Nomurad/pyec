@@ -776,7 +776,11 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
 
         else:
             # neighberhood mating
-            parents = [population[index]] + random.sample(subpop, 2)
+            if random.uniform(0.0, 1.0) < self.offspring_delta:
+                parents = [population[index]] + random.sample(subpop[1:], 2)
+            else:
+                
+                parents = random.sample((population[:index]+population[index+1:]), 2) 
             child = self._DEmating(parents, eval_func, index)
         
         res = self.update_archives_and_alternate(child, index, subpop, population)
