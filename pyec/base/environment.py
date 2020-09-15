@@ -5,8 +5,10 @@ from .indiv import Individual, Fitness
 from .population import Population
 from ..operators.initializer import UniformInitializer
 
+
 class EnvironmentError(Exception):
     pass 
+
 
 class Pool(object):
     """
