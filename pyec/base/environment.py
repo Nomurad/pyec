@@ -31,7 +31,7 @@ class Pool(object):
         """
         indiv = self.cls(genome)
         self.current_id = indiv.set_id(self.current_id)  # set id & renew current_id
-        if parents is None:
+        if parents is not None:
             indiv.set_parents_id(parents)
         self.append(indiv)
         return indiv

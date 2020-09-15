@@ -26,7 +26,7 @@ class Individual(object):
 
     def __init__(self, genome: np.ndarray, parents=None):
         self._id: int = -1
-        self.parent_id: List[int] = []
+        self.parent_id = []
         self.bounds = (0, 1)  # ((lower), (upper))
         self.weight = None
         self.n_obj = 1
