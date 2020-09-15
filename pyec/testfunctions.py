@@ -17,8 +17,11 @@ PI4 = 4 * math.pi
 PI6 = 6 * math.pi
 PI10 = 10 * math.pi
 
+
 class TestProblem_Error(Exception):
     pass
+
+
 class TestProblem(metaclass=ABCMeta):
 
     def __init__(self, n_obj):
@@ -31,6 +34,7 @@ class TestProblem(metaclass=ABCMeta):
 ################################################################################
 # S.O.
 ################################################################################
+
 
 def rastrigin(x):
     return A * len(x) + sum(map(lambda v: v ** 2 - A * math.cos(PI2 * v), x))
@@ -99,62 +103,73 @@ def zdt6(x):
     g = 1 + 9 * (np.sum(x[1:]) / (len(x) - 1)) ** 0.25
     return f, g * (1 - (f / g) ** 2)
 
+
 def DTLZ2(x):
-    
-    f1 = sum( math.pow(xi-0.5, 2.0) for xi in x )
+
+    f1 = sum(math.pow(xi-0.5, 2.0) for xi in x)
 
 
 ################################################################################
 # M.O. w/ const
 ################################################################################
 
-def osy(x):
-    """ The Osyczka and Kundu(OSY) test problem is 
-        a six-variable problem with 2-objectives 
-        and 6 inquality constraints.
+class Constraint_TestProblem(TestProblem):
+    def __init__(self, n_obj=2, n_const=2):
+        super().__init__(n_obj)
+        self.n_const = n_const
 
-        where 
-        0<=x1,x2,x6<=10,
-        1<=x3,x5<=5,
-        0<=x4<=4
+    @abstractmethod
+    def __call__(self):
+        pass
 
-    """
-    if len(x) == 1:
-        return x[0], 1 - math.sqrt(x[0])
 
-    f1 = sum(map(lambda i, v: (-1 if i else -25) * (x[i] - v)**2, 
-                range(5), ([2, 2, 1, 4, 1]) ))
-    f2 = sum(map(lambda v: v ** 2, x))
-    g1 = x[0] + x[1] - 2
-    g2 = 6 - x[0] - x[1]
-    g3 = 2 - x[1] + x[0]
-    g4 = 2 - x[0] + 3 * x[1]
-    g5 = 4 - (x[2] - 3) ** 2 - x[3]
-    g6 = (x[4] - 3) ** 2 + x[5] - 4
-    return (f1, f2), (g1, g2, g3, g4, g5, g6)
+class OSY(Constraint_TestProblem):
+    def __init__(self):
+        super().__init__(2, 6)
+
+    def __call__(self, x):
+        return self.osy(x)
+
+    def osy(self, x):
+        """ The Osyczka and Kundu(OSY) test problem is 
+            a six-variable problem with 2-objectives 
+            and 6 inquality constraints.
+
+            where 
+            0<=x1,x2,x6<=10,
+            1<=x3,x5<=5,
+            0<=x4<=4
+
+        """
+        if len(x) == 1:
+            return x[0], 1 - math.sqrt(x[0])
+
+        f1 = sum(map(lambda i, v: (-1 if i else -25) * (x[i] - v)**2, 
+                 range(5), ([2, 2, 1, 4, 1])))
+        f2 = sum(map(lambda v: v ** 2, x))
+        g1 = x[0] + x[1] - 2
+        g2 = 6 - x[0] - x[1]
+        g3 = 2 - x[1] + x[0]
+        g4 = 2 - x[0] + 3 * x[1]
+        g5 = 4 - (x[2] - 3) ** 2 - x[3]
+        g6 = (x[4] - 3) ** 2 + x[5] - 4
+        return (f1, f2), (-g1, -g2, -g3, -g4, -g5, -g6)
+
 
 def tnk(x):
     """TNK -- n_obj=2, n_dv=2, n_constraint=2
-    
+
     Arguments:
         x {[np.ndarray]} -- [ 0 <= x[0],x[1] <= PI ]
     """
     f1 = x[0]
     f2 = x[1]
 
-    g1 = x[0]**2 + x[1]**2 -1 - 0.1*np.cos(16*np.arctan(x[0]/x[1])) #>=0
-    g2 = -(x[0] - 0.5)**2 - (x[1] - 0.5)**2 + 0.5   #>=0
+    g1 = x[0]**2 + x[1]**2 - 1 - 0.1*np.cos(16*np.arctan(x[0]/x[1]))  # >=0
+    g2 = -(x[0] - 0.5)**2 - (x[1] - 0.5)**2 + 0.5   # >=0
 
     return (f1, f2), (g1, g2)
 
-class Constraint_TestProblem(TestProblem):
-    def __init__(self, n_obj=2, n_const=2):
-        super().__init__(n_obj)
-        self.n_const = n_const
-    
-    @abstractmethod
-    def __call__(self):
-        pass
 
 class Circle_problem(Constraint_TestProblem):
     def __init__(self):
@@ -176,11 +191,10 @@ class mCDTLZ(Constraint_TestProblem):
         super().__init__(n_obj, n_const)
         self.n_dv = None
 
-
     def __call__(self, x):
         if not hasattr(x, "__len__"):
             raise TestProblem_Error("dv size error.")
-        
+
         if self.n_dv is None:
             self.n_dv = len(x)
             self.n_bar_m = int(self.n_dv/self.n_obj)
@@ -188,15 +202,14 @@ class mCDTLZ(Constraint_TestProblem):
 
         # n = self.n_dv  # num of design variable
         # m = self.n_obj #num of objective function
-        
+
         f = [0]*self.n_obj
         g = [0]*self.n_obj
-
 
         for i in range(self.n_obj):
             # calc objective func 
             f[i] = self.calc_objfunc(x, i)
-        
+
         for i in range(self.n_obj):
             # calc constraint violation
             g[i] = self.calc_constfunc(x, f, i)
@@ -207,7 +220,7 @@ class mCDTLZ(Constraint_TestProblem):
         n_bar_m = self.n_bar_m
         st = int((i)*n_bar_m)
         fin = int((i+1)*n_bar_m)
-        
+
         lis = [math.sqrt(xl) for xl in x[st:fin]]
         # print("st, fin =",i, st, fin)
         # print("list = ", lis, "\n")
@@ -221,10 +234,11 @@ class mCDTLZ(Constraint_TestProblem):
         res = f[i]**2 + 4*(sum(lis)) - 1
         return -res
 
+
 class WaterProblem(Constraint_TestProblem):
     def __init__(self, n_obj=5, n_const=7):
         super().__init__(5, 7)
-    
+
     def __call__(self, x):
         if not hasattr(x, "__len__"):
             raise TestProblem_Error("dv size error.")
@@ -244,7 +258,9 @@ class WaterProblem(Constraint_TestProblem):
         g6 = -2000 + (0.417*(x1*x2)+1721.26*x3-136.54)
         g7 = -550 + (0.164/(x1*x2)+631.13*x3-54.48)
 
-        return [f1,f2,f3,f4,f5],[g1,g2,g3,g4,g5,g6,g7]
+        return [f1, f2, f3, f4, f5], [g1, g2, g3, g4, g5, g6, g7]
+
+
 class Knapsack(Constraint_TestProblem):
 
     def __init__(self, n_obj=2, n_items=500, n_const=2, phi=0.8):
@@ -260,11 +276,11 @@ class Knapsack(Constraint_TestProblem):
 
         class kp_item(object):
             def __init__(self, 
-                            n_obj, 
-                            n_const, 
-                            rand_lower=10,
-                            rand_upper=100
-                            ):
+                         n_obj, 
+                         n_const, 
+                         rand_lower=10,
+                         rand_upper=100
+                         ):
                 self.m = n_obj  # num of obj
                 self.k = n_const    # num of knapsack(constraint)
                 self.profits = [random.randint(rand_lower, rand_upper) for i in range(n_obj)]
@@ -278,7 +294,7 @@ class Knapsack(Constraint_TestProblem):
         else:
             raise TestProblem_Error("phi array size is invalid.")
         print(self.phi)
-        
+
         # num of items
         self.n_items = n_items
         # init items
@@ -288,24 +304,24 @@ class Knapsack(Constraint_TestProblem):
         for j in range(self.n_const):
             c_j = self.phi[j]*sum([self.items[l].weights[j] for l in range(self.n_items)])
             self.capa.append(c_j)
-        
+
         # for debug
         print("init knapsack")
         print("items : ", self.items[0].__dict__)
         print("capa : ", self.capa)
-    
+
     def __call__(self, x):
         # print("callable")
 
         if not hasattr(x, "__iter__"):
             raise TestProblem_Error("x must be iterable.")
-        
+
         f = [0]*(self.n_obj)
         for i in range(self.n_obj):
             _profits = np.array([self.items[l].profits[i] for l in range(self.n_items)])
             # _p_times_x = list(map(lambda p_li,x_l: p_li*x_l, _profits,x))
             _p_times_x = _profits*np.array(x)
-            f_i = sum( _p_times_x )
+            f_i = sum(_p_times_x)
             # f.append(f_i)
             f[i] = f_i
 
@@ -327,7 +343,6 @@ class Knapsack(Constraint_TestProblem):
         return f, cv 
 
 
-
 ################################################################################
 
 def __test__():
@@ -346,9 +361,9 @@ def __test__():
     cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
     wp = WaterProblem()
     x = [
-        random.uniform(0.01,0.45),
-        random.uniform(0.01,0.1),
-        random.uniform(0.01,0.1)
+        random.uniform(0.01, 0.45),
+        random.uniform(0.01, 0.1),
+        random.uniform(0.01, 0.1)
     ]
     res = wp(x)
     print(x)
@@ -372,7 +387,7 @@ def __test__():
 
     # infeasible = res2[res2[:,1,0] > 0]
     # infeasible2 = res2[res2[:,1,1] > 0]
-    
+
     # plt.scatter(res3[:,0,0], res3[:,0,1])
     # plt.scatter(infeasible[:,0,0], infeasible[:,0,1], c="red")
     # plt.scatter(infeasible2[:,0,0], infeasible2[:,0,1], c="red")

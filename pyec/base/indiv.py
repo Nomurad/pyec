@@ -1,15 +1,18 @@
+from typing import List, Optional
 import numpy as np
+
 
 class IndividualError(Exception):
     pass     
+
 
 class Fitness(object):
     """適応度
     """
     def __init__(self):
-        self._fitness = None #適応度
-        self.optimizer = None #NSGA-II , MOEA/D, etc...
-    
+        self._fitness = None  # 適応度
+        self.optimizer = None  # NSGA-II , MOEA/D, etc...
+
     @property
     def fitness(self):
         return self._fitness
@@ -17,21 +20,21 @@ class Fitness(object):
     def set_fitness(self, value, optimizer=None):
         self._fitness = value
         self.optimizer = optimizer
-        
+
 
 class Individual(object):
 
-    def __init__(self, genome:np.ndarray, parents=None):
+    def __init__(self, genome: np.ndarray, parents=None):
         self._id: int = -1
-        self.parent_id = []
-        self.bounds = (0,1) # ((lower), (upper))
+        self.parent_id: List[int] = []
+        self.bounds = (0, 1)  # ((lower), (upper))
         self.weight = None
         self.n_obj = 1
 
-        self.genome = genome #遺伝子
-        self.value = None #評価値
-        self.wvalue = None #重みづけ評価値
-        self.constraint_violation = None #制約違反量(負の値=制約違反なし)
+        self.genome = genome  # 遺伝子
+        self.value = None  # 評価値
+        self.wvalue: Optional[list] = None  # 重みづけ評価値
+        self.constraint_violation: Optional[list] = None  # 制約違反量(負の値=制約違反なし)
         self.feasible_rank = None
         self.fitness = Fitness()
 
@@ -44,7 +47,7 @@ class Individual(object):
 
     def get_id(self):
         return self._id 
-    
+
     @property
     def id(self) -> int:
         return self._id

@@ -16,15 +16,15 @@ from ..operators.mating import MatingIterator, Mating
 from ..operators.sorting import NonDominatedSort
 from ..operators.scalaring import *
 
-
-
 ################################################################################
+
+
 def weight_vector_generator(nobj, divisions, coeff=1):
-    
-    if coeff:
+
+    if coeff: 
         divisions = divisions*coeff
-    
-    # if nobj == 2:
+
+    # if nobj == 2: 
     #     weights = [[1,0],[0,1]]
     #     weights.extend([(i/(divisions-1.0), 1.0-i/(divisions-1.0)) 
     #                                     for i in range(1, divisions-1)])
@@ -33,7 +33,7 @@ def weight_vector_generator(nobj, divisions, coeff=1):
 
     def weight_recursive(weight_vectors, weight, left, total, idx=0):
 
-        if idx == nobj-1:
+        if idx == nobj-1: 
             weight[idx] = float(left)/float(total)
             weight_vectors.append(copy.copy(weight))
             # return weight_vectors
@@ -49,6 +49,8 @@ def weight_vector_generator(nobj, divisions, coeff=1):
     return weight_vectors
 
 ################################################################################
+
+
 class MOEADError(Exception):
     pass
 
@@ -59,13 +61,13 @@ class MOEAD(object):
     """
     name = "moead"
 
-    def __init__(self, popsize:int, nobj:int,
-                    selection:Selector, mating:Mating, ksize=3 ):
+    def __init__(self, popsize: int, nobj: int,
+                 selection: Selector, mating: Mating, ksize=3):
         self.division = popsize
         self.popsize = popsize
         self.nobj = nobj
         self.ksize = ksize
-        self.ref_points = []
+        self.ref_points: List = []
         self.min_or_max = np.zeros(nobj, dtype=int)
         self.selector = selection
         self.mating = mating
@@ -74,14 +76,14 @@ class MOEAD(object):
         # self.scalar = scalar_weighted_sum
         print("scalar func is ", self.scalar)
         self.init_weight()
-        
+
         self.alternation = "normal"
         self.normalize = False
         self.normalizer = None
-        self.EP = []
+        self.EP: List = []
         self.n_EPupdate = 0
 
-    def __call__(self, index:int, population:Population, eval_func) -> Individual:
+    def __call__(self, index: int, population: Population, eval_func) -> Individual: 
         child = self.get_offspring(index, population, eval_func)
         return child
 
@@ -90,14 +92,13 @@ class MOEAD(object):
         self.popsize = len(self.weight_vec)
         print(f"popsize update -> {self.popsize}")
         # print([np.linalg.norm(n) for n in self.weight_vec])
-        
+
         self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
         self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
 
-        # print("weight vector shape:", self.weight_vec.shape)
-        # print("ref point:", self.ref_points.shape)
-        # print("neighber:", self.neighbers)
-
+        # print("weight vector shape: ", self.weight_vec.shape)
+        # print("ref point: ", self.ref_points.shape)
+        # print("neighber: ", self.neighbers)
 
     def get_neighber(self, index):
         norms = np.zeros((self.weight_vec.shape[0], self.weight_vec.shape[1]+2))
@@ -106,37 +107,36 @@ class MOEAD(object):
 
         for i, w2 in enumerate(self.weight_vec):
             # print(i)
-            norms[i,0] = np.linalg.norm(w1 - w2)
-            norms[i,1] = i
-            norms[i,2:] = w2
+            norms[i, 0] = np.linalg.norm(w1 - w2)
+            norms[i, 1] = i
+            norms[i, 2:] = w2
 
-        norms_sort = norms[norms[:,0].argsort(),:]  #normの大きさでnormsをソート
+        norms_sort = norms[norms[:, 0].argsort(), :]   # normの大きさでnormsをソート
         # print(norms)
         neighber_index = np.zeros((self.ksize), dtype="int")
         for i in range(self.ksize):
-            neighber_index[i] = norms_sort[i,1]
-        
+            neighber_index[i] = norms_sort[i, 1]
+
         # print(index, "neighbers_index", neighber_index)
         return neighber_index
 
-    def update_reference(self, indiv:Individual):
+    def update_reference(self, indiv: Individual):
 
-        if self.normalize is not False:
-            if self.min_or_max[0] == 0:
+        if self.normalize is not False: 
+            if self.min_or_max[0] == 0: 
                 self.min_or_max = np.array([int(wval/abs(wval)) for wval in indiv.wvalue], dtype=int)
                 self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
                 self.ref_points[self.ref_points > self.min_or_max] = 1.0
                 self.ref_points[self.ref_points <= self.min_or_max] = 0.0
             # for i in range(len(self.ref_points)):
-            #     if self.min_or_max[i] < 0:
+            #     if self.min_or_max[i] < 0: 
             #         self.ref_points[i] = 1.0
         else:
             wvals = np.array(indiv.wvalue)
-            self.ref_points = np.min([self.ref_points, wvals],axis=0)
+            self.ref_points = np.min([self.ref_points, wvals], axis=0)
         # print("update ref point = ", self.ref_point)
 
-
-    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
+    def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
         # print(self.neighbers[index])
         subpop = [population[i] for i in self.neighbers[index]]
 
@@ -144,7 +144,7 @@ class MOEAD(object):
             self.calc_fitness_single(subpop[i], index)
             # fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
             # indiv.set_fitness(fit_value)
-        
+
         parents = self.selector(subpop)
         # print("len parents", parents)
         # print("id_s", [p.get_id() for p in parents])
@@ -157,9 +157,9 @@ class MOEAD(object):
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)
-        if self.normalizer is not None:
+        if self.normalizer is not None: 
             self.normalizer.normalizing(child)
-            # print("ori, normalize:",child.value, child.wvalue)
+            # print("ori, normalize: ",child.value, child.wvalue)
             # input()
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
@@ -167,14 +167,14 @@ class MOEAD(object):
 
         nr = int(len(subpop))
         res = self._alternate(child, nr, index, population, subpop)
-        
-        # if res == None:
+
+        # if res == None: 
         #     return population[index]
-            
+
         # if res.get_id() == child.get_id():
         #     self.update_EP(res)
         #     self.n_EPupdate += 1
-        
+
         return res
 
     def _alternate(self, child, nr, index, population, subpop):
@@ -185,34 +185,34 @@ class MOEAD(object):
         rands = list(range(len(subpop)))
         random.shuffle(rands)
         for c in range(nr):
-            j2 = rands[c]%self.ksize
+            j2 = rands[c] % self.ksize
             j = int(neighber[j2])
             old_indiv = population[j]
             population[j] = max(old_indiv, child)
-            if child.id == population[j].id:
+            if child.id == population[j].id: 
                 res = child
             # w = self.weight_vec[j]
             # fit1 = self.scalar(child, w, self.ref_points)
-            # if fit1 > old_indiv.fitness.fitness:
+            # if fit1 > old_indiv.fitness.fitness: 
             #     population[j] = child
             #     res = child
 
-        # if self.alternation is "all":
+        # if self.alternation is "all": 
         #     res = max(population[index], child)
         #     population[index] = res
         # else:
         #     res = max(*subpop, child)
         #     population[index] = res
 
-        # if res == child:
+        # if res == child: 
         #     print("child ")
-        if res == None:
+        if res is None:
             res = population[index]
         # print(res.fitness.fitness, " | ", child.fitness.fitness)
 
         return res
 
-    def update_EP(self, indiv:Individual):
+    def update_EP(self, indiv: Individual):
         # print("EP append")
         if not indiv.is_feasible():
             return
@@ -226,7 +226,6 @@ class MOEAD(object):
                     return
                 # else:
                 #     tmpEP = self.EP.pop(i)
-            
 
             # self.EP.append(indiv)
             # tmpEP = copy.deepcopy(self.EP)
@@ -239,83 +238,82 @@ class MOEAD(object):
             # # self.EP = self.sorting.output_pareto(self.EP)
             # for i in reversed(range(len(self.EP))):
             #     # print(i)
-            #     if self.EP[i].id == poplist[i]:
+            #     if self.EP[i].id == poplist[i]: 
             #         self.EP.pop(i)
             self.EP.append(indiv)
-            
+
         else:
             self.EP.append(indiv)
-        
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
         """
-        for indiv in population:
+        for indiv in population: 
             self.update_reference(indiv)
 
-        if self.normalize is True:
+        if self.normalize is True: 
             values = list(map(self._get_indiv_value, population))
             values = np.array(values)
             # print(values.shape)
-            # upper = [np.max(values[:,0]), np.max(values[:,1])]
-            # lower = [np.min(values[:,0]), np.min(values[:,1])]
+            # upper = [np.max(values[: ,0]), np.max(values[: ,1])]
+            # lower = [np.min(values[: ,0]), np.min(values[: ,1])]
             upper = [np.max(values[:, idx]) for idx in range(values.shape[-1])]
             lower = [np.min(values[:, idx]) for idx in range(values.shape[-1])]
-            print("upper/lower: ",(upper), (lower))
+            print("upper/lower: ", (upper), (lower))
             # input()
-            if self.normalizer is None:
+            if self.normalizer is None: 
                 self.normalizer = Normalizer(upper, lower)
             else:
                 self.normalizer.ref_update(upper, lower)
 
-            for indiv in population:
+            for indiv in population: 
                 self.normalizer.normalizing(indiv)
 
         for idx, indiv in enumerate(population):
             self.calc_fitness_single(indiv, idx)
 
-    def calc_fitness_single(self, indiv:Individual, index):
+    def calc_fitness_single(self, indiv: Individual, index):
         """1個体の適応度計算
         """
         fit = self.scalar(indiv, self.weight_vec[index], self.ref_points)
         indiv.set_fitness(fit)
-        # print("fit:",fit)
+        # print("fit: ",fit)
 
-    def _get_indiv_value(self, indiv:Individual):
+    def _get_indiv_value(self, indiv: Individual):
         return indiv.value
 
 
 class MOEAD_DE(MOEAD):
     name = "moead_de"
 
-    def __init__(self, popsize:int, nobj:int,
-                    selection:Selector, mating:Mating, ksize=3,
-                    CR=0.9, F=0.7, eta=20
-                ):
+    def __init__(self, popsize: int, nobj: int,
+                 selection: Selector, mating: Mating, ksize=3,
+                 CR=0.9, F=0.7, eta=20
+                 ):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
 
         self.pool = mating.pool
-        self.CR = CR   #交叉率
-        self.scaling_F = F    #スケーリングファクタ ->( 0<=F<=1 )
+        self.CR = CR   # 交叉率
+        self.scaling_F = F   # スケーリングファクタ ->( 0<=F<=1 )
         self.pm = self.mating._mutation.rate
         # self.pm = 1.0/len(self.ref_points)
         self.eta = self.mating._mutation.eta
-        self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
+        self.offspring_delta = 0.9  # get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
         self.crossover = \
             DifferrentialEvolutonary_Crossover(
-                    self.CR,
-                    self.scaling_F,
-                    self.pm,
-                    self.eta
-                )
+                self.CR,
+                self.scaling_F,
+                self.pm,
+                self.eta
+            )
 
     def _set_parents(self):
         pass
 
-    def get_offspring(self, index, population:Population, eval_func) -> Individual:
+    def get_offspring(self, index, population: Population, eval_func) -> Individual: 
         rand = random.uniform(0.0, 1.0)
-        
-        if rand >= self.offspring_delta:
+
+        if rand >= self.offspring_delta: 
             # subpop = [population[i] for i in range(len(population))]
             subpop = list(population)
         else:
@@ -324,12 +322,12 @@ class MOEAD_DE(MOEAD):
         for i, indiv in enumerate(subpop):
             fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
             subpop[i].set_fitness(fit_value)
-        
+
         # parents = self.selector(subpop)
         parents = random.sample(subpop, 2)
         # child = Individual(np.random.rand(len(parents[0].genome)))
         child = self.mating.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
-        
+
         p1 = population[index].get_genome()
         p2 = parents[0].get_genome()
         p3 = parents[1].get_genome()
@@ -339,18 +337,18 @@ class MOEAD_DE(MOEAD):
         # else:
         #     p2 = parents[1].get_genome()
         #     p3 = parents[0].get_genome()
-            
+
         self.pm = 1.0/len(p1)
         child_dv = self.crossover([p1, p2, p3])
 
-        # print("child_dv:", (child_dv))
+        # print("child_dv: ", (child_dv))
         child.set_genome(child_dv)
         child.set_boundary(parents[0].bounds)
         child.set_weight(parents[0].weight)
 
         child.evaluate(eval_func, (child.get_design_variable()))
         # print(child.evaluated(), child.value)
-        if self.normalizer is not None:
+        if self.normalizer is not None: 
             self.normalizer.normalizing(child)
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
@@ -360,15 +358,15 @@ class MOEAD_DE(MOEAD):
         nr = 2
         res = self._alternate(child, nr, index, population, subpop)
 
-                # for i, indiv in enumerate(population):
-                #     if old_indiv.get_id() == indiv.get_id():
-                #         # print("replace")
-                #         population[i] = child
-                #         res.append(child)
-        
-        # if res == None:
+        # for i, indiv in enumerate(population):
+        #     if old_indiv.get_id() == indiv.get_id():
+        #         # print("replace")
+        #         population[i] = child
+        #         res.append(child)
+
+        # if res == None: 
         #     return population[index]
-        
+
         # if res.get_id() == child.get_id():
         #     self.update_EP(res)
         #     self.n_EPupdate += 1
@@ -379,39 +377,39 @@ class MOEAD_DE(MOEAD):
 class C_MOEAD(MOEAD):
     name = "c_moead"
 
-    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
-                    pool:Pool, n_constraint:int, ksize=3):
+    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+                 pool: Pool, n_constraint: int, ksize=3):
         super().__init__(popsize, nobj, selection, mating, ksize=ksize)
         self.scalar = scalar_chebyshev
         # self.scalar = scalar_chebyshev_for_maximize
         # self.scalar = scalar_weighted_sum
         self.n_constraint = n_constraint
-        self.CVsort = NonDominatedSort()    #CVsort:constraint violation sort
-        self.fesible_indivs = []
+        self.CVsort = NonDominatedSort()   # CVsort: constraint violation sort
+        self.fesible_indivs: List = []
 
-    def CVcheck(self, indiv:Individual)-> bool:
+    def CVcheck(self, indiv: Individual) -> bool: 
         """ if indiv is feasible => True
             else => False
         """
-        
+
         cv = indiv.constraint_violation
         if hasattr(cv, "__len__"):
             cv = sum(cv)
-        
-        if cv <= 0.0:
+
+        if cv <= 0.0: 
             return True
         else:
             return False
 
-    def get_offspring(self, index, population:Population, eval_func) -> Individual:
-        
+    def get_offspring(self, index, population: Population, eval_func) -> Individual: 
+
         subpop = [population[i] for i in self.neighbers[index]]
 
         for i, _ in enumerate(subpop):
             self.calc_fitness_single(subpop[i], index)
 
         # rand = random.random()
-        # if rand >= self.offspring_delta:
+        # if rand >= self.offspring_delta: 
         #     subpop = [population[i] for i in range(len(population))]
         # else:
         #     subpop = [population[i] for i in self.neighbers[index]]
@@ -419,24 +417,24 @@ class C_MOEAD(MOEAD):
         # for i, indiv in enumerate(subpop):
         #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
         #     indiv.set_fitness(fit_value, self)
-        
+
         parents = self.selector(subpop)
         childs = self.mating(parents)
         child = random.choice(childs)
         res, _ = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
 
         self.update_reference(child)
-        
+
         # feasible child solutions
         # p_feasibles = [p for p in parents if p.constraint_violation <= 0.0]
         # c_feasibles = [s for s in childs if s.constraint_violation <= 0.0]
         # c_infeasibles = [s for s in childs in s.constraint_violation != 0.0]
-        
+
         parent = population[index]
         if child.is_feasible():
             if parent.is_feasible():
                 self.update_reference(child)
-                if self.normalizer is not None:
+                if self.normalizer is not None: 
                     self.normalizer.normalizing(child)
 
                 child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
@@ -448,12 +446,11 @@ class C_MOEAD(MOEAD):
                 population[index] = child
                 res = child
         else:
-            if child.cv_sum < parent.cv_sum:
+            if child.cv_sum < parent.cv_sum: 
                 population[index] = child
                 res = child 
             else:
                 res = parent
-               
 
         # child = self.pool.indiv_creator(np.random.rand(len(parents[0].genome)))
         # child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
@@ -464,53 +461,55 @@ class C_MOEAD(MOEAD):
 
         return res 
 
+
 class Solution_archive(list):
-        def __init__(self, n_wvec, size):
-            self.limit_size = size 
-            self._archives = [[] for _ in range(n_wvec)]
 
-        def __getitem__(self, key):
-            return self._archives[key]
+    def __init__(self, n_wvec, size):
+        self.limit_size = size
+        self._archives = [[] for _ in range(n_wvec)]
 
-        def __len__(self):
-            return len(self._archives)
+    def __getitem__(self, key):
+        return self._archives[key]
 
-        @property
-        def archives(self):
-            return self._archives
+    def __len__(self):
+        return len(self._archives)
 
-        def append(self, indiv:Individual, index:int):
-            self._archives[index].append(indiv)
-            if self.get_archive_size(index) > self.limit_size:
-                self._archives[index].sort()
-                self._archives[index].pop(0)
+    @property
+    def archives(self):
+        return self._archives
 
-        def get_archive_size(self, index):
-            return len(self._archives[index])
+    def append(self, indiv: Individual, index: int):
+        self._archives[index].append(indiv)
+        if self.get_archive_size(index) > self.limit_size:
+            self._archives[index].sort()
+            self._archives[index].pop(0)
 
-        def clear(self, index):
-            self._archives[index].clear()
+    def get_archive_size(self, index):
+        return len(self._archives[index])
+
+    def clear(self, index):
+        self._archives[index].clear()
 
 
 class C_MOEAD_DMA(C_MOEAD):
     name = "c_moead_dma"
 
-    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
-                    pool:Pool, n_constraint:int, ksize=3, alpha=4, **kwargs):
+    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+                 pool: Pool, n_constraint: int, ksize=3, alpha=4, **kwargs):
         """ alpha is archive size(int).
         """
-        
+
         super().__init__(popsize, nobj, selection, mating, 
-                            pool, n_constraint, ksize)
+                         pool, n_constraint, ksize)
 
         self.archive_size = alpha
         self.archives = Solution_archive(len(self.weight_vec), self.archive_size)
         # self.scalar = scalar_chebyshev_for_maximize
 
         # default cmoea/d-dma's crossover operator & mutation operator
-        # if "cross_rate_dm" in kwargs:
+        # if "cross_rate_dm" in kwargs: 
         #     self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
-        print("in moead cross_rate_dm:", kwargs)
+        print("in moead cross_rate_dm: ", kwargs)
         self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
         rate_cross = self.mating._crossover.rate
         rate_mutate = self.mating._mutation.rate
@@ -518,16 +517,16 @@ class C_MOEAD_DMA(C_MOEAD):
         self.mating._mutation = PolynomialMutation(rate_mutate, 20)
         print("init ", C_MOEAD_DMA.name)
 
-    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
+    def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
         subpop = [population[i] for i in self.neighbers[index]]
-        
+
         # select x^i as a parent
         parents = [population[index]]
-        
+
         archive_size = self.archives.get_archive_size(index)
         # print("archive size", archive_size)
-        if (parents[0].is_feasible()) and (archive_size > 0) \
-            and (random.random() <= self.cross_rate_dm):
+        if(parents[0].is_feasible()) and (archive_size > 0) and \
+          (random.random() <= self.cross_rate_dm):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
@@ -536,12 +535,12 @@ class C_MOEAD_DMA(C_MOEAD):
             # subpop2.pop(0)
             parents.append(subpop[pb_idx])
 
-        # print("Pa and Pb:",[i.id for i in parents])
+        # print("Pa and Pb: ",[i.id for i in parents])
 
         child = self._SBXmating(parents, eval_func, index)
 
         res = self.update_archives_and_alternate(child, index, subpop, population)
-        # if res.id != parents[0].id:
+        # if res.id != parents[0].id: 
         #     # print(res.constraint_violation)
         #     population[index] = res
         if res.get_id() == child.get_id():
@@ -554,8 +553,8 @@ class C_MOEAD_DMA(C_MOEAD):
         childs = self.mating(parents)
         idx = random.randint(0, 1)
         child = childs[idx]
-        # child:Individual = random.choice(childs)
-        if idx == 0:
+        # child: Individual = random.choice(childs)
+        if idx == 0: 
             idx = 1
         else:
             idx = 0
@@ -569,20 +568,21 @@ class C_MOEAD_DMA(C_MOEAD):
 
         return child
 
-    def _child_normalize(self, child) -> Individual:
-        if self.normalizer is not None:
+    def _child_normalize(self, child) -> Individual: 
+        if self.normalizer is not None: 
             self.normalizer.normalizing(child)
         return child
-        
-    def update_archives_and_alternate(self, child:Individual, 
-                                            index:int, 
-                                            subpop:List[Individual],
-                                            population:Population):
+
+    def update_archives_and_alternate(self,
+                                      child: Individual,
+                                      index: int,
+                                      subpop: List[Individual],
+                                      population: Population):
         """ update archives & solution alternating.
 
         """
 
-        res = population[index] # parent
+        res = population[index]  # parent
         neighber = list(self.neighbers[index].copy())
         random.shuffle(neighber)
         # neighber = random.sample(self.neighbers[index], self.ksize)
@@ -592,7 +592,7 @@ class C_MOEAD_DMA(C_MOEAD):
         # for j, xj in enumerate(subpop):
         nr = int(len(subpop)/2)
         for j, xj in enumerate(subpop):
-            if j > nr:
+            if j > nr: 
                 break
 
             if len(subpop) < len(population):
@@ -606,22 +606,22 @@ class C_MOEAD_DMA(C_MOEAD):
             # x^j is feasible & y is feasible.
             if xj.is_feasible() and child.is_feasible():
                 xj_fit = xj_fits[j]
-                if c_fit > xj_fit:
+                if c_fit > xj_fit: 
                     population[nei_idx] = child
                     res = child
-                    if len(self.archives[index]) > 0:
+                    if len(self.archives[index]) > 0: 
                         now_archives = copy.deepcopy(self.archives[index])
                         # print(now_archives)
                         self.archives.clear(index)
                         for _, a in enumerate(now_archives):
-                            if self.scalar(a, self.weight_vec[nei_idx], self.ref_points) > c_fit:
+                            if self.scalar(a, self.weight_vec[nei_idx], self.ref_points) > c_fit: 
                                 self.archives.append(a, index)
 
             # x^j is feasible & y is infeasible.
             elif xj.is_feasible() and (not child.is_feasible()):
-                if c_fit > xj_fits[j]:
+                if c_fit > xj_fits[j]: 
                     self.archives.append(child, index)
-            
+
             # x^j is infeasible & y is feasible.
             elif (not xj.is_feasible()) and child.is_feasible():
                 population[nei_idx] = child
@@ -638,48 +638,48 @@ class C_MOEAD_DMA(C_MOEAD):
                     if c_fit > xj_fits[j]:
                         population[nei_idx] = child
                         res = child
-            
+
         return res
 
 
 class C_MOEAD_DEDMA(C_MOEAD_DMA):
     name = "c_moead_dedma"
 
-    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
-                    pool:Pool, n_constraint:int, ksize=3, alpha=4,
-                    CR=0.9, F=0.7, eta=20, **kwargs
-                    ):
+    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+                 pool: Pool, n_constraint: int, ksize=3, alpha=4,
+                 CR=0.9, F=0.7, eta=20, **kwargs
+                 ):
         mros = C_MOEAD_DEDMA.mro()
         # print("mro", (mros))
 
         super().__init__(
             popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
         )
-        print("name is ",super(mros[0], self).name)
+        print("name is ", super(mros[0], self).name)
         print("cross_rate_dm", self.cross_rate_dm)
 
-        #DE settings
-        self.CR = CR   #交叉率
-        self.scaling_F = F    #スケーリングファクタ ->( 0<=F<=1 )
+        # DE settings
+        self.CR = CR   # 交叉率
+        self.scaling_F = F    # スケーリングファクタ ->( 0<=F<=1 )
         self.pm = self.mating._mutation.rate
         # self.pm = 1.0/len(self.ref_points)
         self.eta = self.mating._mutation.eta
-        self.offspring_delta = 0.9 #get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
+        self.offspring_delta = 0.9  # get_offspringで交配対象にする親個体の範囲を近傍個体集団にする確率
         self.crossover = \
             DifferrentialEvolutonary_Crossover(
-                    self.CR,
-                    self.scaling_F,
-                    self.pm,
-                    self.eta
-                )
+                self.CR,
+                self.scaling_F,
+                self.pm,
+                self.eta
+            )
 
         # print(self.__dict__)
         # input()
 
-    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
-        
+    def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
+
         archive_size = self.archives.get_archive_size(index)
-        rand = random.uniform(0.0, 1.0)
+        # rand = random.uniform(0.0, 1.0)
         # if rand >= self.offspring_delta:
         #     # subpop = [population[i] for i in range(len(population))]
         #     subpop = list(population)
@@ -693,14 +693,14 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
 
         # parents = [population[index]]
         parents = [subpop[random.randint(1, len(subpop)-1)]]
-        if (population[index].is_feasible()) and (archive_size > 0) \
-            and (random.random() <= self.cross_rate_dm):
+        if(population[index].is_feasible()) and (archive_size > 0) and \
+          (random.random() <= self.cross_rate_dm):
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
         else:
             parents = random.sample(subpop2[1:], 2)
-        
-        # if random.random() <= self.cross_rate_dm:
+
+        # if random.random() <= self.cross_rate_dm: 
         #     # parents = np.random.choice(subpop2, 2, replace=False)
         #     parents = random.sample(subpop2, 2)
         # else:
@@ -721,10 +721,9 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
             self.update_EP(res)
             self.n_EPupdate += 1
 
-
         return res
 
-    def _DEmating(self, parents, eval_func, index) -> Individual:
+    def _DEmating(self, parents, eval_func, index) -> Individual: 
         p1 = parents[0].get_genome()
         p2 = parents[1].get_genome()
         p3 = parents[2].get_genome()
@@ -739,7 +738,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         child.set_weight(parents[0].weight)
 
         child.evaluate(eval_func, (child.get_design_variable()), self.n_constraint)
-        
+
         child = self._child_normalize(child)
         self.update_reference(child)
         child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
@@ -751,25 +750,26 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
     """ 
         Hybrid crossover method(SBX & DE)
     """
-    def __init__(self, popsize:int, nobj:int, selection:Selector, mating:Mating, 
-                    pool:Pool, n_constraint:int, ksize=3, alpha=4,
-                    CR=0.9, F=0.7, eta=20, **kwargs
-                    ):
+
+    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+                 pool: Pool, n_constraint: int, ksize=3, alpha=4,
+                 CR=0.9, F=0.7, eta=20, **kwargs
+                 ):
         super().__init__(
             popsize, nobj, selection, mating, pool,
             n_constraint, ksize, alpha, CR, F, eta, **kwargs
             )
 
-    def get_offspring(self, index:int, population:Population, eval_func) -> Individual:
+    def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
         archive_size = self.archives.get_archive_size(index)
-        
+
         subpop = [population[i] for i in self.neighbers[index]]
         subpop2 = subpop + self.archives[index]
 
-        if  (population[index].is_feasible()) and (archive_size > 0) \
-            and (random.random() <= self.cross_rate_dm):
-            # direct mating 
+        if(population[index].is_feasible()) and (archive_size > 0) and \
+          (random.random() <= self.cross_rate_dm):
+            # direct mating
             parents = [subpop[random.randint(1, len(subpop)-1)], None]
             pb_idx = random.randint(0, archive_size-1)
             parents[-1] = self.archives[index][pb_idx]
@@ -777,18 +777,15 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
 
         else:
             # neighberhood mating
-            if random.uniform(0.0, 1.0) < self.offspring_delta:
+            if random.uniform(0.0, 1.0) < self.offspring_delta: 
                 parents = [population[index]] + random.sample(subpop[1:], 2)
             else:
-                parents = random.sample((population[:index]+population[index+1:]), 3) 
+                parents = random.sample((population[: index]+population[index+1:]), 3) 
             child = self._DEmating(parents, eval_func, index)
-        
+
         res = self.update_archives_and_alternate(child, index, subpop, population)
         if res.get_id() == child.get_id():
             self.update_EP(res)
             self.n_EPupdate += 1
 
         return res
-
-    
-

@@ -1,3 +1,4 @@
+from typing  import List, Any
 import numpy as np 
 
 from .indiv import Individual, Fitness
@@ -14,21 +15,21 @@ class Pool(object):
     def __init__(self):
         self.cls = Individual
         self.current_id = 0
-        self.data = [] #全個体リスト
+        self.data = []  # 全個体リスト
 
-    def __call__(self, genome:np.ndarray, parents=None):
+    def __call__(self, genome: np.ndarray, parents=None):
         self.indiv_creator(genome, parents)
 
-    def indiv_creator(self, genome:np.ndarray, parents=None):
+    def indiv_creator(self, genome: np.ndarray, parents=None):
         """遺伝子情報から個体を生成，全個体リストに追加しておく
-        
+
         Arguments:
             genome {np.ndarray} -- [遺伝子情報]
             parents {Individual} -- [親]
         """
         indiv = self.cls(genome)
-        self.current_id = indiv.set_id(self.current_id) #set id & renew current_id
-        if parents != None:
+        self.current_id = indiv.set_id(self.current_id)  # set id & renew current_id
+        if parents is None:
             indiv.set_parents_id(parents)
         self.append(indiv)
         return indiv
@@ -38,7 +39,7 @@ class Pool(object):
 
     def __len__(self):
         return self.current_id
-    
+
     def append(self, indiv):
         self.data.append(indiv)
 
@@ -46,20 +47,21 @@ class Pool(object):
         self.current_id -= 1
         return self.data.pop(index)
 
+
 class Environment(object):
     """進化計算のパラメータなどを保存するクラス
     """
-    
-    def __init__(self,  popsize:int, #1世代あたりの個体数
-                        dv_size:int, #設計変数の数
-                        n_obj:int,
-                        optimizer,
-                        eval_func=None, 
-                        dv_bounds:tuple=(0,1), #設計変数の上下限値
-                        n_constraint=0, #制約条件の数
-                        normalize=False,
-                        old_pop=None
-                        ):
+
+    def __init__(self, popsize: int,  # 1世代あたりの個体数
+                 dv_size: int,  # 設計変数の数
+                 n_obj: int,
+                 optimizer,
+                 eval_func=None, 
+                 dv_bounds: tuple = (0, 1),   # 設計変数の上下限値
+                 n_constraint=0,  # 制約条件の数
+                 normalize=False,
+                 old_pop=None
+                 ):
 
         self.current_id = 0
         self.popsize = popsize
@@ -70,21 +72,21 @@ class Environment(object):
             self.nowpop = Population(capa=popsize)
         else:
             print("Re Start EA.")
-            print("oldpop dict",old_pop.__dict__)
+            print("oldpop dict", old_pop.__dict__)
             self.nowpop = old_pop
-        self.history = [] #過去世代のpopulationのリスト
+        self.history: List[Any] = []  # 過去世代のpopulationのリスト
         self.pool = Pool()
         self.func = eval_func
         self.optimizer = optimizer
-        self.weight = None #重み(正=>最小化, 負=>最大化)
+        self.weight = None  # 重み(正=>最小化, 負=>最大化)
 
-        #設計変数の上下限値 # None or (low, up) or ([low], [up])
+        # 設計変数の上下限値 # None or (low, up) or ([low], [up])
         self.dv_bounds = dv_bounds
 
         self.n_constraint = n_constraint
-        self.feasible_indivs_id = []
+        self.feasible_indivs_id: List[int] = []
 
-        #initializerの設定
+        # initializerの設定
         self.initializer = UniformInitializer(dv_size) 
         self.creator = Creator(self.initializer, self.pool)
 
@@ -92,7 +94,7 @@ class Environment(object):
         """世代交代時に呼び出し
         """
         self.history.append(self.nowpop)
-        
+
         if population is not None:
             self.nowpop = population
         elif indivs is not None:
@@ -100,16 +102,16 @@ class Environment(object):
         else:
             # self.nowpop = Population(capa=self.popsize)
             pass
-        
-    def evaluate(self, indiv:Individual):
+
+    def evaluate(self, indiv: Individual):
         """目的関数値を計算
            適応度はoptimizerを使って設定
-        
+
         Arguments:
             indiv {Individual} -- [個体情報]
         """
         res = indiv.evaluate(self.func, indiv.get_design_variable(),
-                            n_constraint=self.n_constraint)
+                             n_constraint=self.n_constraint)
         return res 
 
     def evaluated_all(self):
@@ -118,18 +120,18 @@ class Environment(object):
             flag_evaluated = indiv.evaluated()
             if flag_evaluated is False:
                 return False
-        
+
         return True
 
 
 class Creator(object):
     """初期個体の生成器
     """
-    
-    def __init__(self, initializer, pool:Pool):
+
+    def __init__(self, initializer, pool: Pool):
         self.initializer = initializer
         self._pool = pool
-        
+
     def __call__(self):
         genome = np.array(self.initializer())
         # indiv = Individual(genome)
@@ -141,16 +143,17 @@ class Creator(object):
         indiv = Individual(genome)
         return indiv
 
+
 class Normalizer(object):
     """評価値のnormalizer
     """
-    def __init__(self, upper:list, lower:list):
+    def __init__(self, upper: list, lower: list):
         if len(upper) != len(lower):
             raise Exception("UpperList size != LowerList size")
         self.upper = np.array(upper)
         self.lower = np.array(lower)
 
-    def normalizing(self, indiv:Individual):
+    def normalizing(self, indiv: Individual):
         val = np.array(indiv.value)
         res = (val - self.lower)/(self.upper - self.lower)
         indiv.wvalue = list(res) 
