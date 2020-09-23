@@ -76,17 +76,17 @@ class NonDominatedSort(object):
                 #     continue
                 #iがjに優越されている -> True
                 dom = population[j].dominate(population[i])
-                is_dominated[i,j] = (i!= j) and dom
+                is_dominated[i,j] = (i != j) and dom
 
         #iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
 
-        # for i in range(popsize):
-        #     if num_dominated[i] == 0:
-        #         front.append(population[i])
+        for i in range(popsize):
+            if num_dominated[i] == 0:
+                front.append(population[i])
 
-        for idx in num_dominated[num_dominated == 0]:
-            front.append(population[idx])
+        # for idx in num_dominated[num_dominated == 0]:
+        #     front.append(population[idx])
 
         return front
 
