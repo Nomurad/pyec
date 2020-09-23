@@ -126,8 +126,8 @@ class MOEAD(object):
             if self.min_or_max[0] == 0: 
                 self.min_or_max = np.array([int(wval/abs(wval)) for wval in indiv.wvalue], dtype=int)
                 self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
-                self.ref_points[self.ref_points > self.min_or_max] = 1.0
-                self.ref_points[self.ref_points <= self.min_or_max] = 0.0
+                # self.ref_points[self.ref_points > self.min_or_max] = 1.0
+                # self.ref_points[self.ref_points <= self.min_or_max] = 0.0
             # for i in range(len(self.ref_points)):
             #     if self.min_or_max[i] < 0: 
             #         self.ref_points[i] = 1.0

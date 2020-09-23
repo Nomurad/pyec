@@ -170,3 +170,4 @@ class Normalizer(object):
 
         temp = np.vstack((self.lower, lower))
         self.lower = np.min(temp, axis=0)
+        print(f"upper/lower ref_points: {self.upper},{self.lower}")
