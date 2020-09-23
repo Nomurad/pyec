@@ -81,15 +81,13 @@ class NonDominatedSort(object):
         #iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
 
-        for i in range(popsize):
-            if num_dominated[i] == 0:
-                front.append(population[i])
+        # for i in range(popsize):
+        #     if num_dominated[i] == 0:
+        #         front.append(population[i])
 
-            # is_rank_ditermined = not(rank[i] or num_dominated[i])
-            # mask[i] = is_rank_ditermined
-            # if is_rank_ditermined:
-            #     # rank[i] = r + 1
-            #     front.append(population[i])
+        for idx in num_dominated[num_dominated == 0]:
+            front.append(population[idx])
+
         return front
 
     def constraint_violation_sort(self, population:Population, return_rank=False):
