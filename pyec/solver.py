@@ -61,25 +61,41 @@ class Solver(object):
 
         self.n_epoch = 0
         self.restart = 0
-        if old_pop is not None:
-            self.restart = len(old_pop)
-            print(f"start epoch is {self.restart}")
-            # print("oldpop", old_pop[-1].__dict__)
-            self.env = Environment(popsize, dv_size, n_obj, optimizer,
-                                   eval_func, dv_bounds, n_constraint, 
-                                   old_pop=old_pop[-1])
-            self.env.history.extend(old_pop)
-            # print("history", len(self.env.history))
-        else:
-            self.env = Environment(popsize, dv_size, n_obj, optimizer,
-                                   eval_func, dv_bounds, n_constraint)
-        self.eval_func = eval_func
+        self.env: Environment
 
+        if old_env is not None:
+            print("loading environment data...")
+            self.env = old_env
+            self.selector = self.env.optimizer.selector
+            self.mating = self.env.optimizer.mating
+            self.eval_func = self.env.func
+            self.optimizer = self.env.optimizer
+            self.restart = len(self.env.history)
+            print("eval func is(restart) ", self.eval_func)
+            print(f"Re-Start epoch = {self.restart}")
+            return
+
+        else:
+            if old_pop is not None:
+                self.restart = len(old_pop)
+                print(f"start epoch is {self.restart}")
+                # print("oldpop", old_pop[-1].__dict__)
+                self.env = Environment(popsize, dv_size, n_obj, optimizer,
+                                       eval_func, dv_bounds, n_constraint, 
+                                       old_pop=old_pop[-1])
+                self.env.history.append(old_pop)
+                # print("history", len(self.env.history))
+            else:
+                self.env = Environment(popsize, dv_size, n_obj, optimizer,
+                                       eval_func, dv_bounds, n_constraint)
+
+            self.selector = selector
+            self.mating = Mating(mating[0], mating[1], self.env.pool)
+
+        self.eval_func = self.env.func
         self.n_obj = self.env.n_obj
         # self.n_obj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("n_obj:", self.n_obj)
-        self.selector = selector
-        self.mating = Mating(mating[0], mating[1], self.env.pool)
 
         print("set optimizer:", optimizer.name)
         if optimizer.name == "moead":
