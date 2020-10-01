@@ -1,5 +1,6 @@
 import random
 import copy
+from itertools import chain
 from typing import List
 import numpy as np
 
@@ -476,7 +477,7 @@ class Solution_archive(list):
 
     @property
     def archives(self):
-        return self._archives
+        return chain.from_iterable(self._archives)
 
     def append(self, indiv: Individual, index: int):
         self._archives[index].append(indiv)
