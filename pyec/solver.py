@@ -34,7 +34,8 @@ class Solver(object):
                  n_constraint=0,
                  save=True,
                  savepath=None,
-                 old_pop=None,
+                 old_env: Environment = None,
+                 old_pop: Population = None,
                  **kwargs
                  ):
         """ solver initializer
@@ -53,6 +54,7 @@ class Solver(object):
             weight {list or tuple} -- [目的関数の重み付け] (default: None)
             normalize {bool} -- [評価値の正規化] (default: False)
             n_constraint {int} -- [制約条件数] (dafault: 0)
+            old_env {environment} -- [environment instance (when use restart calc)] (default: None)
             old_pop [Population] -- [last population, Restart時に使用]
         """
         self.flag_save = save
