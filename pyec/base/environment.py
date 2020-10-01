@@ -155,6 +155,12 @@ class Normalizer(object):
         self.upper = np.array(upper)
         self.lower = np.array(lower)
 
+    def _modificator(self, coeff):
+        if self.lower < 0:
+            self.lower = self.lower * coeff
+        else:
+            self.lower = 0.0
+
     def normalizing(self, indiv: Individual):
         val = np.array(indiv.value)
         res = (val - self.lower)/(self.upper - self.lower)
