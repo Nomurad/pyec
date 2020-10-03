@@ -240,6 +240,7 @@ print(solver.optimizer.name)
 #         dom += (indiv.dominate(other))
 #     if dom != 0:
 #         print("dominate:",i, dom)
+
 plt.colorbar(sc)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.0])
