@@ -66,6 +66,7 @@ def problem_set(prob:str):
         weights = [MINIMIZE]*n_obj
     print("problem is ", problem)
 
+
 problem_set("mCDTLZ")
 n_obj = problem.n_obj
 n_const = problem.n_const
