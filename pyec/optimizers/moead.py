@@ -795,3 +795,24 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
             self.n_EPupdate += 1
 
         return res
+
+    def _parent_selector(self, 
+                         population: Population,
+                         index: int,
+                         n_parent: int = 3) -> Tuple[List[Individual], List[Individual]]:
+
+        pop: Union[List, Population] 
+
+        if random.uniform(0.0, 1.0) < self.offspring_delta:
+            subpop = [population[i] for i in self.neighbers[index]]
+        else:
+            # subpop = [indiv for indiv in population]
+            subpop = population[:]
+
+        # WR selection
+        parents = random.sample(subpop, n_parent)
+
+        # WOR selection
+        # parents = population[index] + random.sample(pop[1:], 2)
+        return parents, subpop
+
