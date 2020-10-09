@@ -152,7 +152,8 @@ class Solver(object):
                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
                                        **kwargs)
 
-        self.optimizer.normalize = normalize
+        # self.optimizer.normalize = normalize
+        self.optimizer.init_normalize(normalize)
 
         # When running MOEA/D, updated popsize, so modify self.env.popsize.
         self.env.popsize = self.optimizer.popsize 
