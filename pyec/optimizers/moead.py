@@ -695,50 +695,38 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
 
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
-        archive_size = self.archives.get_archive_size(index)
-        # rand = random.uniform(0.0, 1.0)
-        # if rand >= self.offspring_delta:
-        #     # subpop = [population[i] for i in range(len(population))]
-        #     subpop = list(population)
-        #     subpop2 = subpop.copy()
-        #     for arc in self.archives:
-        #         subpop2 = subpop2 + arc
-        # else:
-        #     subpop = [population[i] for i in self.neighbers[index]]
-        subpop = [population[i] for i in self.neighbers[index]]
-        subpop2 = subpop + self.archives[index]
+        # subpop is neighboring individuals
+        parents, subpop = self._parent_selector(population, index=index, n_parent=3)
 
-        # parents = [population[index]]
-        parents = [subpop[random.randint(1, len(subpop)-1)]]
-        if(population[index].is_feasible()) and (archive_size > 0) and \
-          (random.random() <= self.cross_rate_dm):
-            pb_idx = random.randint(0, archive_size-1)
-            parents.append(self.archives[index][pb_idx])
-        else:
-            parents = random.sample(subpop2[1:], 2)
-
-        # if random.random() <= self.cross_rate_dm: 
-        #     # parents = np.random.choice(subpop2, 2, replace=False)
-        #     parents = random.sample(subpop2, 2)
-        # else:
-        #     parents = random.sample(subpop, 2)
-
-        # for i, indiv in enumerate(subpop):
-        #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
-        #     subpop[i].set_fitness(fit_value)
-        parents = [population[index]] + parents
         child = self._DEmating(parents, eval_func, index)
 
-        # print(population)
-        # nr = int(len(subpop)/2)
-        # nr = 2
-        # res = self._alternate(child, nr, index, population, subpop)
-        res = self.update_archives_and_alternate(child, index, subpop, population)
+        nr = 2
+        res = self.update_archives_and_alternate(child, index, subpop, population, nr=nr)
         if res.get_id() == child.get_id():
             self.update_EP(res)
             self.n_EPupdate += 1
 
         return res
+
+    def _parent_selector(self, 
+                         population: Population, 
+                         index: int,
+                         n_parent: int = 3) -> Tuple[List[Individual], List[Individual]]:
+
+        subpop = [population[i] for i in self.neighbers[index]]
+        archive_size = self.archives.get_archive_size(index)
+        parents = [subpop[random.randint(1, len(subpop)-1)]]
+
+        if(population[index].is_feasible()) and (archive_size > 0) and \
+          (random.random() <= self.cross_rate_dm):
+            pb_idx = random.randint(0, archive_size-1)
+            parents.append(self.archives[index][pb_idx])
+        else:
+            subpop2 = subpop + self.archives[index]
+            parents = random.sample(subpop2[1:], 2)
+
+        parents = [population[index]] + parents
+        return parents, subpop
 
     def _DEmating(self, parents, eval_func, index) -> Individual: 
         p1 = parents[0].get_genome()
@@ -794,10 +782,11 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
 
         else:
             # neighberhood mating
-            if random.uniform(0.0, 1.0) < self.offspring_delta: 
-                parents = [population[index]] + random.sample(subpop[1:], 2)
-            else:
-                parents = random.sample((population[: index]+population[index+1:]), 3) 
+            parents, subpop = self._parent_selector(population, index, n_parent=3)
+            # if random.uniform(0.0, 1.0) < self.offspring_delta: 
+            #     parents = [population[index]] + random.sample(subpop[1:], 2)
+            # else:
+            #     parents = random.sample((population[:index]+population[index+1:]), 3) 
             child = self._DEmating(parents, eval_func, index)
 
         res = self.update_archives_and_alternate(child, index, subpop, population)
