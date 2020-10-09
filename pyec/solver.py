@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import dill
 import copy
 import os 
 
@@ -264,7 +265,8 @@ class Solver(object):
                     "result": result,
                     "env": env, 
                     "optimizer": self.optimizer}
-                pickle.dump(savedata, f)
+                # pickle.dump(savedata, f)
+                dill.dump(savedata, f, protocol=4)
 
         if delete is True:
             if os.path.exists(fname):
@@ -301,5 +303,7 @@ class Solver(object):
             )
 
         with open(fname, "wb") as f:
-            pickle.dump(savedata, f)
+            # pickle.dump(savedata, f)
+            dill.dump(savedata, f)
+
 
