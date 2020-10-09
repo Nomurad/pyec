@@ -2,6 +2,7 @@ import random
 import copy
 from itertools import chain
 from typing import List
+from typing import List, Tuple, Union, Optional
 import numpy as np
 
 from ..base.indiv import Individual
@@ -579,6 +580,9 @@ class C_MOEAD_DMA(C_MOEAD):
                                       index: int,
                                       subpop: List[Individual],
                                       population: Population):
+                                      population: Population,
+                                      nr: Optional[int] = None
+                                      ):
         """ update archives & solution alternating.
 
         """

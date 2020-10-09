@@ -149,11 +149,13 @@ class Creator(object):
 class Normalizer(object):
     """評価値のnormalizer
     """
-    def __init__(self, upper: list, lower: list):
+    def __init__(self, upper: list, lower: list, option="unhold"):
         if len(upper) != len(lower):
             raise Exception("UpperList size != LowerList size")
         self.upper = np.array(upper)
         self.lower = np.array(lower)
+        self.option = option
+        self.eps = 1e-16
 
     def _modificator(self, coeff):
         if self.lower < 0:
@@ -163,11 +165,14 @@ class Normalizer(object):
 
     def normalizing(self, indiv: Individual):
         val = np.array(indiv.value)
-        res = (val - self.lower)/(self.upper - self.lower)
+        res = (val - self.lower)/(self.upper - self.lower + self.eps)
         indiv.wvalue = list(res) 
         return res
 
     def ref_update(self, upper, lower):
+        if self.option != "unhold":
+            return
+
         upper = np.array(upper)
         lower = np.array(lower)
 
