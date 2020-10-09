@@ -124,11 +124,16 @@ class MOEAD(object):
         # print(index, "neighbers_index", neighber_index)
         return neighber_index
 
+    def init_normalize(self, is_normalize: bool, option="unhold"):
+        self.normalize = is_normalize
+        self.normalize_option = option
+
     def update_reference(self, indiv: Individual):
 
         if self.normalize is not False: 
             if self.min_or_max[0] == 0: 
-                self.min_or_max = np.array([int(wval/abs(wval)) for wval in indiv.wvalue], dtype=int)
+                eps = 1e-16
+                self.min_or_max = np.array([int(wval/abs(wval + eps)) for wval in indiv.wvalue], dtype=int)
                 self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
                 # self.ref_points[self.ref_points > self.min_or_max] = 1.0
                 # self.ref_points[self.ref_points <= self.min_or_max] = 0.0
@@ -267,7 +272,7 @@ class MOEAD(object):
             print("upper/lower: ", (upper), (lower))
             # input()
             if self.normalizer is None: 
-                self.normalizer = Normalizer(upper, lower)
+                self.normalizer = Normalizer(upper, lower, self.normalize_option)
             else:
                 self.normalizer.ref_update(upper, lower)
 
