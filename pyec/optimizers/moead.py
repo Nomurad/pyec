@@ -589,7 +589,6 @@ class C_MOEAD_DMA(C_MOEAD):
                                       child: Individual,
                                       index: int,
                                       subpop: List[Individual],
-                                      population: Population):
                                       population: Population,
                                       nr: Optional[int] = None
                                       ):
@@ -604,8 +603,11 @@ class C_MOEAD_DMA(C_MOEAD):
 
         c_fit = child.fitness.fitness
         xj_fits = [0]*len(subpop)
-        # for j, xj in enumerate(subpop):
-        nr = int(len(subpop)/2)
+        wvec = self.weight_vec[index]
+
+        if nr is None:
+            nr = 2
+
         for j, xj in enumerate(subpop):
             if j > nr: 
                 break
@@ -616,7 +618,7 @@ class C_MOEAD_DMA(C_MOEAD):
                 nei_idx = j
 
             xj = population[nei_idx]
-            xj_fits[j] = self.scalar(xj, self.weight_vec[index], self.ref_points)
+            xj_fits[j] = self.scalar(xj, wvec, self.ref_points)
 
             # x^j is feasible & y is feasible.
             if xj.is_feasible() and child.is_feasible():
