@@ -1,7 +1,6 @@
 import random
 import copy
 from itertools import chain
-from typing import List
 from typing import List, Tuple, Union, Optional
 import numpy as np
 
