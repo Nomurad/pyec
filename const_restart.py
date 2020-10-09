@@ -4,6 +4,7 @@ import time
 import sys
 import os 
 import json
+import pickle
 from pprint import pprint
 
 from pyec.base.indiv import Individual, Fitness
@@ -30,11 +31,11 @@ dvsize = n_obj
 alpha = 4
 phi = 0.3
 
-optimizer = C_MOEAD
-optimizer = C_MOEAD_DMA
-optimizer = C_MOEAD_DEDMA
-
-optimizer = eval("C_MOEAD_DMA")
+fname = "opt_result.pkl"
+opt_res = pickle.load(open(fname, "rb"))
+env = opt_res["env"]
+optimizer = opt_res["optimizer"]
+print("opt name:", optimizer.name)
 
 def problem_set(prob:str):
     global n_obj, dvsize, bmax, problem, weights, phi
@@ -66,7 +67,6 @@ def problem_set(prob:str):
         weights = [MINIMIZE]*n_obj
     print("problem is ", problem)
 
-
 problem_set("mCDTLZ")
 n_obj = problem.n_obj
 n_const = problem.n_const
@@ -75,9 +75,10 @@ cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
 mutate = PolynomialMutation(rate=1/dvsize, eta=20)
 
 args = {
-    "popsize":100,
-    "dv_size":dvsize,
-    "n_obj":n_obj,
+    "old_pop":env.history[-1],
+    "popsize":env.popsize,
+    "dv_size":env.dv_size,
+    "n_obj":env.n_obj,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[cross, mutate],
     "optimizer":optimizer,
@@ -98,34 +99,10 @@ inpfile = "calc_input.json"
 if os.path.exists(inpfile):
     with open(inpfile, "r") as f:
         inpdict = json.load(f)
-    for argskey in args:
-        if argskey in inpdict:
-            args[argskey] = inpdict.get(argskey)
         
-    args["dv_size"] = n_obj*10
-    dvsize = args["dv_size"]
-    n_const = args["n_constraint"]
     max_epoch = inpdict["Genelation"]
     print("set total num of genelation is ", max_epoch)
-    mutate.rate = 1/dvsize
 
-    n_obj = inpdict["n_obj"]
-    problem_set(inpdict["problem"])
-    print((inpdict["problem"]))
-    args["weight"] = weights
-    args["eval_func"] = problem
-    args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
-    args["optimizer"] = eval(inpdict["optimizer"])
-    args["cross_rate_dm"] = inpdict.get("cross_rate_dm", 1.0)
-
-    if inpdict["problem"] == "WaterProblem":
-        args["dv_bounds"] = ([0.01]*dvsize, [0.45,0.1,0.1])
-        n_obj = problem.n_obj
-        n_const = problem.n_const
-        args["n_obj"] = 5
-        args["n_constraint"] = 7
-        args["dv_size"] = 3
-        args["weight"] = weights
     # pprint(inpdict)
     # print()
     # pprint(args)
@@ -151,8 +128,7 @@ data = np.array(data)
 # plt.show()
 
 st_time = time.time()
-# solver.run(max_epoch, savepath="result")
-solver.run(max_epoch)
+solver.run(max_epoch, savepath="result")
 print("calc time: ", time.time()-st_time)
 print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 # print(solver.optimizer.mating.__repr__())
@@ -241,7 +217,6 @@ print(solver.optimizer.name)
 #         dom += (indiv.dominate(other))
 #     if dom != 0:
 #         print("dominate:",i, dom)
-
 plt.colorbar(sc)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.0])
