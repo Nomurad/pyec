@@ -405,8 +405,8 @@ class C_MOEAD(MOEAD):
         """
 
         cv = indiv.constraint_violation
-        if hasattr(cv, "__len__"):
-            cv = sum(cv)
+        if hasattr(cv, "__iter__"):
+            cv = sum([max(_cv, 0) for _cv in cv])
 
         if cv <= 0.0: 
             return True
