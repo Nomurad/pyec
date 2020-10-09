@@ -120,6 +120,9 @@ class Individual(object):
         """ if all constraint violation value is under 0.0 => True
             else => False
         """
+        if self.constraint_violation is None:
+            return True
+
         if hasattr(self.constraint_violation, "__len__"):
             cv_s = np.array(self.constraint_violation)
             if all(cv_s <= 0.0):
