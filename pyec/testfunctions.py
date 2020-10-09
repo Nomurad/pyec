@@ -206,25 +206,26 @@ class mCDTLZ(Constraint_TestProblem):
         f = [0]*self.n_obj
         g = [0]*self.n_obj
 
-        for i in range(self.n_obj):
-            # calc objective func 
-            f[i] = self.calc_objfunc(x, i)
+        # calc objective func 
+        f = [self.calc_objfunc(x, i) for i in range(self.n_obj)]
+        # for i in range(self.n_obj):
+        #     f[i] = self.calc_objfunc(x, i)
 
-        for i in range(self.n_obj):
-            # calc constraint violation
-            g[i] = self.calc_constfunc(x, f, i)
+        # calc constraint violation
+        g = [self.calc_constfunc(x, f, i) for i in range(self.n_obj)]
+        # for i in range(self.n_obj):
+        #     g[i] = self.calc_constfunc(x, f, i)
 
         return f, g
 
     def calc_objfunc(self, x, i):
         n_bar_m = self.n_bar_m
-        st = int((i)*n_bar_m)
-        fin = int((i+1)*n_bar_m)
+        st = i * n_bar_m
+        fin = (i + 1) * n_bar_m
 
-        lis = [math.sqrt(xl) for xl in x[st:fin]]
-        # print("st, fin =",i, st, fin)
-        # print("list = ", lis, "\n")
-        res = (1/n_bar_m)*sum(lis)
+        lis = tuple(math.sqrt(xl) for xl in x[st:fin])
+        # res = (1/n_bar_m)*sum(lis)
+        res = sum(lis) / n_bar_m
         return res
 
     def calc_constfunc(self, x, f, i):
@@ -261,6 +262,19 @@ class WaterProblem(Constraint_TestProblem):
         return [f1, f2, f3, f4, f5], [g1, g2, g3, g4, g5, g6, g7]
 
 
+class kp_item(object):
+    def __init__(self, 
+                 n_obj, 
+                 n_const, 
+                 rand_lower=10,
+                 rand_upper=100
+                 ):
+        self.m = n_obj  # num of obj
+        self.k = n_const    # num of knapsack(constraint)
+        self.profits = [random.randint(rand_lower, rand_upper) for i in range(n_obj)]
+        self.weights = [random.randint(rand_lower, rand_upper) for i in range(n_const)]
+
+
 class Knapsack(Constraint_TestProblem):
 
     def __init__(self, n_obj=2, n_items=500, n_const=2, phi=0.8):
@@ -273,18 +287,6 @@ class Knapsack(Constraint_TestProblem):
             dv range = [0.0~0.1]
         """
         super().__init__(n_obj, n_const)
-
-        class kp_item(object):
-            def __init__(self, 
-                         n_obj, 
-                         n_const, 
-                         rand_lower=10,
-                         rand_upper=100
-                         ):
-                self.m = n_obj  # num of obj
-                self.k = n_const    # num of knapsack(constraint)
-                self.profits = [random.randint(rand_lower, rand_upper) for i in range(n_obj)]
-                self.weights = [random.randint(rand_lower, rand_upper) for i in range(n_const)]
 
         # phi setting
         if not hasattr(phi, "__iter__"):
@@ -317,6 +319,8 @@ class Knapsack(Constraint_TestProblem):
             raise TestProblem_Error("x must be iterable.")
 
         f = [0]*(self.n_obj)
+        x = [1 if xi > 0.5 else 0 for xi in x]
+
         for i in range(self.n_obj):
             _profits = np.array([self.items[l].profits[i] for l in range(self.n_items)])
             # _p_times_x = list(map(lambda p_li,x_l: p_li*x_l, _profits,x))
