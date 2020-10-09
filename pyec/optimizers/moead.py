@@ -81,7 +81,10 @@ class MOEAD(object):
         self.alternation = "normal"
         self.normalize = False
         self.normalizer = None
+        self.normalize_option = None
         self.EP: List = []
+        self.EPappend = self.EP.append
+        self.EPpop = self.EP.pop
         self.n_EPupdate = 0
 
     def __call__(self, index: int, population: Population, eval_func) -> Individual: 
@@ -222,7 +225,7 @@ class MOEAD(object):
             # tmpEP = []
             for i in reversed(range(len(self.EP))):
                 if indiv.dominate(self.EP[i]):
-                    self.EP.pop(i)
+                    self.EPpop(i)
                 elif self.EP[i].dominate(indiv):
                     return
                 # else:
@@ -241,10 +244,11 @@ class MOEAD(object):
             #     # print(i)
             #     if self.EP[i].id == poplist[i]: 
             #         self.EP.pop(i)
-            self.EP.append(indiv)
+
+            self.EPappend(indiv)
 
         else:
-            self.EP.append(indiv)
+            self.EPappend(indiv)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
