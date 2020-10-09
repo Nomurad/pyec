@@ -262,7 +262,9 @@ class MOEAD(object):
             self.update_reference(indiv)
 
         if self.normalize is True: 
-            values = list(map(self._get_indiv_value, population))
+            # subpop = [indiv for indiv in population if indiv.is_feasible()]
+            subpop = population
+            values = list(map(self._get_indiv_value, subpop))
             values = np.array(values)
             # print(values.shape)
             # upper = [np.max(values[: ,0]), np.max(values[: ,1])]
