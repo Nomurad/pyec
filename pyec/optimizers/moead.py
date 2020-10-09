@@ -763,7 +763,7 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
         super().__init__(
             popsize, nobj, selection, mating, pool,
             n_constraint, ksize, alpha, CR, F, eta, **kwargs
-            )
+        )
 
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
