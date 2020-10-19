@@ -228,6 +228,7 @@ class MOEAD(object):
 
         if len(self.EP) > 2:
             # tmpEP = []
+            # self.EP.sort()
             for i in reversed(range(len(self.EP))):
                 if indiv.dominate(self.EP[i]):
                     self.EPpop(i)
@@ -551,7 +552,9 @@ class C_MOEAD_DMA(C_MOEAD):
 
         child = self._SBXmating(parents, eval_func, index)
 
-        res = self.update_archives_and_alternate(child, index, subpop, population, nr=len(subpop))
+        nr = len(subpop)
+        nr = 2
+        res = self.update_archives_and_alternate(child, index, subpop, population, nr=nr)
         # if res.id != parents[0].id: 
         #     # print(res.constraint_violation)
         #     population[index] = res
