@@ -220,8 +220,10 @@ class mCDTLZ(Constraint_TestProblem):
 
     def calc_objfunc(self, x, i):
         n_bar_m = self.n_bar_m
-        st = i * n_bar_m
-        fin = (i + 1) * n_bar_m
+        # st = i * n_bar_m
+        # fin = (i + 1) * n_bar_m
+        st = int(i * self.n_dv / self.n_obj)
+        fin = int((i + 1) * self.n_dv / self.n_obj)
 
         lis = tuple(math.sqrt(xl) for xl in x[st:fin])
         # res = (1/n_bar_m)*sum(lis)
