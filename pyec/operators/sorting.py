@@ -121,8 +121,8 @@ class NonDominatedSort(object):
             if num_dominated[i] == 0:
                 front.append(population[i])
 
-        # for idx in num_dominated[num_dominated == 0]:
-        #     front.append(population[idx])
+        # # for idx in num_dominated[num_dominated == 0]:
+        # #     front.append(population[idx])
 
         return front
 
