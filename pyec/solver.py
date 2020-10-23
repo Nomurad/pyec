@@ -260,7 +260,8 @@ class Solver(object):
 
         if save is True:
             with open(fname, "wb") as f:
-                env = copy.copy(self.env)
+                # env = copy.copy(self.env)
+                env = self.env
                 env.func = "problem"
                 savedata = {
                     "result": result,
