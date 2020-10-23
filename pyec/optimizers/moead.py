@@ -553,7 +553,7 @@ class C_MOEAD_DMA(C_MOEAD):
         child = self._SBXmating(parents, eval_func, index)
 
         nr = len(subpop)
-        nr = 2
+        # nr = 2
         res = self.update_archives_and_alternate(child, index, subpop, population, nr=nr)
         # if res.id != parents[0].id: 
         #     # print(res.constraint_violation)
