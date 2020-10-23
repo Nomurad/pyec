@@ -58,8 +58,8 @@ class NonDominatedSort(object):
 
         raise NonDominatedSortError("Error: reached the end of function")
 
-     def output_pareto(self, population: Population):
-       popsize = len(population)
+    def output_pareto(self, population: Population):
+        popsize = len(population)
 
         is_dominated = np.empty((popsize, popsize), dtype=np.bool)
         num_dominated = np.zeros(popsize, dtype=np.int64)
