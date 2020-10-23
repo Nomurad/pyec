@@ -675,7 +675,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         super().__init__(
             popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
         )
-        print("name is ", super(mros[0], self).name)
+        # print("name is ", super(mros[0], self).name)
         print("cross_rate_dm", self.cross_rate_dm)
 
         # DE settings
@@ -767,6 +767,7 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
             popsize, nobj, selection, mating, pool,
             n_constraint, ksize, alpha, CR, F, eta, **kwargs
         )
+
 
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
