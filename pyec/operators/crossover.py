@@ -131,7 +131,7 @@ class DifferrentialEvolutonary_Crossover(object):
         num_dv = len(p1)
         # Fs = [self.scaling_F() for _ in range(num_dv))]
         # vi_genome = p1 + Fs*(p2 - p3)
-        Fs = self.scaling_F(2)
+        Fs = self.scaling_F()
         # print("scaling F = ", Fs)
         vi_genome = p1 + Fs*(p2 - p3)
         j_rand = random.randint(0, num_dv)
@@ -189,8 +189,6 @@ class DifferrentialEvolutonary_Crossover(object):
         """
         if optional is not None:
             return self._scaling_F(optional)
-        else:
-            self._scaling_F = lambda x: self._scaling_F
         return self._scaling_F
 
     def _dv_modifier_initializer(self, mode):
