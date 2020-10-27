@@ -65,13 +65,13 @@ class NonDominatedSort(object):
         num_dominated = np.zeros(popsize, dtype=np.int64)
         mask = np.empty(popsize, dtype=np.bool)
         rank = np.zeros(popsize, dtype=np.int64)
-        
+
         n_dim = len(population[0].value)
         valarr = np.empty((popsize, n_dim))
         for i, indiv in enumerate(population):
             valarr[i] = indiv.value
         n_points = valarr.shape[0]
-            
+
         is_efficient = np.arange(n_points)
         next_point_index = 0
         indexlist = [next_point_index]
