@@ -276,6 +276,15 @@ class Solver(object):
 
         return result
 
+    def save_resultobj(self):
+        self._serializer("indiv_pool.pkl", self.env.pool)
+        self._serializer("indiv_history.pkl", self.env.history)
+        self._serializer("optimizer.pkl", self.optimizer)
+
+    def _serializer(self, fname, obj):
+        with open(fname, "wb") as f:
+            pickle.dump(obj, f, protocol=4)
+
     def save_current_generation(self, path):
         if path is None:
             return
