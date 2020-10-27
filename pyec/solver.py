@@ -284,7 +284,7 @@ class Solver(object):
         EP_id = [p.id for p in self.optimizer.EP]
         self._serializer("EP_indivID.pkl", EP_id)
 
-   def _serializer(self, fname, obj):
+    def _serializer(self, fname, obj):
         with open(fname, "wb") as f:
             pickle.dump(obj, f, protocol=4)
 
