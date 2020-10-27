@@ -128,10 +128,12 @@ class DifferrentialEvolutonary_Crossover(object):
         except:
             raise CrossoverError("you should set 3 parents")
 
-        # Fs = [self.scaling_F() for _ in range(len(p1))]
+        num_dv = len(p1)
+        # Fs = [self.scaling_F() for _ in range(num_dv))]
         # vi_genome = p1 + Fs*(p2 - p3)
-        vi_genome = p1 + self.scaling_F()*(p2 - p3)
-        num_dv = len(vi_genome)
+        Fs = self.scaling_F(2)
+        # print("scaling F = ", Fs)
+        vi_genome = p1 + Fs*(p2 - p3)
         j_rand = random.randint(0, num_dv)
 
         child_dv = np.zeros(num_dv)
@@ -161,14 +163,14 @@ class DifferrentialEvolutonary_Crossover(object):
     def set_scaling_F(self, F, sigma=None):
         self._scaling_F = F
         self._scaling_sigma = sigma
-        if sigma is None and type(F) is float:
+        if sigma is None:
             self.scaling_F = self._constant_scaling_F
         elif sigma is not None:
             self.scaling_F = self._gauss_scaling_F
         else:
             raise CrossoverError("Invalid F.")
         print("scaling F is ", (self.scaling_F.__doc__))
-        print(f"F, sigma = {self._scaling_F}, {sigma}")
+        print(f"F, sigma = {self._scaling_F}, {self._scaling_sigma}")
 
     def _gauss_scaling_F(self):
         """ gaussian scaling factor
@@ -182,9 +184,11 @@ class DifferrentialEvolutonary_Crossover(object):
         res = random.gauss(self._scaling_F, self._scaling_sigma)
         return res
 
-    def _constant_scaling_F(self):
+    def _constant_scaling_F(self, optional=None):
         """ const scaling factor
         """
+        if optional is not None:
+            return self._scaling_F(optional)
         return self._scaling_F
 
     def _dv_modifier_initializer(self, mode):
