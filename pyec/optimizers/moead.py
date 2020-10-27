@@ -681,6 +681,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         # DE settings
         self.CR = CR   # 交叉率
         self.scaling_F = F    # スケーリングファクタ ->( 0<=F<=1 )
+        self.scaling_sigma = kwargs.get("sigma")
         self.pm = self.mating._mutation.rate
         # self.pm = 1.0/len(self.ref_points)
         self.eta = self.mating._mutation.eta
@@ -690,7 +691,8 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
                 self.CR,
                 self.scaling_F,
                 self.pm,
-                self.eta
+                self.eta,
+                self.scaling_sigma
             )
 
         # print(self.__dict__)
