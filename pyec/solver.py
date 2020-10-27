@@ -267,7 +267,7 @@ class Solver(object):
                     "result": result,
                     "env": env, 
                     "optimizer": self.optimizer}
-                # pickle.dump(savedata, f)
+                # pickle.dump(savedata, f, protocol=4)
                 dill.dump(savedata, f, protocol=4)
 
         if delete is True:
