@@ -98,14 +98,16 @@ class SimulatedBinaryCrossover(AbstractCrossover):
         else:
             return y1, y2
 
+
 class DifferrentialEvolutonary_Crossover(object):
     """ Differential Evolution(DE) operator
         This operator contains Mutation operator.
     """
 
-    def __init__(self, CR=1.0, F=0.5, pm=0.1, eta=20):
+    def __init__(self, CR=1.0, F=0.5, pm=0.1, eta=20, sigma=None):
         self.CR = CR 
-        self.scaling_F = F
+        self.set_scaling_F(F, sigma)
+        # self.scaling_F = F
         if type(F) is float:
             self.scaling_F = lambda x: F 
         else:
@@ -151,11 +153,24 @@ class DifferrentialEvolutonary_Crossover(object):
                 child_dv[i] = child_dv[i] + (delta_k*(b_k - a_k))
 
         self.modifier(child_dv)
-        # for i in range(num_dv):
-        #     if child_dv[i] < 0.0 or child_dv[i] > 1.0:
-        #         child_dv[i] = random.uniform(0.0, 1.0)
 
         return child_dv
+
+    def set_scaling_F(self, F, sigma=None):
+        if type(F) is float:
+            self._scaling_F = F
+            self.scaling_F = self._constant_scaling_F
+        elif sigma is not None:
+            self.scaling_F = self._gauss_scaling_F(F, sigma)
+        else:
+            raise CrossoverError("Invalid F.")
+
+    def _gauss_scaling_F(self, F: float, sigma: float):
+        return random.gauss(F, sigma) 
+
+    def _constant_scaling_F(self, F: float):
+        # self._scaling_F = F
+        return self._scaling_F
 
     def _dv_modifier_initializer(self, mode):
         """ mode  | func
