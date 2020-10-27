@@ -189,6 +189,8 @@ class DifferrentialEvolutonary_Crossover(object):
         """
         if optional is not None:
             return self._scaling_F(optional)
+        else:
+            self._scaling_F = lambda x: self._scaling_F
         return self._scaling_F
 
     def _dv_modifier_initializer(self, mode):
