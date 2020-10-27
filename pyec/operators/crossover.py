@@ -108,10 +108,10 @@ class DifferrentialEvolutonary_Crossover(object):
         self.CR = CR 
         self.set_scaling_F(F, sigma)
         # self.scaling_F = F
-        if type(F) is float:
-            self.scaling_F = lambda x: F 
-        else:
-            print("setting F by lambda")
+        # if type(F) is float:
+        #     self.scaling_F = lambda x: F 
+        # else:
+        #     print("setting F by lambda")
         self.pm = pm
         self.eta = eta
 
@@ -128,7 +128,9 @@ class DifferrentialEvolutonary_Crossover(object):
         except:
             raise CrossoverError("you should set 3 parents")
 
-        vi_genome = p1 + self.scaling_F(1)*(p2 - p3)
+        # Fs = [self.scaling_F() for _ in range(len(p1))]
+        # vi_genome = p1 + Fs*(p2 - p3)
+        vi_genome = p1 + self.scaling_F()*(p2 - p3)
         num_dv = len(vi_genome)
         j_rand = random.randint(0, num_dv)
 
@@ -157,19 +159,32 @@ class DifferrentialEvolutonary_Crossover(object):
         return child_dv
 
     def set_scaling_F(self, F, sigma=None):
-        if type(F) is float:
-            self._scaling_F = F
+        self._scaling_F = F
+        self._scaling_sigma = sigma
+        if sigma is None and type(F) is float:
             self.scaling_F = self._constant_scaling_F
         elif sigma is not None:
-            self.scaling_F = self._gauss_scaling_F(F, sigma)
+            self.scaling_F = self._gauss_scaling_F
         else:
             raise CrossoverError("Invalid F.")
+        print("scaling F is ", (self.scaling_F.__doc__))
+        print(f"F, sigma = {self._scaling_F}, {sigma}")
 
-    def _gauss_scaling_F(self, F: float, sigma: float):
-        return random.gauss(F, sigma) 
+    def _gauss_scaling_F(self):
+        """ gaussian scaling factor
+        """
+        res = random.gauss(self._scaling_F, self._scaling_sigma)
+        return res
 
-    def _constant_scaling_F(self, F: float):
-        # self._scaling_F = F
+    def _gauss_scaling_F_list(self):
+        """ gaussian scaling factor
+        """
+        res = random.gauss(self._scaling_F, self._scaling_sigma)
+        return res
+
+    def _constant_scaling_F(self):
+        """ const scaling factor
+        """
         return self._scaling_F
 
     def _dv_modifier_initializer(self, mode):
