@@ -106,15 +106,15 @@ class NonDominatedSort(object):
         # for i in range(popsize):
         #     for j in range(popsize):
         for i, j in itertools.product(range(popsize), range(popsize)):
-                if not population[j].is_feasible():
-                    continue
-                # if i == j:
-                #     continue
-                #iがjに優越されている -> True
-                dom = population[j].dominate(population[i])
-                is_dominated[i,j] = (i != j) and dom
+            if not population[j].is_feasible():
+                continue
+            # if i == j:
+            #     continue
+            # iがjに優越されている -> True
+            dom = population[j].dominate(population[i])
+            is_dominated[i, j] = (i != j) and dom
 
-        #iを優越する個体の数
+        # iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
 
         for i in range(popsize):
