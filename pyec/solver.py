@@ -286,7 +286,7 @@ class Solver(object):
 
     def _serializer(self, fname, obj):
         with open(fname, "wb") as f:
-            dill.dump(obj, f, protocol=4)
+            pickle.dump(obj, f, protocol=4)
 
     def save_current_generation(self, path):
         if path is None:
