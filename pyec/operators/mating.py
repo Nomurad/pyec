@@ -38,7 +38,7 @@ class Mating(object):
         child_genomes = self._crossover(parent_genomes)
         
         for child_genome in child_genomes:
-            child_genome = self._mutation(child_genome) #一定確率で突然変異
+            child_genome = self._mutation(child_genome)   # 一定確率で突然変異
             child_indiv = self._pool.indiv_creator(child_genome, parents)
             # child_indiv.set_parents_id(parents)
             child_indiv.set_weight(parents[0].weight)
