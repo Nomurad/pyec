@@ -279,6 +279,7 @@ class Solver(object):
     def save_resultobj(self):
         self._serializer("indiv_pool.pkl", self.env.pool)
         self._serializer("indiv_history.pkl", self.env.history)
+        del self.optimizer.mating.pool
         self._serializer("optimizer.pkl", self.optimizer)
 
         EP_id = [p.id for p in self.optimizer.EP]
