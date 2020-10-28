@@ -3,6 +3,7 @@ import pickle
 import dill
 import copy
 import os 
+import time
 
 from .base.indiv import Individual
 from .base.population import Population
@@ -277,13 +278,18 @@ class Solver(object):
         return result
 
     def save_resultobj(self):
+        sttime = time.time()
         self._serializer("indiv_pool.pkl", self.env.pool)
+        print(f"pool savetime: {time.time() - sttime}")
         self._serializer("indiv_history.pkl", self.env.history)
-        del self.optimizer.mating.pool
+        print(f"history savetime: {time.time() - sttime}")
+        self.optimizer.mating.pool = None
         self._serializer("optimizer.pkl", self.optimizer)
+        print(f"optimizer savetime: {time.time() - sttime}")
 
         EP_id = [p.id for p in self.optimizer.EP]
         self._serializer("EP_indivID.pkl", EP_id)
+        print(f"save finish!! : {time.time() - sttime}")
 
     def _serializer(self, fname, obj):
         with open(fname, "wb") as f:
