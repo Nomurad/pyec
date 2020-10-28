@@ -49,6 +49,9 @@ class Pool(object):
         self.current_id -= 1
         return self.data.pop(index)
 
+    def clear_indivpool(self):
+        self.data = [] 
+
 
 class Environment(object):
     """進化計算のパラメータなどを保存するクラス
