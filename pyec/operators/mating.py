@@ -25,6 +25,11 @@ class Mating(object):
     def pool(self):
         return self._pool
 
+    def clear_pool(self):
+        print("indiv pool clear!")
+        self._pool.clear_indivpool()
+        return 
+
     def __call__(self, parents=None) -> List[Individual]:
         if (parents is None) and (self._parents is None):
             raise MatingError("You should set parents.")
