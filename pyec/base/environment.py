@@ -98,7 +98,7 @@ class Environment(object):
     def alternate(self, population=None, indivs=None):
         """世代交代時に呼び出し
         """
-        self.history.append(self.nowpop)
+        self.history.append(tuple(self.nowpop))
 
         if population is not None:
             self.nowpop = population
