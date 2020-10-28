@@ -283,7 +283,7 @@ class Solver(object):
         print(f"pool savetime: {time.time() - sttime}")
         self._serializer("indiv_history.pkl", self.env.history)
         print(f"history savetime: {time.time() - sttime}")
-        self.optimizer.mating.pool = None
+        self.optimizer.mating.clear_pool()
         self._serializer("optimizer.pkl", self.optimizer)
         print(f"optimizer savetime: {time.time() - sttime}")
 
