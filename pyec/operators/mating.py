@@ -1,4 +1,5 @@
 from typing import Union, List
+import random
 
 import numpy as np 
 from ..base.indiv import Individual
@@ -30,7 +31,7 @@ class Mating(object):
         self._pool.clear_indivpool()
         return 
 
-    def __call__(self, parents=None) -> List[Individual]:
+    def __call__(self, parents=None, singlemode=True) -> List[Individual]:
         if (parents is None) and (self._parents is None):
             raise MatingError("You should set parents.")
         elif (parents is None) and (self._parents is not None):
@@ -41,6 +42,13 @@ class Mating(object):
         parent_genomes = [indiv.get_genome() for indiv in parents]
         # print("parent genomes:", parent_genomes)
         child_genomes = self._crossover(parent_genomes)
+        if singlemode == True:
+            child_genome = random.choice(child_genomes)
+            child_indiv = self._pool.indiv_creator(child_genome, parents)
+            child_indiv.set_weight(parents[0].weight)
+            child_indiv.set_boundary(parents[0].bounds)
+            self._stored.append(child_indiv)
+            return self._stored
         
         for child_genome in child_genomes:
             child_genome = self._mutation(child_genome)   # 一定確率で突然変異
