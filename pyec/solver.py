@@ -227,6 +227,8 @@ class Solver(object):
                 self.result(save=True, fname=f"opt_result_epoch{self.n_epoch}.pkl")
                 self.result(delete=True, fname=f"opt_result_epoch{self.n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
+            EP_id = [p.id for p in self.optimizer.EP]
+            self.env.EP_history.append(EP_id)
             print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
             self.optimizer.n_EPupdate = 0
             print("ref point:", self.optimizer.ref_points)
@@ -288,7 +290,9 @@ class Solver(object):
         print(f"optimizer savetime: {time.time() - sttime}")
 
         EP_id = [p.id for p in self.optimizer.EP]
-        self._serializer("EP_indivID.pkl", EP_id)
+        EPhist = self.env.EP_history
+        EPdata = {"EP_id": EP_id, "EP_history": EPhist}
+        self._serializer("EP_indivID.pkl", EPdata)
         print(f"save finish!! : {time.time() - sttime}")
 
     def _serializer(self, fname, obj):

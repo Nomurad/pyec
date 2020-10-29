@@ -80,6 +80,7 @@ class Environment(object):
             print("oldpop dict", old_pop.__dict__)
             self.nowpop = old_pop
         self.history: List[Any] = []  # 過去世代のpopulationのリスト
+        self.EP_history: List[Any] = []
         self.pool = Pool()
         self.func = eval_func
         self.optimizer = optimizer
