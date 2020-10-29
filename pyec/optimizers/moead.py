@@ -158,7 +158,8 @@ class MOEAD(object):
         # print("len parents", parents)
         # print("id_s", [p.get_id() for p in parents])
         childs = self.mating(parents)
-        child = random.choice(childs)
+        # child = random.choice(childs)
+        child = childs[0]
         idx = 0
         if all(child.genome == childs[idx]):
             idx = 1
@@ -433,7 +434,8 @@ class C_MOEAD(MOEAD):
 
         parents = self.selector(subpop)
         childs = self.mating(parents)
-        child = random.choice(childs)
+        # child = random.choice(childs)
+        child = childs[0]
         res, _ = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
 
         self.update_reference(child)
@@ -566,14 +568,15 @@ class C_MOEAD_DMA(C_MOEAD):
 
     def _SBXmating(self, parents, eval_func, index) -> Individual:
         childs = self.mating(parents)
-        idx = random.randint(0, 1)
-        child = childs[idx]
-        # child: Individual = random.choice(childs)
-        if idx == 0: 
-            idx = 1
-        else:
-            idx = 0
-        self.mating.pool.pop(childs[idx].get_id())
+        child = childs[0]
+        # idx = random.randint(0, 1)
+        # child = childs[idx]
+        # # child: Individual = random.choice(childs)
+        # if idx == 0: 
+        #     idx = 1
+        # else:
+        #     idx = 0
+        # self.mating.pool.pop(childs[idx].get_id())
 
         child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
 
