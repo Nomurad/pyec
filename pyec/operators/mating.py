@@ -14,7 +14,7 @@ class MatingError(Exception):
 
 class Mating(object):
     
-    def __init__(self, crossover:AbstractCrossover, mutation:PolynomialMutation, pool:Pool):
+    def __init__(self, crossover: AbstractCrossover, mutation: PolynomialMutation, pool: Pool):
         self._crossover = crossover
         self._mutation = mutation
         self._pool = pool
