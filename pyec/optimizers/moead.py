@@ -719,22 +719,46 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
     def _parent_selector(self, 
                          population: Population, 
                          index: int,
-                         n_parent: int = 3) -> Tuple[List[Individual], List[Individual]]:
+                         n_parent: int = 3,
+                         DEselection_mode="WR") -> Tuple[List[Individual], List[Individual]]:
 
-        subpop = [population[i] for i in self.neighbers[index]]
+        if random.uniform(0.0, 1.0) < self.offspring_delta:
+            subpop = [population[i] for i in self.neighbers[index]]
+        else:
+            subpop = population[:]
+
         archive_size = self.archives.get_archive_size(index)
-        parents = [subpop[random.randint(1, len(subpop)-1)]]
+        # parents = [subpop[random.randint(1, len(subpop)-1)]]
 
         if(population[index].is_feasible()) and (archive_size > 0) and \
           (random.random() <= self.cross_rate_dm):
+            parents = [population[index]]
+            parents.append(subpop[random.randint(1, len(subpop)-1)])
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
+
         else:
             subpop2 = subpop + self.archives[index]
-            parents = random.sample(subpop2[1:], 2)
+            if DEselection_mode == "WOR":
+                # parents = random.sample(subpop2[1:], 2)
+                parents = self._WORselection(population[index], subpop2, n_parent)
+            elif DEselection_mode == "WR":
+                parents = self._WRselection(population[index], subpop2, n_parent)
+            else:
+                raise MOEADError("Invalid parent selection method.")
 
-        parents = [population[index]] + parents
+        # parents = [population[index]] + parents
         return parents, subpop
+
+    def _WORselection(self, target_indiv, poplist, n_parent):
+        # randidx = np.random.randint(0, len(poplist))
+        random.shuffle(poplist)
+        parents = [target_indiv] + poplist[0:n_parent-1]
+        return parents
+
+    def _WRselection(self, target_indiv, poplist, n_parent):
+        parents = target_indiv + random.choices(poplist, k=n_parent-1)
+        return parents
 
     def _DEmating(self, parents, eval_func, index) -> Individual: 
         p1 = parents[0].get_genome()
@@ -773,13 +797,12 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
             n_constraint, ksize, alpha, CR, F, eta, **kwargs
         )
 
-
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
         archive_size = self.archives.get_archive_size(index)
 
         subpop = [population[i] for i in self.neighbers[index]]
-        subpop2 = subpop + self.archives[index]
+        # subpop2 = subpop + self.archives[index]
 
         if(population[index].is_feasible()) and (archive_size > 0) and \
           (random.random() <= self.cross_rate_dm):
@@ -808,20 +831,24 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
     def _parent_selector(self, 
                          population: Population,
                          index: int,
-                         n_parent: int = 3) -> Tuple[List[Individual], List[Individual]]:
-
-        pop: Union[List, Population] 
+                         n_parent: int = 3,
+                         DEselection_mode="WR") -> Tuple[List[Individual], List[Individual]]:
 
         if random.uniform(0.0, 1.0) < self.offspring_delta:
             subpop = [population[i] for i in self.neighbers[index]]
         else:
-            # subpop = [indiv for indiv in population]
             subpop = population[:]
 
-        # WR selection
-        parents = random.sample(subpop, n_parent)
-
         # WOR selection
-        # parents = population[index] + random.sample(pop[1:], 2)
-        return parents, subpop
+        if DEselection_mode == "WOR":
+            random.shuffle(subpop)        
+            parents = [population[index]] + subpop[1:n_parent]
 
+        # WR selection
+        elif DEselection_mode == "WR":
+            parents = [population[index]] + random.choices(subpop, k=n_parent-1)
+
+        else:
+            raise MOEADError("Invalid parent selection method")
+
+        return parents, subpop
