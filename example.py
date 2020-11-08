@@ -9,6 +9,7 @@ from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
 from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
+from pyec.optimizers.nsga import NSGA2
 from pyec.solver import Solver
 
 from pyec.testfunctions import zdt1, zdt2, zdt3, tnk, mCDTLZ, Knapsack
@@ -35,9 +36,9 @@ class Problem():
         return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
 # problem = Problem()
-problem = zdt3
+problem = zdt1
 optimizer = MOEAD_DE
-# optimizer = MOEAD
+# optimizer = NSGA2
 n_const = 0
 # problem = Knapsack(n_const=n_const ,phi=0.5)
 # optimizer = C_MOEAD
@@ -100,7 +101,8 @@ for epoch, pop in enumerate(result):
 data = np.array(data)
 print(data)
 # plt.scatter(data[-1,0], data[-1,1])
-print(f"ref_points={solver.optimizer.ref_points}")
+if hasattr(solver.optimizer, "ref_points"):
+    print(f"ref_points={solver.optimizer.ref_points}")
 print(f"pool size={len(solver.env.pool)}")
 
 sort_func = NonDominatedSort()
