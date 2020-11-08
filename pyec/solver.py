@@ -191,15 +191,14 @@ class Solver(object):
 
                 self.env.nowpop.append(indiv)
 
-            for indiv in self.env.nowpop:
-                # 目的関数値を計算
-                # print("func:", self.eval_func.__dict__)
-                # self.optimizer.get_offspring(self.env.nowpop, self.eval_func)
-                # res = self.env.evaluate(indiv)
-                if self.env.n_constraint > 0:
-                    for indiv in self.env.nowpop:
-                        if indiv.is_feasible():
-                            self.env.feasible_indivs_id.append(indiv.id)
+            if self.env.n_constraint > 0:
+                for indiv in self.env.nowpop:
+                    # 目的関数値を計算
+                    # print("func:", self.eval_func.__dict__)
+                    # self.optimizer.get_offspring(self.env.nowpop, self.eval_func)
+                    # res = self.env.evaluate(indiv)
+                    if indiv.is_feasible():
+                        self.env.feasible_indivs_id.append(indiv.id)
             # print("res", res)
 
             # 適応度計算
@@ -253,7 +252,8 @@ class Solver(object):
         nowpop = copy.deepcopy(self.env.nowpop)
         # nowpop = self.env.nowpop
 
-        self.optimizer.get_new_generation(nowpop, self.eval_func)
+        nowpop = self.optimizer.get_new_generation(nowpop, self.eval_func)
+        # print("nowpop size:",len(nowpop))
         if self.env.n_constraint > 0:
             for indiv in nowpop:
                 if indiv.is_feasible():
@@ -268,7 +268,7 @@ class Solver(object):
         #             # print("feasible append")
 
         next_pop = nowpop
-        self.optimizer.calc_fitness(next_pop)
+        # self.optimizer.calc_fitness(next_pop)
 
         self.env.alternate(next_pop)
 
