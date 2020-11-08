@@ -53,7 +53,7 @@ def weight_vector_generator(nobj, divisions, coeff=1):
 ################################################################################
 
 
-class MOEADError(Exception):
+class MOEADError(OptimizerError):
     pass
 
 
