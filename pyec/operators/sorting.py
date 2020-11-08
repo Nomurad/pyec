@@ -11,24 +11,36 @@ class NonDominatedSortError(Exception):
 class NonDominatedSort(object):
 
     def __init__(self):
-        pass
+        self.product = None
         # self.pop = pop
+    
+    def _mask_func(self, idxes):
+        i, j = idxes
+        dom = self.pop[j].dominate(self.pop[i])
+        is_dominated = (i!=j) and dom 
+        return is_dominated
 
     def sort(self, population:Population, return_rank=False):
         popsize = len(population)
+        self.pop = population
 
-        is_dominated = np.empty((popsize, popsize), dtype=np.bool)
+        # is_dominated = np.empty((popsize, popsize), dtype=np.bool)
         num_dominated = np.zeros(popsize, dtype=np.int64)
         mask = np.empty(popsize, dtype=np.bool)
         rank = np.zeros(popsize, dtype=np.int64)
 
-        for i in range(popsize):
-            for j in range(popsize):
-                # if i == j:
-                #     continue
-                #iがjに優越されている -> True
-                dom = population[j].dominate(population[i])
-                is_dominated[i,j] = (i!= j) and dom
+        # if self.product is None:
+        self.product = itertools.product(range(popsize), range(popsize))
+        # print(popsize)
+        is_dominated = list(map(self._mask_func, self.product))
+        is_dominated = np.array(is_dominated, dtype=bool).reshape(popsize, popsize)
+        # for i in range(popsize):
+        #     for j in range(popsize):
+        #         # if i == j:
+        #         #     continue
+        #         #iがjに優越されている -> True
+        #         dom = population[j].dominate(population[i])
+        #         is_dominated[i,j] = (i!= j) and dom
 
         #iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
