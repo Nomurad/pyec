@@ -58,7 +58,7 @@ class NonDominatedSort(object):
 
         raise NonDominatedSortError("Error: reached the end of function")
 
-    def output_pareto(self, population:Population):
+    def output_pareto(self, population: Population):
         popsize = len(population)
 
         is_dominated = np.empty((popsize, popsize), dtype=np.bool)
@@ -66,27 +66,63 @@ class NonDominatedSort(object):
         mask = np.empty(popsize, dtype=np.bool)
         rank = np.zeros(popsize, dtype=np.int64)
 
-        front = []
+        n_dim = len(population[0].value)
+        valarr = np.empty((popsize, n_dim))
+        for i, indiv in enumerate(population):
+            valarr[i] = indiv.value
+        n_points = valarr.shape[0]
+
+        is_efficient = np.arange(n_points)
+        next_point_index = 0
+        indexlist = [next_point_index]
+        while next_point_index < len(valarr):
+            nondominated_point_mask = np.any(valarr < valarr[next_point_index], axis=1)
+            nondominated_point_mask[next_point_index] = True
+            is_efficient = is_efficient[nondominated_point_mask]  # remove dominated
+            valarr = valarr[nondominated_point_mask]
+            next_point_index = np.sum(nondominated_point_mask[:next_point_index]) + 1
+            indexlist.append(next_point_index)
+            print("index: ", next_point_index, end="\r")
+
+        front = [population[i] for i in indexlist]
+
+        # front = []
+        # # for i in range(popsize):
+        # #     for j in range(popsize):
+        # for i, j in itertools.product(range(popsize), range(popsize)):
+        #         if j == 0:
+        #             print(f"i, j = {i} ,{j}", end="\r")
+        #         if not population[j].is_feasible():
+        #             continue
+        #         # if i == j:
+        #         #     continue
+        #         #iがjに優越されている -> True
+        #         dom = population[j].dominate(population[i])
+        #         is_dominated[i, j] = (i != j) and dom
+        # print()
+        # #iを優越する個体の数
+        # is_dominated.sum(axis=(1,), out=num_dominated)
+
         # for i in range(popsize):
         #     for j in range(popsize):
         for i, j in itertools.product(range(popsize), range(popsize)):
-                if not population[j].is_feasible():
-                    continue
-                # if i == j:
-                #     continue
-                #iがjに優越されている -> True
-                dom = population[j].dominate(population[i])
-                is_dominated[i,j] = (i != j) and dom
+            if not population[j].is_feasible():
+                continue
+            # if i == j:
+            #     continue
+            # iがjに優越されている -> True
+            dom = population[j].dominate(population[i])
+            is_dominated[i, j] = (i != j) and dom
 
-        #iを優越する個体の数
+        # iを優越する個体の数
         is_dominated.sum(axis=(1,), out=num_dominated)
 
         for i in range(popsize):
             if num_dominated[i] == 0:
                 front.append(population[i])
 
-        # for idx in num_dominated[num_dominated == 0]:
-        #     front.append(population[idx])
+        # # for idx in num_dominated[num_dominated == 0]:
+        # #     front.append(population[idx])
 
         return front
 

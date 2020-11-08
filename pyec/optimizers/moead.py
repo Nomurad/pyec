@@ -1,7 +1,7 @@
 import random
 import copy
 from itertools import chain
-from typing import List
+from typing import List, Tuple, Union, Optional
 import numpy as np
 
 from ..base.indiv import Individual
@@ -81,7 +81,10 @@ class MOEAD(object):
         self.alternation = "normal"
         self.normalize = False
         self.normalizer = None
+        self.normalize_option = None
         self.EP: List = []
+        self.EPappend = self.EP.append
+        self.EPpop = self.EP.pop
         self.n_EPupdate = 0
 
     def __call__(self, index: int, population: Population, eval_func) -> Individual: 
@@ -121,11 +124,16 @@ class MOEAD(object):
         # print(index, "neighbers_index", neighber_index)
         return neighber_index
 
+    def init_normalize(self, is_normalize: bool, option="unhold"):
+        self.normalize = is_normalize
+        self.normalize_option = option
+
     def update_reference(self, indiv: Individual):
 
         if self.normalize is not False: 
             if self.min_or_max[0] == 0: 
-                self.min_or_max = np.array([int(wval/abs(wval)) for wval in indiv.wvalue], dtype=int)
+                eps = 1e-16
+                self.min_or_max = np.array([int(wval/abs(wval + eps)) for wval in indiv.wvalue], dtype=int)
                 self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
                 # self.ref_points[self.ref_points > self.min_or_max] = 1.0
                 # self.ref_points[self.ref_points <= self.min_or_max] = 0.0
@@ -150,7 +158,8 @@ class MOEAD(object):
         # print("len parents", parents)
         # print("id_s", [p.get_id() for p in parents])
         childs = self.mating(parents)
-        child = random.choice(childs)
+        # child = random.choice(childs)
+        child = childs[0]
         idx = 0
         if all(child.genome == childs[idx]):
             idx = 1
@@ -220,9 +229,10 @@ class MOEAD(object):
 
         if len(self.EP) > 2:
             # tmpEP = []
+            # self.EP.sort()
             for i in reversed(range(len(self.EP))):
                 if indiv.dominate(self.EP[i]):
-                    self.EP.pop(i)
+                    self.EPpop(i)
                 elif self.EP[i].dominate(indiv):
                     return
                 # else:
@@ -241,10 +251,11 @@ class MOEAD(object):
             #     # print(i)
             #     if self.EP[i].id == poplist[i]: 
             #         self.EP.pop(i)
-            self.EP.append(indiv)
+
+            self.EPappend(indiv)
 
         else:
-            self.EP.append(indiv)
+            self.EPappend(indiv)
 
     def calc_fitness(self, population):
         """population内全ての個体の適応度を計算
@@ -253,7 +264,9 @@ class MOEAD(object):
             self.update_reference(indiv)
 
         if self.normalize is True: 
-            values = list(map(self._get_indiv_value, population))
+            # subpop = [indiv for indiv in population if indiv.is_feasible()]
+            subpop = population
+            values = list(map(self._get_indiv_value, subpop))
             values = np.array(values)
             # print(values.shape)
             # upper = [np.max(values[: ,0]), np.max(values[: ,1])]
@@ -263,7 +276,7 @@ class MOEAD(object):
             print("upper/lower: ", (upper), (lower))
             # input()
             if self.normalizer is None: 
-                self.normalizer = Normalizer(upper, lower)
+                self.normalizer = Normalizer(upper, lower, self.normalize_option)
             else:
                 self.normalizer.ref_update(upper, lower)
 
@@ -394,8 +407,8 @@ class C_MOEAD(MOEAD):
         """
 
         cv = indiv.constraint_violation
-        if hasattr(cv, "__len__"):
-            cv = sum(cv)
+        if hasattr(cv, "__iter__"):
+            cv = sum([max(_cv, 0) for _cv in cv])
 
         if cv <= 0.0: 
             return True
@@ -421,7 +434,8 @@ class C_MOEAD(MOEAD):
 
         parents = self.selector(subpop)
         childs = self.mating(parents)
-        child = random.choice(childs)
+        # child = random.choice(childs)
+        child = childs[0]
         res, _ = child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
 
         self.update_reference(child)
@@ -540,7 +554,9 @@ class C_MOEAD_DMA(C_MOEAD):
 
         child = self._SBXmating(parents, eval_func, index)
 
-        res = self.update_archives_and_alternate(child, index, subpop, population)
+        nr = len(subpop)
+        # nr = 2
+        res = self.update_archives_and_alternate(child, index, subpop, population, nr=nr)
         # if res.id != parents[0].id: 
         #     # print(res.constraint_violation)
         #     population[index] = res
@@ -552,14 +568,15 @@ class C_MOEAD_DMA(C_MOEAD):
 
     def _SBXmating(self, parents, eval_func, index) -> Individual:
         childs = self.mating(parents)
-        idx = random.randint(0, 1)
-        child = childs[idx]
-        # child: Individual = random.choice(childs)
-        if idx == 0: 
-            idx = 1
-        else:
-            idx = 0
-        self.mating.pool.pop(childs[idx].get_id())
+        child = childs[0]
+        # idx = random.randint(0, 1)
+        # child = childs[idx]
+        # # child: Individual = random.choice(childs)
+        # if idx == 0: 
+        #     idx = 1
+        # else:
+        #     idx = 0
+        # self.mating.pool.pop(childs[idx].get_id())
 
         child.evaluate(eval_func, child.get_design_variable(), self.n_constraint)
 
@@ -578,7 +595,9 @@ class C_MOEAD_DMA(C_MOEAD):
                                       child: Individual,
                                       index: int,
                                       subpop: List[Individual],
-                                      population: Population):
+                                      population: Population,
+                                      nr: Optional[int] = None
+                                      ):
         """ update archives & solution alternating.
 
         """
@@ -590,8 +609,11 @@ class C_MOEAD_DMA(C_MOEAD):
 
         c_fit = child.fitness.fitness
         xj_fits = [0]*len(subpop)
-        # for j, xj in enumerate(subpop):
-        nr = int(len(subpop)/2)
+        wvec = self.weight_vec[index]
+
+        if nr is None:
+            nr = 2
+
         for j, xj in enumerate(subpop):
             if j > nr: 
                 break
@@ -602,7 +624,7 @@ class C_MOEAD_DMA(C_MOEAD):
                 nei_idx = j
 
             xj = population[nei_idx]
-            xj_fits[j] = self.scalar(xj, self.weight_vec[index], self.ref_points)
+            xj_fits[j] = self.scalar(xj, wvec, self.ref_points)
 
             # x^j is feasible & y is feasible.
             if xj.is_feasible() and child.is_feasible():
@@ -656,12 +678,13 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         super().__init__(
             popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
         )
-        print("name is ", super(mros[0], self).name)
+        # print("name is ", super(mros[0], self).name)
         print("cross_rate_dm", self.cross_rate_dm)
 
         # DE settings
         self.CR = CR   # 交叉率
         self.scaling_F = F    # スケーリングファクタ ->( 0<=F<=1 )
+        self.scaling_sigma = kwargs.get("sigma")
         self.pm = self.mating._mutation.rate
         # self.pm = 1.0/len(self.ref_points)
         self.eta = self.mating._mutation.eta
@@ -671,7 +694,8 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
                 self.CR,
                 self.scaling_F,
                 self.pm,
-                self.eta
+                self.eta,
+                self.scaling_sigma
             )
 
         # print(self.__dict__)
@@ -679,50 +703,62 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
 
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
-        archive_size = self.archives.get_archive_size(index)
-        # rand = random.uniform(0.0, 1.0)
-        # if rand >= self.offspring_delta:
-        #     # subpop = [population[i] for i in range(len(population))]
-        #     subpop = list(population)
-        #     subpop2 = subpop.copy()
-        #     for arc in self.archives:
-        #         subpop2 = subpop2 + arc
-        # else:
-        #     subpop = [population[i] for i in self.neighbers[index]]
-        subpop = [population[i] for i in self.neighbers[index]]
-        subpop2 = subpop + self.archives[index]
+        # subpop is neighboring individuals
+        parents, subpop = self._parent_selector(population, index=index, n_parent=3)
 
-        # parents = [population[index]]
-        parents = [subpop[random.randint(1, len(subpop)-1)]]
-        if(population[index].is_feasible()) and (archive_size > 0) and \
-          (random.random() <= self.cross_rate_dm):
-            pb_idx = random.randint(0, archive_size-1)
-            parents.append(self.archives[index][pb_idx])
-        else:
-            parents = random.sample(subpop2[1:], 2)
-
-        # if random.random() <= self.cross_rate_dm: 
-        #     # parents = np.random.choice(subpop2, 2, replace=False)
-        #     parents = random.sample(subpop2, 2)
-        # else:
-        #     parents = random.sample(subpop, 2)
-
-        # for i, indiv in enumerate(subpop):
-        #     fit_value = self.scalar(indiv, self.weight_vec[index], self.ref_points)
-        #     subpop[i].set_fitness(fit_value)
-        parents = [population[index]] + parents
         child = self._DEmating(parents, eval_func, index)
 
-        # print(population)
-        # nr = int(len(subpop)/2)
-        # nr = 2
-        # res = self._alternate(child, nr, index, population, subpop)
-        res = self.update_archives_and_alternate(child, index, subpop, population)
+        nr = 2
+        res = self.update_archives_and_alternate(child, index, subpop, population, nr=nr)
         if res.get_id() == child.get_id():
             self.update_EP(res)
             self.n_EPupdate += 1
 
         return res
+
+    def _parent_selector(self, 
+                         population: Population, 
+                         index: int,
+                         n_parent: int = 3,
+                         DEselection_mode="WR") -> Tuple[List[Individual], List[Individual]]:
+
+        if random.uniform(0.0, 1.0) < self.offspring_delta:
+            subpop = [population[i] for i in self.neighbers[index]]
+        else:
+            subpop = population[:]
+
+        archive_size = self.archives.get_archive_size(index)
+        # parents = [subpop[random.randint(1, len(subpop)-1)]]
+
+        if(population[index].is_feasible()) and (archive_size > 0) and \
+          (random.random() <= self.cross_rate_dm):
+            parents = [population[index]]
+            parents.append(subpop[random.randint(1, len(subpop)-1)])
+            pb_idx = random.randint(0, archive_size-1)
+            parents.append(self.archives[index][pb_idx])
+
+        else:
+            subpop2 = subpop + self.archives[index]
+            if DEselection_mode == "WOR":
+                # parents = random.sample(subpop2[1:], 2)
+                parents = self._WORselection(population[index], subpop2, n_parent)
+            elif DEselection_mode == "WR":
+                parents = self._WRselection(population[index], subpop2, n_parent)
+            else:
+                raise MOEADError("Invalid parent selection method.")
+
+        # parents = [population[index]] + parents
+        return parents, subpop
+
+    def _WORselection(self, target_indiv, poplist, n_parent):
+        # randidx = np.random.randint(0, len(poplist))
+        random.shuffle(poplist)
+        parents = [target_indiv] + poplist[0:n_parent-1]
+        return parents
+
+    def _WRselection(self, target_indiv, poplist, n_parent):
+        parents = [target_indiv] + random.choices(poplist, k=n_parent-1)
+        return parents
 
     def _DEmating(self, parents, eval_func, index) -> Individual: 
         p1 = parents[0].get_genome()
@@ -759,14 +795,14 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
         super().__init__(
             popsize, nobj, selection, mating, pool,
             n_constraint, ksize, alpha, CR, F, eta, **kwargs
-            )
+        )
 
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
 
         archive_size = self.archives.get_archive_size(index)
 
         subpop = [population[i] for i in self.neighbers[index]]
-        subpop2 = subpop + self.archives[index]
+        # subpop2 = subpop + self.archives[index]
 
         if(population[index].is_feasible()) and (archive_size > 0) and \
           (random.random() <= self.cross_rate_dm):
@@ -778,10 +814,11 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
 
         else:
             # neighberhood mating
-            if random.uniform(0.0, 1.0) < self.offspring_delta: 
-                parents = [population[index]] + random.sample(subpop[1:], 2)
-            else:
-                parents = random.sample((population[: index]+population[index+1:]), 3) 
+            parents, _ = self._parent_selector(population, index, n_parent=3)
+            # if random.uniform(0.0, 1.0) < self.offspring_delta: 
+            #     parents = [population[index]] + random.sample(subpop[1:], 2)
+            # else:
+            #     parents = random.sample((population[:index]+population[index+1:]), 3) 
             child = self._DEmating(parents, eval_func, index)
 
         res = self.update_archives_and_alternate(child, index, subpop, population)
@@ -790,3 +827,34 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
             self.n_EPupdate += 1
 
         return res
+
+    def _parent_selector(self, 
+                         population: Population,
+                         index: int,
+                         n_parent: int = 3,
+                         DEselection_mode="WOR") -> Tuple[List[Individual], List[Individual]]:
+
+        if random.uniform(0.0, 1.0) < self.offspring_delta:
+            subpop = [population[i] for i in self.neighbers[index]]
+        else:
+            subpop = population[:]
+
+        # WOR selection
+        if DEselection_mode == "WOR":
+            subpop = subpop[1:]
+            random.shuffle(subpop)        
+            parents = [population[index]] + subpop[0:n_parent]
+
+        # WR selection
+        elif DEselection_mode == "WR":
+            parents = [population[index]] + random.choices(subpop, k=n_parent-1)
+
+        # WPR selection
+        elif DEselection_mode == "WPR":
+            random.shuffle(subpop)        
+            parents = [population[index]] + subpop[:n_parent]
+
+        else:
+            raise MOEADError("Invalid parent selection method")
+
+        return parents, subpop

@@ -66,6 +66,7 @@ def problem_set(prob:str):
         weights = [MINIMIZE]*n_obj
     print("problem is ", problem)
 
+
 problem_set("mCDTLZ")
 n_obj = problem.n_obj
 n_const = problem.n_const
@@ -150,7 +151,8 @@ data = np.array(data)
 # plt.show()
 
 st_time = time.time()
-solver.run(max_epoch, savepath="result")
+# solver.run(max_epoch, savepath="result")
+solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
 print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 # print(solver.optimizer.mating.__repr__())
@@ -239,6 +241,7 @@ print(solver.optimizer.name)
 #         dom += (indiv.dominate(other))
 #     if dom != 0:
 #         print("dominate:",i, dom)
+
 plt.colorbar(sc)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.0])

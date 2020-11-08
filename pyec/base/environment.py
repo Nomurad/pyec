@@ -49,6 +49,9 @@ class Pool(object):
         self.current_id -= 1
         return self.data.pop(index)
 
+    def clear_indivpool(self):
+        self.data = [] 
+
 
 class Environment(object):
     """進化計算のパラメータなどを保存するクラス
@@ -77,6 +80,7 @@ class Environment(object):
             print("oldpop dict", old_pop.__dict__)
             self.nowpop = old_pop
         self.history: List[Any] = []  # 過去世代のpopulationのリスト
+        self.EP_history: List[Any] = []
         self.pool = Pool()
         self.func = eval_func
         self.optimizer = optimizer
@@ -95,7 +99,7 @@ class Environment(object):
     def alternate(self, population=None, indivs=None):
         """世代交代時に呼び出し
         """
-        self.history.append(self.nowpop)
+        self.history.append(tuple(self.nowpop))
 
         if population is not None:
             self.nowpop = population
@@ -149,11 +153,13 @@ class Creator(object):
 class Normalizer(object):
     """評価値のnormalizer
     """
-    def __init__(self, upper: list, lower: list):
+    def __init__(self, upper: list, lower: list, option="unhold"):
         if len(upper) != len(lower):
             raise Exception("UpperList size != LowerList size")
         self.upper = np.array(upper)
         self.lower = np.array(lower)
+        self.option = option
+        self.eps = 1e-16
 
     def _modificator(self, coeff):
         if self.lower < 0:
@@ -163,11 +169,14 @@ class Normalizer(object):
 
     def normalizing(self, indiv: Individual):
         val = np.array(indiv.value)
-        res = (val - self.lower)/(self.upper - self.lower)
+        res = (val - self.lower)/(self.upper - self.lower + self.eps)
         indiv.wvalue = list(res) 
         return res
 
     def ref_update(self, upper, lower):
+        if self.option != "unhold":
+            return
+
         upper = np.array(upper)
         lower = np.array(lower)
 

@@ -1,7 +1,9 @@
 import numpy as np
 import pickle
+import dill
 import copy
 import os 
+import time
 
 from .base.indiv import Individual
 from .base.population import Population
@@ -97,7 +99,7 @@ class Solver(object):
         # self.n_obj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("n_obj:", self.n_obj)
 
-        print("set optimizer:", optimizer.name)
+        # print("set optimizer:", optimizer.name)
         if optimizer.name == "moead":
             if ksize == 0:
                 ksize = 3
@@ -151,7 +153,8 @@ class Solver(object):
                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
                                        **kwargs)
 
-        self.optimizer.normalize = normalize
+        # self.optimizer.normalize = normalize
+        self.optimizer.init_normalize(normalize)
 
         # When running MOEA/D, updated popsize, so modify self.env.popsize.
         self.env.popsize = self.optimizer.popsize 
@@ -224,6 +227,8 @@ class Solver(object):
                 self.result(save=True, fname=f"opt_result_epoch{self.n_epoch}.pkl")
                 self.result(delete=True, fname=f"opt_result_epoch{self.n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
+            EP_id = [p.id for p in self.optimizer.EP]
+            self.env.EP_history.append(EP_id)
             print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
             self.optimizer.n_EPupdate = 0
             print("ref point:", self.optimizer.ref_points)
@@ -258,19 +263,41 @@ class Solver(object):
 
         if save is True:
             with open(fname, "wb") as f:
-                env = copy.copy(self.env)
+                # env = copy.copy(self.env)
+                env = self.env
                 env.func = "problem"
                 savedata = {
                     "result": result,
                     "env": env, 
                     "optimizer": self.optimizer}
-                pickle.dump(savedata, f)
+                # pickle.dump(savedata, f, protocol=4)
+                dill.dump(savedata, f, protocol=4)
 
         if delete is True:
             if os.path.exists(fname):
                 os.remove(fname)
 
         return result
+
+    def save_resultobj(self):
+        sttime = time.time()
+        self._serializer("indiv_pool.pkl", self.env.pool)
+        print(f"pool savetime: {time.time() - sttime}")
+        self._serializer("indiv_history.pkl", self.env.history)
+        print(f"history savetime: {time.time() - sttime}")
+        self.optimizer.mating.clear_pool()
+        self._serializer("optimizer.pkl", self.optimizer)
+        print(f"optimizer savetime: {time.time() - sttime}")
+
+        EP_id = [p.id for p in self.optimizer.EP]
+        EPhist = self.env.EP_history
+        EPdata = {"EP_id": EP_id, "EP_history": EPhist}
+        self._serializer("EP_indivID.pkl", EPdata)
+        print(f"save finish!! : {time.time() - sttime}")
+
+    def _serializer(self, fname, obj):
+        with open(fname, "wb") as f:
+            pickle.dump(obj, f, protocol=4)
 
     def save_current_generation(self, path):
         if path is None:
@@ -301,5 +328,7 @@ class Solver(object):
             )
 
         with open(fname, "wb") as f:
-            pickle.dump(savedata, f)
+            # pickle.dump(savedata, f)
+            dill.dump(savedata, f)
+
 

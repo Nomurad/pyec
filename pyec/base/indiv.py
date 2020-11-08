@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Union, List, Optional
 import numpy as np
 
 
@@ -26,7 +26,7 @@ class Individual(object):
 
     def __init__(self, genome: np.ndarray, parents=None):
         self._id: int = -1
-        self.parent_id = []
+        self.parent_id: List[int] = []
         self.bounds = (0, 1)  # ((lower), (upper))
         self.weight = None
         self.n_obj = 1
@@ -34,7 +34,7 @@ class Individual(object):
         self.genome = genome  # 遺伝子
         self.value = None  # 評価値
         self.wvalue: Optional[list] = None  # 重みづけ評価値
-        self.constraint_violation: Optional[list] = None  # 制約違反量(負の値=制約違反なし)
+        self.constraint_violation: Union[List, int, None] = None  # 制約違反量(負の値=制約違反なし)
         self.feasible_rank = None
         self.fitness = Fitness()
 
@@ -57,7 +57,7 @@ class Individual(object):
         for parent in parents:
             self.parent_id.append(parent.get_id())
             # print("parent id", parent.get_id())
-        
+
     def set_weight(self, weight):
         self.weight = np.array(weight)
         # self.wvalue = self.weight*self.value
@@ -120,6 +120,9 @@ class Individual(object):
         """ if all constraint violation value is under 0.0 => True
             else => False
         """
+        if self.constraint_violation is None:
+            return True
+
         if hasattr(self.constraint_violation, "__len__"):
             cv_s = np.array(self.constraint_violation)
             if all(cv_s <= 0.0):

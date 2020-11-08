@@ -51,7 +51,7 @@ dvsize = 3
 args = {
     "popsize":50,
     "dv_size":dvsize,
-    "nobj":2,
+    "n_obj":2,
     "selector":Selector(TournamentSelectionStrict),
     "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
     "optimizer":optimizer,

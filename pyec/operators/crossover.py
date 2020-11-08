@@ -13,6 +13,7 @@ class AbstractCrossover(metaclass=ABCMeta):
     def __call__(self, genomes):
         pass
 
+
 class BlendCrossover(AbstractCrossover):
     """BLX-alpha
     """
@@ -97,18 +98,24 @@ class SimulatedBinaryCrossover(AbstractCrossover):
         else:
             return y1, y2
 
+
 class DifferrentialEvolutonary_Crossover(object):
     """ Differential Evolution(DE) operator
         This operator contains Mutation operator.
     """
 
-    def __init__(self, CR=1.0, F=0.5, pm=0.1, eta=20):
+    def __init__(self, CR=1.0, F=0.5, pm=0.1, eta=20, sigma=None):
         self.CR = CR 
-        self.scaling_F = F
+        self.set_scaling_F(F, sigma)
+        # self.scaling_F = F
+        # if type(F) is float:
+        #     self.scaling_F = lambda x: F 
+        # else:
+        #     print("setting F by lambda")
         self.pm = pm
         self.eta = eta
 
-        self._dv_modifier_initializer(0)
+        self._dv_modifier_initializer(1)
 
     def __call__(self, genomes):
         """ This method needs 3 genomes.
@@ -121,16 +128,21 @@ class DifferrentialEvolutonary_Crossover(object):
         except:
             raise CrossoverError("you should set 3 parents")
 
-        vi_genome = p1 + self.scaling_F*(p2 - p3)
-        num_dv = len(vi_genome)
+        num_dv = len(p1)
+        # Fs = [self.scaling_F() for _ in range(num_dv))]
+        # vi_genome = p1 + Fs*(p2 - p3)
+        Fs = self.scaling_F()
+        # print("scaling F = ", Fs)
+        vi_genome = p1 + Fs*(p2 - p3)
+        j_rand = random.randint(0, num_dv)
 
         child_dv = np.zeros(num_dv)
         for i in range(num_dv):
-            if random.uniform(0.0, 1.0) < self.CR:
+            if random.uniform(0.0, 1.0) < self.CR or i == j_rand:
                 child_dv[i] = vi_genome[i]
             else:
                 child_dv[i] = p1[i]
-        
+
         eta = self.eta
         rand = random.uniform(0.0, 1.0)
         if rand < 0.5:
@@ -138,17 +150,46 @@ class DifferrentialEvolutonary_Crossover(object):
         else:
             delta_k = 1 - (2 - 2*rand)**(1/(eta+1))
 
+        a_k = 0.0
+        b_k = 1.0
         for i in range(num_dv):
             if random.uniform(0.0, 1.0) < self.pm:
-                a_k = 0.0
-                b_k = 1.0
                 child_dv[i] = child_dv[i] + (delta_k*(b_k - a_k))
 
-        for i in range(num_dv):
-            if child_dv[i] < 0.0 or child_dv[i] > 1.0:
-                child_dv[i] = random.uniform(0.0, 1.0)
+        self.modifier(child_dv)
 
         return child_dv
+
+    def set_scaling_F(self, F, sigma=None):
+        self._scaling_F = F
+        self._scaling_sigma = sigma
+        if sigma is None:
+            self.scaling_F = self._constant_scaling_F
+        elif sigma is not None:
+            self.scaling_F = self._gauss_scaling_F
+        else:
+            raise CrossoverError("Invalid F.")
+        print("scaling F is ", (self.scaling_F.__doc__))
+        print(f"F, sigma = {self._scaling_F}, {self._scaling_sigma}")
+
+    def _gauss_scaling_F(self):
+        """ gaussian scaling factor
+        """
+        res = random.gauss(self._scaling_F, self._scaling_sigma)
+        return res
+
+    def _gauss_scaling_F_list(self):
+        """ gaussian scaling factor
+        """
+        res = random.gauss(self._scaling_F, self._scaling_sigma)
+        return res
+
+    def _constant_scaling_F(self, optional=None):
+        """ const scaling factor
+        """
+        if optional is not None:
+            return self._scaling_F(optional)
+        return self._scaling_F
 
     def _dv_modifier_initializer(self, mode):
         """ mode  | func
@@ -162,7 +203,7 @@ class DifferrentialEvolutonary_Crossover(object):
         elif mode == 1:
             self.modifier = self._modifier_minmax
         else:
-            raise CrossoverError("mode number are 0 and 1.")
+            raise CrossoverError("mode number are 0, 1.")
 
     def _modifier_minmax(self, dv):
         for i in range(len(dv)):
@@ -173,12 +214,13 @@ class DifferrentialEvolutonary_Crossover(object):
             if dv[i] > 1.0:
                 dv[i] = 1.0
         return dv
-    
+
     def _modifier_rand(self, dv):
         for i in range(len(dv)):
             if dv[i] < 0.0 or dv[i] > 1.0:
                 dv[i] = random.uniform(0.0, 1.0)
         return dv
+
 
 if __name__ == "__main__":
     g_size = 3
@@ -188,7 +230,7 @@ if __name__ == "__main__":
     cross = SimulatedBinaryCrossover(rate=1.0, eta=20)
     # cross = BlendCrossover(rate=1.0, alpha=0.5)
 
-    out1, out2 = cross([genome1,genome2])
+    out1, out2 = cross([genome1, genome2])
 
     print(genome1, genome2)
     print(out1, out2)
