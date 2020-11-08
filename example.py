@@ -2,9 +2,9 @@ from pyec.base.indiv import Individual, Fitness
 from pyec.base.population import Population
 from pyec.base.environment import Environment
 
-from pyec.operators.crossover import SimulatedBinaryCrossover
+from pyec.operators.crossover import SimulatedBinaryCrossover as SBX
 from pyec.operators.selection import Selector, TournamentSelectionStrict
-from pyec.operators.mutation import PolynomialMutation
+from pyec.operators.mutation import PolynomialMutation as PM
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
@@ -35,8 +35,9 @@ class Problem():
         return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
 # problem = Problem()
-problem = zdt1
+problem = zdt3
 optimizer = MOEAD_DE
+# optimizer = MOEAD
 n_const = 0
 # problem = Knapsack(n_const=n_const ,phi=0.5)
 # optimizer = C_MOEAD
@@ -49,11 +50,11 @@ dvsize = 3
 # n_const = 2
 
 args = {
-    "popsize":50,
+    "popsize":100,
     "dv_size":dvsize,
     "n_obj":2,
     "selector":Selector(TournamentSelectionStrict),
-    "mating":[SimulatedBinaryCrossover(), PolynomialMutation()],
+    "mating":[SBX(), PM()],
     "optimizer":optimizer,
     "eval_func":problem,
     "ksize":10,
