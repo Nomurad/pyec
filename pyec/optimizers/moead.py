@@ -17,6 +17,7 @@ from ..operators.mating import MatingIterator, Mating
 from ..operators.sorting import NonDominatedSort
 from ..operators.scalaring import *
 
+from . import Optimizer, OptimizerError
 ################################################################################
 
 
@@ -56,7 +57,7 @@ class MOEADError(Exception):
     pass
 
 
-class MOEAD(object):
+class MOEAD(Optimizer):
     """MOEA/D
 
     """
@@ -82,6 +83,7 @@ class MOEAD(object):
         self.normalize = False
         self.normalizer = None
         self.normalize_option = None
+        self.sort = NonDominatedSort()
         self.EP: List = []
         self.EPappend = self.EP.append
         self.EPpop = self.EP.pop
@@ -145,6 +147,13 @@ class MOEAD(object):
             self.ref_points = np.min([self.ref_points, wvals], axis=0)
         # print("update ref point = ", self.ref_point)
 
+    def get_new_generation(self, population: Population, eval_func) -> Population:
+        for i, indiv in enumerate(population):
+            child = self.get_offspring(i, population, eval_func)
+
+        self.calc_fitness(population)
+        return population
+
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
         # print(self.neighbers[index])
         subpop = [population[i] for i in self.neighbers[index]]
@@ -176,14 +185,15 @@ class MOEAD(object):
         # population[index] = res
 
         nr = int(len(subpop))
+        # nr = 2
         res = self._alternate(child, nr, index, population, subpop)
 
         # if res == None: 
         #     return population[index]
 
-        # if res.get_id() == child.get_id():
-        #     self.update_EP(res)
-        #     self.n_EPupdate += 1
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+            self.n_EPupdate += 1
 
         return res
 
@@ -221,6 +231,11 @@ class MOEAD(object):
         # print(res.fitness.fitness, " | ", child.fitness.fitness)
 
         return res
+
+    def update_allEP(self, population):
+        tmppop = self.EP + list(population)
+        front = self.sort.output_pareto([indiv for indiv in tmppop if indiv.is_feasible])
+        self.EP = front
 
     def update_EP(self, indiv: Individual):
         # print("EP append")
@@ -381,9 +396,9 @@ class MOEAD_DE(MOEAD):
         # if res == None: 
         #     return population[index]
 
-        # if res.get_id() == child.get_id():
-        #     self.update_EP(res)
-        #     self.n_EPupdate += 1
+        if res.get_id() == child.get_id():
+            self.update_EP(res)
+            self.n_EPupdate += 1
 
         return res
 

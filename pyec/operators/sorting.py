@@ -74,17 +74,15 @@ class NonDominatedSort(object):
 
         is_efficient = np.arange(n_points)
         next_point_index = 0
-        indexlist = [next_point_index]
         while next_point_index < len(valarr):
             nondominated_point_mask = np.any(valarr < valarr[next_point_index], axis=1)
             nondominated_point_mask[next_point_index] = True
             is_efficient = is_efficient[nondominated_point_mask]  # remove dominated
             valarr = valarr[nondominated_point_mask]
             next_point_index = np.sum(nondominated_point_mask[:next_point_index]) + 1
-            indexlist.append(next_point_index)
             print("index: ", next_point_index, end="\r")
 
-        front = [population[i] for i in indexlist]
+        front = [population[i] for i in is_efficient]
 
         # front = []
         # # for i in range(popsize):

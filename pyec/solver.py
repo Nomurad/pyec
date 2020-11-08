@@ -13,6 +13,7 @@ from .operators.selection import Selector, TournamentSelection, TournamentSelect
 from .operators.mutation import PolynomialMutation as PM
 from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
+from .operators.sorting import NonDominatedSort
 
 from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
 
@@ -64,6 +65,7 @@ class Solver(object):
         self.n_epoch = 0
         self.restart = 0
         self.env: Environment
+        self.sort = NonDominatedSort()
 
         if old_env is not None:
             print("loading environment data...")
@@ -242,13 +244,19 @@ class Solver(object):
         nowpop = copy.deepcopy(self.env.nowpop)
         # nowpop = self.env.nowpop
 
-        for i in range(len(self.env.nowpop)):
-            child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
-            if self.env.n_constraint > 0:
-                # vioration = child.constraint_violation
-                if child.is_feasible():
-                    self.env.feasible_indivs_id.append(child.id)
-                    # print("feasible append")
+        self.optimizer.get_new_generation(nowpop, self.eval_func)
+        if self.env.n_constraint > 0:
+            for indiv in nowpop:
+                if indiv.is_feasible():
+                    self.env.feasible_indivs_id.append(indiv.id)
+        # self.optimizer.update_allEP(nowpop)
+        # for i in range(len(self.env.nowpop)):
+        #     child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
+        #     if self.env.n_constraint > 0:
+        #         # vioration = child.constraint_violation
+        #         if child.is_feasible():
+        #             self.env.feasible_indivs_id.append(child.id)
+        #             # print("feasible append")
 
         next_pop = nowpop
         self.optimizer.calc_fitness(next_pop)
