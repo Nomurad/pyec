@@ -15,8 +15,9 @@ from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
 from .operators.sorting import NonDominatedSort
 
+from .optimizers import Optimizer
 from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
-
+from .optimizers.nsga import NSGA2
 
 class Solver(object):
     """進化計算ソルバー    
@@ -27,7 +28,7 @@ class Solver(object):
                  n_obj: int,  # 目的関数の数
                  selector,
                  mating,
-                 optimizer,
+                 optimizer: Optimizer,
                  eval_func, 
                  ksize: int = 0,
                  alpha: int = 0,
@@ -154,6 +155,9 @@ class Solver(object):
                                        self.selector, self.mating,
                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
                                        **kwargs)
+        elif optimizer is NSGA2:
+            self.optimizer = optimizer(self.env.popsize, self.n_obj,
+                                       self.selector, self.mating)
 
         # self.optimizer.normalize = normalize
         self.optimizer.init_normalize(normalize)
@@ -183,16 +187,19 @@ class Solver(object):
                 # print(type(indiv))
                 indiv.set_boundary(self.env.dv_bounds)
                 indiv.set_weight(self.env.weight)
+                self.env.evaluate(indiv)
 
                 self.env.nowpop.append(indiv)
 
             for indiv in self.env.nowpop:
                 # 目的関数値を計算
                 # print("func:", self.eval_func.__dict__)
-                res = self.env.evaluate(indiv)
+                # self.optimizer.get_offspring(self.env.nowpop, self.eval_func)
+                # res = self.env.evaluate(indiv)
                 if self.env.n_constraint > 0:
-                    if indiv.is_feasible():
-                        self.env.feasible_indivs_id.append(indiv.id)
+                    for indiv in self.env.nowpop:
+                        if indiv.is_feasible():
+                            self.env.feasible_indivs_id.append(indiv.id)
             # print("res", res)
 
             # 適応度計算
@@ -229,11 +236,13 @@ class Solver(object):
                 self.result(save=True, fname=f"opt_result_epoch{self.n_epoch}.pkl")
                 self.result(delete=True, fname=f"opt_result_epoch{self.n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
-            EP_id = [p.id for p in self.optimizer.EP]
-            self.env.EP_history.append(EP_id)
-            print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
-            self.optimizer.n_EPupdate = 0
-            print("ref point:", self.optimizer.ref_points)
+            if hasattr(self.optimizer, "EP"):
+                EP_id = [p.id for p in self.optimizer.EP]
+                self.env.EP_history.append(EP_id)
+                print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
+                self.optimizer.n_EPupdate = 0
+            if hasattr(self.optimizer, "ref_points"):
+                print("ref point:", self.optimizer.ref_points)
 
             if savepath is not None:
                 self.save_current_generation(savepath)
