@@ -99,7 +99,7 @@ class Solver(object):
         # self.n_obj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("n_obj:", self.n_obj)
 
-        print("set optimizer:", optimizer.name)
+        # print("set optimizer:", optimizer.name)
         if optimizer.name == "moead":
             if ksize == 0:
                 ksize = 3

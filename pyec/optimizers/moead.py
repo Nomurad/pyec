@@ -757,7 +757,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         return parents
 
     def _WRselection(self, target_indiv, poplist, n_parent):
-        parents = target_indiv + random.choices(poplist, k=n_parent-1)
+        parents = [target_indiv] + random.choices(poplist, k=n_parent-1)
         return parents
 
     def _DEmating(self, parents, eval_func, index) -> Individual: 
@@ -814,7 +814,7 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
 
         else:
             # neighberhood mating
-            parents, subpop = self._parent_selector(population, index, n_parent=3)
+            parents, _ = self._parent_selector(population, index, n_parent=3)
             # if random.uniform(0.0, 1.0) < self.offspring_delta: 
             #     parents = [population[index]] + random.sample(subpop[1:], 2)
             # else:
@@ -832,7 +832,7 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
                          population: Population,
                          index: int,
                          n_parent: int = 3,
-                         DEselection_mode="WR") -> Tuple[List[Individual], List[Individual]]:
+                         DEselection_mode="WOR") -> Tuple[List[Individual], List[Individual]]:
 
         if random.uniform(0.0, 1.0) < self.offspring_delta:
             subpop = [population[i] for i in self.neighbers[index]]
@@ -841,12 +841,18 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
 
         # WOR selection
         if DEselection_mode == "WOR":
+            subpop = subpop[1:]
             random.shuffle(subpop)        
-            parents = [population[index]] + subpop[1:n_parent]
+            parents = [population[index]] + subpop[0:n_parent]
 
         # WR selection
         elif DEselection_mode == "WR":
             parents = [population[index]] + random.choices(subpop, k=n_parent-1)
+
+        # WPR selection
+        elif DEselection_mode == "WPR":
+            random.shuffle(subpop)        
+            parents = [population[index]] + subpop[:n_parent]
 
         else:
             raise MOEADError("Invalid parent selection method")
