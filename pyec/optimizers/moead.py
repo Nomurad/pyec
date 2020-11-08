@@ -21,12 +21,12 @@ from . import Optimizer, OptimizerError
 ################################################################################
 
 
-def weight_vector_generator(nobj, divisions, coeff=1):
+def weight_vector_generator(n_obj, divisions, coeff=1):
 
     if coeff: 
         divisions = divisions*coeff
 
-    # if nobj == 2: 
+    # if n_obj == 2: 
     #     weights = [[1,0],[0,1]]
     #     weights.extend([(i/(divisions-1.0), 1.0-i/(divisions-1.0)) 
     #                                     for i in range(1, divisions-1)])
@@ -35,7 +35,7 @@ def weight_vector_generator(nobj, divisions, coeff=1):
 
     def weight_recursive(weight_vectors, weight, left, total, idx=0):
 
-        if idx == nobj-1: 
+        if idx == n_obj-1: 
             weight[idx] = float(left)/float(total)
             weight_vectors.append(copy.copy(weight))
             # return weight_vectors
@@ -44,7 +44,7 @@ def weight_vector_generator(nobj, divisions, coeff=1):
                 weight[idx] = float(i)/float(total)
                 weight_recursive(weight_vectors, weight, left-i, total, idx+1)
 
-    weight_recursive(weight_vectors, [0.0]*nobj, divisions, divisions)
+    weight_recursive(weight_vectors, [0.0]*n_obj, divisions, divisions)
 
     weight_vectors = np.array(weight_vectors)
     # np.savetxt("temp.txt", weight_vectors, fmt='%.2f', delimiter='\t')
@@ -63,14 +63,15 @@ class MOEAD(Optimizer):
     """
     name = "moead"
 
-    def __init__(self, popsize: int, nobj: int,
+    def __init__(self, popsize: int, n_obj: int,
                  selection: Selector, mating: Mating, ksize=3):
+        super().__init__(popsize, n_obj)
         self.division = popsize
-        self.popsize = popsize
-        self.nobj = nobj
+        # self.popsize = popsize
+        # self.n_obj = n_obj
         self.ksize = ksize
         self.ref_points: List = []
-        self.min_or_max = np.zeros(nobj, dtype=int)
+        self.min_or_max = np.zeros(n_obj, dtype=int)
         self.selector = selection
         self.mating = mating
         self.sorting = NonDominatedSort()
@@ -94,13 +95,13 @@ class MOEAD(Optimizer):
         return child
 
     def init_weight(self):
-        self.weight_vec = weight_vector_generator(self.nobj, self.popsize-1)
+        self.weight_vec = weight_vector_generator(self.n_obj, self.popsize-1)
         self.popsize = len(self.weight_vec)
         print(f"popsize update -> {self.popsize}")
         # print([np.linalg.norm(n) for n in self.weight_vec])
 
         self.neighbers = np.array([self.get_neighber(i) for i in range(self.popsize)])
-        self.ref_points = np.full(self.nobj, 'inf', dtype=np.float64)
+        self.ref_points = np.full(self.n_obj, 'inf', dtype=np.float64)
 
         # print("weight vector shape: ", self.weight_vec.shape)
         # print("ref point: ", self.ref_points.shape)
@@ -315,11 +316,11 @@ class MOEAD(Optimizer):
 class MOEAD_DE(MOEAD):
     name = "moead_de"
 
-    def __init__(self, popsize: int, nobj: int,
+    def __init__(self, popsize: int, n_obj: int,
                  selection: Selector, mating: Mating, ksize=3,
                  CR=0.9, F=0.7, eta=20
                  ):
-        super().__init__(popsize, nobj, selection, mating, ksize=ksize)
+        super().__init__(popsize, n_obj, selection, mating, ksize=ksize)
 
         self.pool = mating.pool
         self.CR = CR   # 交叉率
@@ -406,9 +407,9 @@ class MOEAD_DE(MOEAD):
 class C_MOEAD(MOEAD):
     name = "c_moead"
 
-    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+    def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
                  pool: Pool, n_constraint: int, ksize=3):
-        super().__init__(popsize, nobj, selection, mating, ksize=ksize)
+        super().__init__(popsize, n_obj, selection, mating, ksize=ksize)
         self.scalar = scalar_chebyshev
         # self.scalar = scalar_chebyshev_for_maximize
         # self.scalar = scalar_weighted_sum
@@ -524,12 +525,12 @@ class Solution_archive(list):
 class C_MOEAD_DMA(C_MOEAD):
     name = "c_moead_dma"
 
-    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+    def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
                  pool: Pool, n_constraint: int, ksize=3, alpha=4, **kwargs):
         """ alpha is archive size(int).
         """
 
-        super().__init__(popsize, nobj, selection, mating, 
+        super().__init__(popsize, n_obj, selection, mating, 
                          pool, n_constraint, ksize)
 
         self.archive_size = alpha
@@ -683,7 +684,7 @@ class C_MOEAD_DMA(C_MOEAD):
 class C_MOEAD_DEDMA(C_MOEAD_DMA):
     name = "c_moead_dedma"
 
-    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+    def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
                  pool: Pool, n_constraint: int, ksize=3, alpha=4,
                  CR=0.9, F=0.7, eta=20, **kwargs
                  ):
@@ -691,7 +692,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
         # print("mro", (mros))
 
         super().__init__(
-            popsize, nobj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
+            popsize, n_obj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
         )
         # print("name is ", super(mros[0], self).name)
         print("cross_rate_dm", self.cross_rate_dm)
@@ -803,12 +804,12 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
         Hybrid crossover method(SBX & DE)
     """
 
-    def __init__(self, popsize: int, nobj: int, selection: Selector, mating: Mating, 
+    def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
                  pool: Pool, n_constraint: int, ksize=3, alpha=4,
                  CR=0.9, F=0.7, eta=20, **kwargs
                  ):
         super().__init__(
-            popsize, nobj, selection, mating, pool,
+            popsize, n_obj, selection, mating, pool,
             n_constraint, ksize, alpha, CR, F, eta, **kwargs
         )
 
