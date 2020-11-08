@@ -1,6 +1,6 @@
 {
     "problem": "mCDTLZ",
-    "optimizer": "C_MOEAD_DMA",
+    "optimizer": "C_MOEAD_DEDMA",
 
     "Genelation": 500,
     "popsize": 100,

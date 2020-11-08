@@ -38,7 +38,7 @@ class Problem():
 # problem = Problem()
 problem = zdt1
 optimizer = MOEAD_DE
-# optimizer = NSGA2
+optimizer = NSGA2
 n_const = 0
 # problem = Knapsack(n_const=n_const ,phi=0.5)
 # optimizer = C_MOEAD
