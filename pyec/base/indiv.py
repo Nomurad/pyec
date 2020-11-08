@@ -17,6 +17,9 @@ class Fitness(object):
     def fitness(self):
         return self._fitness
 
+    def __getitem__(self, key):
+        return self._fitness[key]
+
     def set_fitness(self, value, optimizer=None):
         self._fitness = value
         self.optimizer = optimizer
