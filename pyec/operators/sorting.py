@@ -2,6 +2,7 @@ import itertools
 
 import numpy as np 
 
+from ..base.indiv import Individual
 from ..base.population import Population
 
 class NonDominatedSortError(Exception):
@@ -216,3 +217,45 @@ def non_dominate_sort(population:Population, return_rank=False):
         num_dominated -= np.sum(mask & is_dominated, axis=(1,))
 
     raise NonDominatedSortError("Error: reached the end of function")
+
+
+def identity(x):
+    return x
+class CrowdingDistanceCalculator(object):
+    ''' key=attrgetter('data')
+    '''
+    def __init__(self, key=identity):
+        self.key = key
+
+    def __call__(self, population: Population, normalization=False):
+        popsize = len(population)
+        if popsize == 0:
+            return
+
+        distances = np.zeros(popsize, dtype=np.float32)
+
+        indivs = [x for x in population]
+        index = list(range(popsize))
+
+        # n_obj = len(values[0])
+        n_obj = len(indivs[0].value)
+
+        for i in range(n_obj):
+            get_value = lambda idx: np.array(indivs[idx].value[i])
+
+            index.sort(key=get_value)
+
+            distances[index[0]] = float('inf')
+            distances[index[-1]] = float('inf')
+
+            vrange = get_value(-1) - get_value(0)
+
+            if vrange <= 0:
+                continue
+
+            norm = n_obj * vrange
+
+            for l, c, r in zip(index[:-2], index[1:-1], index[2:]):
+                distances[c] += (get_value(r) - get_value(l)) / norm
+
+        return distances
