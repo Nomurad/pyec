@@ -27,3 +27,31 @@ class Optimizer(ABC):
         self.normalize_option = option 
 
 
+
+class Solution_archive(list):
+
+    def __init__(self, n_wvec, size):
+        self.limit_size = size
+        self._archives = [[] for _ in range(n_wvec)]
+
+    def __getitem__(self, key):
+        return self._archives[key]
+
+    def __len__(self):
+        return len(self._archives)
+
+    @property
+    def archives(self):
+        return chain.from_iterable(self._archives)
+
+    def append(self, indiv: Individual, index: int):
+        self._archives[index].append(indiv)
+        if self.get_archive_size(index) > self.limit_size:
+            self._archives[index].sort()
+            self._archives[index].pop(0)
+
+    def get_archive_size(self, index):
+        return len(self._archives[index])
+
+    def clear(self, index):
+        self._archives[index].clear()

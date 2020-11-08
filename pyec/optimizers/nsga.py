@@ -84,53 +84,53 @@ class NSGA2(Optimizer):
 
 
     def calc_fitness(self, population, n=None):
-            ''' 各個体の集団内における適応度を計算する
-            1. 比優越ソート
-            2. 混雑度計算
-            '''
-            lim = len(population) if n is None else n
-            selected = []
+        ''' 各個体の集団内における適応度を計算する
+        1. 比優越ソート
+        2. 混雑度計算
+        '''
+        lim = len(population) if n is None else n
+        selected = []
 
-            # for i, front in enumerate(self.sort_it(population)):
-            for i, front in enumerate(self.sort.sort(population)):
-                # print('g:', self.generation, 'i:', i, 'l:', len(front))
-                rank = i + 1
-                fit_value = -i # TODO: 可変にする
-                # if i == 0:
-                #     print('len(i==0):', len(front), ' ')
+        # for i, front in enumerate(self.sort_it(population)):
+        for i, front in enumerate(self.sort.sort(population)):
+            # print('g:', self.generation, 'i:', i, 'l:', len(front))
+            rank = i + 1
+            fit_value = -i # TODO: 可変にする
+            # if i == 0:
+            #     print('len(i==0):', len(front), ' ')
 
-                if self.share_fn:
-                    it = self.share_fn(front)
-                    try:
-                        for fit, crowding in zip(front, it):
-                            fitness = fit_value, crowding
-                            # print(fitness)
-                            fit.set_fitness(fitness, rank)
-                    except:
-                        print('Error')
-                        print(front)
-                        print(it)
-                        raise
-                else:
-                    for fit in front:
-                        fitness = fit_value,
-                        fit.set_fitness([fitness, rank])
+            if self.share_fn:
+                it = self.share_fn(front)
+                try:
+                    for fit, crowding in zip(front, it):
+                        fitness = fit_value, crowding
+                        # print(fitness)
+                        fit.set_fitness(fitness, rank)
+                except:
+                    print('Error')
+                    print(front)
+                    print(it)
+                    raise
+            else:
+                for fit in front:
+                    fitness = fit_value,
+                    fit.set_fitness(fitness, rank)
 
-                lim -= len(front) # 個体追加後の余裕
-                if lim >= 0:
-                    selected.extend(front)
-                    if lim == 0:
-                        return selected
-                # elif i == 0:
-                #     return front
-                else:
-                    # front.sort(key=itemgetter(1), reverse=True) # 混雑度降順で並べ替え
-                    # print(front[0].fitness, end="\r")
-                    front.sort(key=lambda x: x.fitness[-1], reverse=True) # 混雑度降順で並べ替え
-                    # print([itemgetter(1)(fit) for fit in front])
-                    # exit()
-                    selected.extend(front[:lim])
+            lim -= len(front) # 個体追加後の余裕
+            if lim >= 0:
+                selected.extend(front)
+                if lim == 0:
                     return selected
+            # elif i == 0:
+            #     return front
+            else:
+                # front.sort(key=itemgetter(1), reverse=True) # 混雑度降順で並べ替え
+                # print(front[0].fitness, end="\r")
+                front.sort(key=lambda x: x.fitness[1], reverse=True) # 混雑度降順で並べ替え
+                # print([itemgetter(1)(fit) for fit in front])
+                # exit()
+                selected.extend(front[:lim])
+                return selected
 
     def calc_rank(self, population, n=None):
         ''' 各個体の集団内におけるランクを計算して設定する
@@ -141,3 +141,11 @@ class NSGA2(Optimizer):
             for fit in front:
                 fit.rank = rank
         return population
+
+
+class TNSDM(NSGA2):
+    def __init__(self, popsize: int, n_obj: int,
+                 selection: Selector, mating: Mating):
+
+        super().__init__(popsize, n_obj, selection, mating)
+        
