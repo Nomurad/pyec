@@ -1,10 +1,10 @@
 {
     "problem": "mCDTLZ",
-    "optimizer": "C_MOEAD_DEDMA",
+    "optimizer": "C_MOEAD_DMA",
 
-    "Genelation": 500,
+    "Genelation": 1000,
     "popsize": 100,
-    "dv_size": 3,
+    "dv_size": 10,
     "n_obj": 2,
     "n_constraint": 2,
 
