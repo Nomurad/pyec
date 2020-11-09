@@ -186,7 +186,7 @@ class MOEAD(Optimizer):
         # population[index] = res
 
         nr = int(len(subpop))
-        # nr = 2
+        nr = 2
         res = self._alternate(child, nr, index, population, subpop)
 
         # if res == None: 
