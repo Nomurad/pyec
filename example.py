@@ -36,7 +36,7 @@ class Problem():
         return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
 # problem = Problem()
-problem = zdt1
+problem = zdt3
 optimizer = MOEAD_DE
 optimizer = NSGA2
 n_const = 0
@@ -44,7 +44,7 @@ n_const = 0
 # optimizer = C_MOEAD
 
 max_epoch = 100*1
-dvsize = 3
+dvsize = 10
 
 # optimizer = C_MOEAD_DE
 # problem = Problem()
@@ -148,4 +148,5 @@ print("data shape",data.shape)
 #     if dom != 0:
 #         print("dominate:",i, dom)
 
+plt.ylim([-2.0, 2.0])
 plt.show()
