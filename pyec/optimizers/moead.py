@@ -64,7 +64,7 @@ class MOEAD(Optimizer):
     name = "moead"
 
     def __init__(self, popsize: int, n_obj: int,
-                 selection: Selector, mating: Mating, ksize=3):
+                 selection: Selector, mating: Mating, ksize=3, **kwargs):
         super().__init__(popsize, n_obj)
         self.division = popsize
         # self.popsize = popsize
@@ -84,6 +84,7 @@ class MOEAD(Optimizer):
         self.normalize = False
         self.normalizer = None
         self.normalize_option = None
+        self.normalize_only_feasible = kwargs.get("feasible_only")
         self.sort = NonDominatedSort()
         self.EP: List = []
         self.EPappend = self.EP.append
@@ -280,8 +281,10 @@ class MOEAD(Optimizer):
             self.update_reference(indiv)
 
         if self.normalize is True: 
-            # subpop = [indiv for indiv in population if indiv.is_feasible()]
-            subpop = population
+            if self.normalize_only_feasible:
+                subpop = [indiv for indiv in population if indiv.is_feasible()]
+            else:
+                subpop = population
             values = list(map(self._get_indiv_value, subpop))
             values = np.array(values)
             # print(values.shape)
@@ -408,8 +411,8 @@ class C_MOEAD(MOEAD):
     name = "c_moead"
 
     def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
-                 pool: Pool, n_constraint: int, ksize=3):
-        super().__init__(popsize, n_obj, selection, mating, ksize=ksize)
+                 pool: Pool, n_constraint: int, ksize=3, **kwargs):
+        super().__init__(popsize, n_obj, selection, mating, ksize=ksize, **kwargs)
         self.scalar = scalar_chebyshev
         # self.scalar = scalar_chebyshev_for_maximize
         # self.scalar = scalar_weighted_sum
@@ -502,7 +505,7 @@ class C_MOEAD_DMA(C_MOEAD):
         """
 
         super().__init__(popsize, n_obj, selection, mating, 
-                         pool, n_constraint, ksize)
+                         pool, n_constraint, ksize, **kwargs)
 
         self.archive_size = alpha
         self.archives = Solution_archive(len(self.weight_vec), self.archive_size)
