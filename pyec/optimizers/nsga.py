@@ -21,6 +21,7 @@ from ..operators.sorting import NonDominatedSort, CrowdingDistanceCalculator
 
 from . import Optimizer, OptimizerError
 
+
 class NSGAError(OptimizerError):
     pass
 
@@ -41,11 +42,11 @@ class NSGA2(Optimizer):
         self.n_parents = 2
         self.n_cycle = 2
         self.alternation = "join"
-        
+
         self.sort = NonDominatedSort()
         self.share_fn = CrowdingDistanceCalculator()
         # self.EP = []
-        
+
     def get_new_generation(self, population: Population, eval_func: FunctionType):
         if not self.popsize:
             self.popsize = len(population)
@@ -79,44 +80,43 @@ class NSGA2(Optimizer):
         if self.alternation == "join":
             joined = population + next_pop
 
-        next_pop = self.calc_fitness(joined, n=self.popsize)
+        next_pop = self.calc_fitness(joined)
         return Population(indivs=next_pop, capa=self.popsize)
 
-
-    def calc_fitness(self, population, n=None):
+    def calc_fitness(self, population):
         ''' 各個体の集団内における適応度を計算する
         1. 比優越ソート
         2. 混雑度計算
         '''
-        lim = len(population) if n is None else n
+        # lim = len(population) if n is None else n
+        lim = self.popsize
         selected = []
 
         # for i, front in enumerate(self.sort_it(population)):
         for i, front in enumerate(self.sort.sort(population)):
             # print('g:', self.generation, 'i:', i, 'l:', len(front))
             rank = i + 1
-            fit_value = -i # TODO: 可変にする
+            fit_value = -i  # TODO: 可変にする
             # if i == 0:
             #     print('len(i==0):', len(front), ' ')
 
             if self.share_fn:
                 it = self.share_fn(front)
-                try:
-                    for fit, crowding in zip(front, it):
-                        fitness = fit_value, crowding
-                        # print(fitness)
-                        fit.set_fitness(fitness, rank)
-                except:
-                    print('Error')
-                    print(front)
-                    print(it)
-                    raise
+                for fit, crowding in zip(front, it):
+                    fitness = fit_value, crowding
+                    # print(fitness)
+                    fit.set_fitness(fitness, rank)
+                # except:
+                #     print('Error')
+                #     print(front)
+                #     print(it)
+                #     raise
             else:
                 for fit in front:
                     fitness = fit_value,
                     fit.set_fitness(fitness, rank)
 
-            lim -= len(front) # 個体追加後の余裕
+            lim -= len(front)  # 個体追加後の余裕
             if lim >= 0:
                 selected.extend(front)
                 if lim == 0:
@@ -126,7 +126,7 @@ class NSGA2(Optimizer):
             else:
                 # front.sort(key=itemgetter(1), reverse=True) # 混雑度降順で並べ替え
                 # print(front[0].fitness, end="\r")
-                front.sort(key=lambda x: x.fitness[1], reverse=True) # 混雑度降順で並べ替え
+                front.sort(key=lambda x: x.fitness[1], reverse=True)  # 混雑度降順で並べ替え
                 # print([itemgetter(1)(fit) for fit in front])
                 # exit()
                 selected.extend(front[:lim])
