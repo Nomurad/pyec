@@ -19,10 +19,10 @@ class Pool(object):
         self.current_id = 0
         self.data = []  # 全個体リスト
 
-    def __call__(self, genome: np.ndarray, parents=None):
+    def __call__(self, genome: np.ndarray, parents: Individual = None):
         self.indiv_creator(genome, parents)
 
-    def indiv_creator(self, genome: np.ndarray, parents=None):
+    def indiv_creator(self, genome: np.ndarray, parents: Individual = None):
         """遺伝子情報から個体を生成，全個体リストに追加しておく
 
         Arguments:
