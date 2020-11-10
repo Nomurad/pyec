@@ -145,7 +145,7 @@ class NSGA2(Optimizer):
 
 class TNSDM(NSGA2):
     def __init__(self, popsize: int, n_obj: int,
-                 selection: Selector, mating: Mating):
+                 selection: Selector, mating: Mating, **kwargs):
 
         super().__init__(popsize, n_obj, selection, mating)
-        
+        self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
