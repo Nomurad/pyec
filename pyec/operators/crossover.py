@@ -121,6 +121,7 @@ class DifferrentialEvolutonary_Crossover(object):
         """ This method needs 3 genomes.
             1st genomes -> arbitrary indiv's genome,
             2nd & 3rd genomes -> random select indiv's genome from Population.
+            vi = p1 + F(p2 - p3)
         """
 
         try:
