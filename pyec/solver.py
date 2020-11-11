@@ -192,13 +192,15 @@ class Solver(object):
                 self.env.nowpop.append(indiv)
 
             if self.env.n_constraint > 0:
-                for indiv in self.env.nowpop:
-                    # 目的関数値を計算
-                    # print("func:", self.eval_func.__dict__)
-                    # self.optimizer.get_offspring(self.env.nowpop, self.eval_func)
-                    # res = self.env.evaluate(indiv)
-                    if indiv.is_feasible():
-                        self.env.feasible_indivs_id.append(indiv.id)
+                feasible_ids = [indiv.id for indiv in self.env.nowpop if indiv.is_feasible()]
+                self.env.feasible_indivs_id.extend(feasible_ids)
+                # for indiv in self.env.nowpop:
+                #     # 目的関数値を計算
+                #     # print("func:", self.eval_func.__dict__)
+                #     # self.optimizer.get_offspring(self.env.nowpop, self.eval_func)
+                #     # res = self.env.evaluate(indiv)
+                #     if indiv.is_feasible():
+                #         self.env.feasible_indivs_id.append(indiv.id)
             # print("res", res)
 
             # 適応度計算
