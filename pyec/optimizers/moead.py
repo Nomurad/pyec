@@ -722,10 +722,13 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
 
         if(population[index].is_feasible()) and (archive_size > 0) and \
           (random.random() <= self.cross_rate_dm):
+            # p1 = population[index]
             parents = [population[index]]
-            parents.append(subpop[random.randint(1, len(subpop)-1)])
+            # p2 = archive indiv
             pb_idx = random.randint(0, archive_size-1)
             parents.append(self.archives[index][pb_idx])
+            # p3 = neighber indiv
+            parents.append(subpop[random.randint(1, len(subpop)-1)])
 
         else:
             subpop2 = subpop + self.archives[index]
