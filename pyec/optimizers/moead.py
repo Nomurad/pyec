@@ -662,7 +662,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
                  pool: Pool, n_constraint: int, ksize=3, alpha=4,
                  CR=0.9, F=0.7, eta=20, **kwargs
                  ):
-        mros = C_MOEAD_DEDMA.mro()
+        # mros = C_MOEAD_DEDMA.mro()
         # print("mro", (mros))
 
         super().__init__(
