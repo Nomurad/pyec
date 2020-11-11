@@ -255,9 +255,11 @@ class Solver(object):
         nowpop = self.optimizer.get_new_generation(nowpop, self.eval_func)
         # print("nowpop size:",len(nowpop))
         if self.env.n_constraint > 0:
-            for indiv in nowpop:
-                if indiv.is_feasible():
-                    self.env.feasible_indivs_id.append(indiv.id)
+            feasible_ids = [indiv.id for indiv in nowpop if indiv.is_feasible()]
+            self.env.feasible_indivs_id.extend(feasible_ids)
+            # for indiv in nowpop:
+            #     if indiv.is_feasible():
+            #         self.env.feasible_indivs_id.append(indiv.id)
         # self.optimizer.update_allEP(nowpop)
         # for i in range(len(self.env.nowpop)):
         #     child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
