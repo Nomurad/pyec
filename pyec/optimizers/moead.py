@@ -520,7 +520,7 @@ class C_MOEAD_DMA(C_MOEAD):
         rate_mutate = self.mating._mutation.rate
         self.mating._crossover = SimulatedBinaryCrossover(rate_cross, 20)
         self.mating._mutation = PolynomialMutation(rate_mutate, 20)
-        print("init ", C_MOEAD_DMA.name)
+        # print("init ", C_MOEAD_DMA.name)
 
     def get_offspring(self, index: int, population: Population, eval_func) -> Individual: 
         subpop = [population[i] for i in self.neighbers[index]]
