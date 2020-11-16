@@ -12,7 +12,8 @@ from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
 from pyec.optimizers.nsga import NSGA2
 from pyec.solver import Solver
 
-from pyec.testfunctions import zdt1, zdt2, zdt3, tnk, mCDTLZ, Knapsack
+from pyec.testfunctions import zdt1, zdt2, zdt3, Fonseca_and_Fleming_func 
+from pyec.testfunctions import tnk, mCDTLZ, Knapsack
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,36 +36,33 @@ class Problem():
         y = vars[1]
         return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
+
 # problem = Problem()
-problem = zdt3
+max_epoch = 100*1
+dvsize = 2
+problem = Fonseca_and_Fleming_func(2, dvsize)
 optimizer = MOEAD_DE
 optimizer = NSGA2
 n_const = 0
 # problem = Knapsack(n_const=n_const ,phi=0.5)
-# optimizer = C_MOEAD
 
-max_epoch = 100*1
-dvsize = 10
-
-# optimizer = C_MOEAD_DE
-# problem = Problem()
-# n_const = 2
 
 args = {
-    "popsize":100,
-    "dv_size":dvsize,
-    "n_obj":2,
-    "selector":Selector(TournamentSelectionStrict),
-    "mating":[SBX(), PM()],
-    "optimizer":optimizer,
-    "eval_func":problem,
-    "ksize":10,
-    "dv_bounds":([0]*dvsize, [1]*dvsize),   #(lowerbounds_list, upperbounds_list)
-    "weight":[1, 1],
+    "popsize": 100,
+    "dv_size": dvsize,
+    "n_obj": 2,
+    "selector": Selector(TournamentSelectionStrict),
+    "mating": [SBX(), PM()],
+    "optimizer": optimizer,
+    "eval_func": problem,
+    "ksize": 10,
+    "dv_bounds": ([0]*dvsize, [1]*dvsize),  # (lowerbounds_list, upperbounds_list)
+    "weight": [1, 1],
     "normalize": False,
-    "n_constraint":n_const,
-    "save":False
+    "n_constraint": n_const,
+    "save": False
 }
+args["dv_bounds"] = ([-4]*dvsize, [4]*dvsize)
 
 print(optimizer.name)
 
@@ -148,5 +146,5 @@ print("data shape",data.shape)
 #     if dom != 0:
 #         print("dominate:",i, dom)
 
-plt.ylim([-2.0, 2.0])
+plt.ylim([0.0, 1.0])
 plt.show()
