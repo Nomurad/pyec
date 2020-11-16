@@ -11,6 +11,10 @@ class OptimizerError(Exception):
 
 
 class Optimizer(ABC):
+
+    name = "optimizer"
+
+    @abstractmethod
     def __init__(self, popsize: int, n_obj: int):
         self.popsize = popsize 
         self.n_obj = n_obj
