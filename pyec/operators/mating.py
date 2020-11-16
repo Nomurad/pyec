@@ -43,9 +43,12 @@ class Mating(object):
 
         parent_genomes = [indiv.get_genome() for indiv in parents]
         # print("parent genomes:", parent_genomes)
+
         child_genomes = self._crossover(parent_genomes)
+
         if singlemode == True:
             child_genome = random.choice(child_genomes)
+            child_genome = self._mutation(child_genome)   # 一定確率で突然変異
             child_indiv = self._pool.indiv_creator(child_genome, parents)
             child_indiv.set_weight(parents[0].weight)
             child_indiv.set_boundary(parents[0].bounds)
