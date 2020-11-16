@@ -104,10 +104,25 @@ def zdt6(x):
     return f, g * (1 - (f / g) ** 2)
 
 
-def DTLZ2(x):
+# def DTLZ2(x):
+# 
+#     f1 = sum(math.pow(xi-0.5, 2.0) for xi in x)
 
-    f1 = sum(math.pow(xi-0.5, 2.0) for xi in x)
 
+class Fonseca_and_Fleming_func(TestProblem):
+    def __init__(self, n_obj=2, n_dv=2):
+        super().__init__(2)
+        self.n_dv = 2
+
+    def __call__(self, x):
+        fs = []
+        tmpsum = -sum([(dv - (1/math.sqrt(self.n_dv)))**2 for dv in x])
+        fs.append((1 - math.exp(tmpsum)))
+
+        tmpsum = -sum([(dv + (1/math.sqrt(self.n_dv)))**2 for dv in x])
+        fs.append((1 - math.exp(tmpsum)))
+
+        return np.array(fs)
 
 ################################################################################
 # M.O. w/ const
@@ -353,53 +368,32 @@ class Knapsack(Constraint_TestProblem):
 
 def __test__():
     import matplotlib.pyplot as plt
-    # x = [0, 1, 2, 3, 4, 5]
-    # print(*osy(x))
-
-    # x = [np.cos(np.pi/4.0), np.sin(np.pi/4.0)]
-    # circle = Circle_problem()
-    # res = circle(x)
-
-    div = 21
+    n_div = 1000
     n_obj = 2
     dv_size = 2
     # random.seed(10)
-    cdtlz = mCDTLZ(n_obj=n_obj, n_const=n_obj)
-    wp = WaterProblem()
-    x = [
-        random.uniform(0.01, 0.45),
-        random.uniform(0.01, 0.1),
-        random.uniform(0.01, 0.1)
-    ]
-    res = wp(x)
-    print(x)
+    x = 8 * np.random.rand(n_div, dv_size) - 4
+    problem = Fonseca_and_Fleming_func(n_obj, dv_size)
+    res = []
+    for dv in x:
+        res.append(problem(dv))
+
+    res = np.array(res)
+    print(x.shape)
     print(res)
-    # res = cdtlz(x)
 
-    # res2 = []
-    # for i in range(300000):
-    #     x = [random.uniform(0.0, 1.0) for _ in range(dv_size)]
-    #     # x = [0]
-    #     res2.append(cdtlz(x))
+    fig = plt.figure()
+    ax1 = plt.subplot(121)
 
-    # res2 = np.array(res2)
-
-    # # response
-    # print("\ndv: ", x)
-    # # print("return: ", res2[:,:,:])
-
-    # res3 = res2[res2[:,1,0]<=0]
-    # res3 = res3[res3[:,1,1]<=0]
-
-    # infeasible = res2[res2[:,1,0] > 0]
-    # infeasible2 = res2[res2[:,1,1] > 0]
-
-    # plt.scatter(res3[:,0,0], res3[:,0,1])
-    # plt.scatter(infeasible[:,0,0], infeasible[:,0,1], c="red")
-    # plt.scatter(infeasible2[:,0,0], infeasible2[:,0,1], c="red")
-    # plt.xlim([0.0, 1.0])
-    # plt.ylim([0.0, 1.0])
-    # plt.show()
+    ax1.scatter(res[:,0], res[:,1])
+    ax1.set_xlim([0.0, 1.0])
+    ax1.set_ylim([0.0, 1.0])
+    
+    ax2 = plt.subplot(122)
+    ax2.scatter(x[:,0], x[:,1])
+    ax2.set_xlim([-4.0, 4.0])
+    ax2.set_ylim([-4.0, 4.0])
+    plt.show()
 
 
 ################################################################################
