@@ -557,7 +557,7 @@ class C_MOEAD_DMA(C_MOEAD):
         return res
 
     def _SBXmating(self, parents, eval_func, index) -> Individual:
-        childs = self.mating(parents)
+        childs = self.mating(parents, singlemode=True)
         child = childs[0]
         # idx = random.randint(0, 1)
         # child = childs[idx]
