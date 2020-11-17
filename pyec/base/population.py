@@ -1,4 +1,5 @@
-from typing import List, overload
+from typing import List, Iterable, overload
+from collections import UserList
 
 from .indiv import Individual
 
@@ -9,7 +10,7 @@ class PopulationError(Exception):
     """
 
 
-class Population(object):
+class Population(UserList):
     """
         Population class
     """
@@ -37,16 +38,22 @@ class Population(object):
         return self.pop[key]
 
     @overload
-    def __getitem__(self, key: int) -> Individual: ...
+    def __getitem__(self, key: int) -> Individual: 
+        ...
 
     @overload
-    def __getitem__(self, s: slice) -> List[Individual]: ...
+    def __getitem__(self, s: slice) -> List[Individual]: 
+        ...
 
     def __getitem__(self, key):
         return self.pop[key]
 
     def __setitem__(self, key: int, indiv: Individual):
         self.pop[key] = indiv
+
+    def __iter__(self):
+        for indiv in self.pop:
+            yield indiv
 
     def __len__(self) -> int:
         return len(self.pop)
