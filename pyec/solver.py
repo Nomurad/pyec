@@ -103,25 +103,25 @@ class Solver(object):
         print("n_obj:", self.n_obj)
 
         # print("set optimizer:", optimizer.name)
-        if optimizer.name == "moead":
+        if optimizer is MOEAD:
             if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj, 
-                                       self.selector, self.mating, ksize=ksize)
+                                       self.selector, self.mating, ksize=ksize, **kwargs)
 
-        elif optimizer.name == "moead_de":
+        elif optimizer is MOEAD_DE:
             if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj,
                                        self.selector, self.mating, ksize=ksize,
-                                       CR=0.75, F=0.75, eta=20)
+                                       CR=0.75, F=0.75, eta=20, **kwargs)
 
-        elif optimizer.name == "c_moead":
+        elif optimizer is C_MOEAD:
             if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj, 
                                        self.selector, self.mating,
-                                       self.env.pool, n_constraint, ksize=ksize)
+                                       self.env.pool, n_constraint, ksize=ksize, **kwargs)
 
         # elif optimizer.name is "c_moead_dma":
         elif optimizer is C_MOEAD_DMA:
@@ -302,11 +302,11 @@ class Solver(object):
 
     def save_resultobj(self):
         sttime = time.time()
-        self._serializer("indiv_pool.pkl", self.env.pool)
-        print(f"pool savetime: {time.time() - sttime}")
+        # self._serializer("indiv_pool.pkl", self.env.pool)
+        # print(f"pool savetime: {time.time() - sttime}")
         self._serializer("indiv_history.pkl", self.env.history)
         print(f"history savetime: {time.time() - sttime}")
-        self.optimizer.mating.clear_pool()
+        # self.optimizer.mating.clear_pool()
         self._serializer("optimizer.pkl", self.optimizer)
         print(f"optimizer savetime: {time.time() - sttime}")
 
