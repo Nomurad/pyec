@@ -1,5 +1,6 @@
 from typing  import List, Any
 import numpy as np 
+import pandas as pd
 
 from .indiv import Individual, Fitness
 from .population import Population
@@ -51,6 +52,13 @@ class Pool(object):
 
     def clear_indivpool(self):
         self.data = [] 
+
+    def to_csv(self):
+        indivdata = []
+        for i, indiv in enumerate(self.data):
+            indivdata.append([indiv.id]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
+        indivdata = np.array(indivdata)
+        pd.DataFrame(indivdata).to_csv("poolindiv_values.csv", header=None, index=False)
 
 
 class Environment(object):
