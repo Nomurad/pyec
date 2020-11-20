@@ -413,7 +413,7 @@ class C_MOEAD(MOEAD):
     def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
                  pool: Pool, n_constraint: int, ksize=3, **kwargs):
         super().__init__(popsize, n_obj, selection, mating, ksize=ksize, **kwargs)
-        self.scalar = scalar_chebyshev
+        # self.scalar = scalar_chebyshev
         # self.scalar = scalar_chebyshev_for_maximize
         # self.scalar = scalar_weighted_sum
         self.n_constraint = n_constraint
