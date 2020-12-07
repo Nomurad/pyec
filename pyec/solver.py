@@ -7,7 +7,7 @@ import time
 
 from .base.indiv import Individual
 from .base.population import Population
-from .base.environment import Environment
+from .base.environment import Environment, UniformInitializer
 
 from .operators.selection import Selector, TournamentSelection, TournamentSelectionStrict
 from .operators.mutation import PolynomialMutation as PM
@@ -92,7 +92,8 @@ class Solver(object):
                 # print("history", len(self.env.history))
             else:
                 self.env = Environment(popsize, dv_size, n_obj, optimizer,
-                                       eval_func, dv_bounds, n_constraint)
+                                       eval_func, dv_bounds, n_constraint,
+                                       initializer=kwargs.get("initializer", UniformInitializer))
 
             self.selector = selector
             self.mating = Mating(mating[0], mating[1], self.env.pool)

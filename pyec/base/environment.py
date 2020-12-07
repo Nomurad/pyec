@@ -73,6 +73,7 @@ class Environment(object):
                  dv_bounds: tuple = (0, 1),   # 設計変数の上下限値
                  n_constraint=0,  # 制約条件の数
                  normalize=False,
+                 initializer=UniformInitializer,
                  old_pop=None
                  ):
 
@@ -101,7 +102,7 @@ class Environment(object):
         self.feasible_indivs_id: List[int] = []
 
         # initializerの設定
-        self.initializer = UniformInitializer(dv_size) 
+        self.initializer = initializer(dv_size, popsize, n_obj)
         self.creator = Creator(self.initializer, self.pool)
 
     def alternate(self, population=None, indivs=None):
