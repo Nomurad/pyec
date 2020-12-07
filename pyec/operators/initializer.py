@@ -27,18 +27,19 @@ class Latin_HyperCube_Sampling(object):
         n = self._size
         M = self.popsize
 
-        rng = np.random.RandomState()
+        rng = np.random.RandomState()  # seed lock
         f = lambda x: (ub-lb)*x + lb 
         g = lambda x: (x-rng.uniform())/M
         rnd_grid = np.array([rng.permutation(list(range(1, M + 1))) for _ in range(n)])
         lhs = [[f(g(rnd_grid[d][m])) for d in range(n)] for m in range(M)]
         self.lhs = np.array(lhs)
+        # print(self.lhs)
 
     def __call__(self):
         if self.count >= len(self.lhs):
             raise Exception
         else:
-            print(self.count)
+            print(f"lhs sampling count, {self.count:5}", end="\r")
 
         res = self.lhs[self.count]
         self.count += 1
