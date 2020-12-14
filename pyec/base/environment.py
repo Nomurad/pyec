@@ -5,6 +5,7 @@ import pandas as pd
 from .indiv import Individual, Fitness
 from .population import Population
 from ..operators.initializer import UniformInitializer
+from ..operators.initializer import Latin_HyperCube_Sampling
 
 
 class EnvironmentError(Exception):
@@ -102,7 +103,7 @@ class Environment(object):
         self.feasible_indivs_id: List[int] = []
 
         # initializerの設定
-        self.initializer = initializer(dv_size, popsize, n_obj)
+        self.initializer = initializer(dv_size, popsize=popsize, n_obj=n_obj)
         self.creator = Creator(self.initializer, self.pool)
 
     def alternate(self, population=None, indivs=None):

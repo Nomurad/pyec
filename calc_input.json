@@ -1,10 +1,10 @@
 {
-    "problem": "mCDTLZ",
-    "optimizer": "C_MOEAD_DMA",
+    "problem": "Knapsack",
+    "optimizer": "C_MOEAD_DEDMA",
 
-    "Genelation": 1000,
-    "popsize": 100,
-    "dv_size": 10,
+    "Genelation": 300,
+    "popsize": 200,
+    "dv_size": 750,
     "n_obj": 2,
     "n_constraint": 2,
 
