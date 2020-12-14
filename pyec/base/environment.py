@@ -5,6 +5,7 @@ import pandas as pd
 from .indiv import Individual, Fitness
 from .population import Population
 from ..operators.initializer import UniformInitializer
+from ..operators.initializer import Latin_HyperCube_Sampling
 
 
 class EnvironmentError(Exception):

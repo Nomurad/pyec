@@ -219,7 +219,7 @@ data0 = data[data[:,0] == 1]
 data_end = data[data[:,0] == max_epoch]
 # data_end = pareto_val
 # plt.scatter(data0[:,1], data0[:,2], c="green")
-plt.scatter(data0[:,1], data0[:,2], c="yellow")
+# plt.scatter(data0[:,1], data0[:,2], c="yellow")
 plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
@@ -253,8 +253,8 @@ print(solver.optimizer.name)
 #         print("dominate:",i, dom)
 
 plt.colorbar(sc)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.0])
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.0])
 plt.tight_layout()
 plt.savefig("result/fig.png", dpi=1200)
 # plt.savefig("result/fig.svg")

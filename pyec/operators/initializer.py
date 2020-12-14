@@ -37,6 +37,7 @@ class Latin_HyperCube_Sampling(object):
 
     def __call__(self):
         if self.count >= len(self.lhs):
+            print(self.count)
             raise Exception
         else:
             print(f"lhs sampling count, {self.count:5}", end="\r")
@@ -45,3 +46,19 @@ class Latin_HyperCube_Sampling(object):
         self.count += 1
         
         return res
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import pandas as pd 
+
+    dvsize = 3
+    n = dvsize*1000
+    rnd = UniformInitializer(dvsize)
+    lhs = Latin_HyperCube_Sampling(dvsize, n)
+    df_rnd = pd.DataFrame([rnd() for _ in range(n)])
+    df_lhs = pd.DataFrame(lhs.lhs)
+    sns.pairplot(df_rnd)
+    sns.pairplot(df_lhs)
+    plt.show()

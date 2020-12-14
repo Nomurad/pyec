@@ -7,7 +7,9 @@ import time
 
 from .base.indiv import Individual
 from .base.population import Population
-from .base.environment import Environment, UniformInitializer
+from .base.environment import Environment
+from .operators.initializer import UniformInitializer 
+from .operators.initializer import Latin_HyperCube_Sampling as LHS 
 
 from .operators.selection import Selector, TournamentSelection, TournamentSelectionStrict
 from .operators.mutation import PolynomialMutation as PM
@@ -181,6 +183,10 @@ class Solver(object):
     def initialize(self, savepath=None):
         if self.restart == 0:
             for _ in range(self.optimizer.popsize):
+                if isinstance(self.env.initializer, LHS):
+                    self.env.initializer.popsize = self.optimizer.popsize
+                    self.env.initializer.calc_lhs()
+
                 indiv = self.env.creator()
 
                 # indiv.set_id(self.env.current_id)
