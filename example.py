@@ -29,18 +29,34 @@ class Problem():
         0 <= x1 <= 5
         0 <= x2 <= 3
         """
-        return self.belegundu(x)
+        return self.biases(x)
 
     def belegundu(self, vars):
         x = vars[0]
         y = vars[1]
         return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
 
+    def biases(self, x):
+        x = np.array(x)
+        n = len(x)
+        x1 = x[0]
+        x2 = x[1]
+        gamma = 0.1
 
-# problem = Problem()
-max_epoch = 100*1
-dvsize = 2
+        f1 = 1 - np.exp(-4*x1)*(np.sin(5*np.pi*x1))**6
+        g = 1 + 10*(sum(x[1:])/(n-1))**0.25
+        h = 1 - (f1/g)**2
+        if f1 > g:
+            h = 0
+        f2 = g*h
+        return [f1, f2]
+
+
+
+max_epoch = 200
+dvsize = 10
 problem = Fonseca_and_Fleming_func(2, dvsize)
+problem = Problem()
 optimizer = MOEAD_DE
 optimizer = NSGA2
 n_const = 0
@@ -62,7 +78,7 @@ args = {
     "n_constraint": n_const,
     "save": False
 }
-args["dv_bounds"] = ([-4]*dvsize, [4]*dvsize)
+#args["dv_bounds"] = ([-4]*dvsize, [4]*dvsize)
 
 print(optimizer.name)
 
@@ -146,5 +162,5 @@ print("data shape",data.shape)
 #     if dom != 0:
 #         print("dominate:",i, dom)
 
-plt.ylim([0.0, 1.0])
+#plt.ylim([0.0, 1.0])
 plt.show()
