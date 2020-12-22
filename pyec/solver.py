@@ -69,7 +69,6 @@ class Solver(object):
         self.n_epoch = 0
         self.restart = 0
         self.env: Environment
-        self.optimizer: Optimizer
         self.sort = NonDominatedSort()
 
         if old_env is not None:
