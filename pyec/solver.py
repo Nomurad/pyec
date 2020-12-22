@@ -15,7 +15,7 @@ from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
 
 from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
-
+# from .optimizers import Optimizer
 
 class Solver(object):
     """進化計算ソルバー    
@@ -64,6 +64,7 @@ class Solver(object):
         self.n_epoch = 0
         self.restart = 0
         self.env: Environment
+        # self.optimizer: 
 
         if old_env is not None:
             print("loading environment data...")
