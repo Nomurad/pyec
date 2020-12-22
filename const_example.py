@@ -19,14 +19,14 @@ from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 from pyec.optimizers.moead import *
 from pyec.solver import Solver
 
-from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, WaterProblem
+from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, WaterProblem, OSY
 
 MAXIMIZE = -1
 MINIMIZE = 1
 
 max_epoch = 100*2
 n_obj = 2
-dvsize = n_obj
+dvsize = 6
 alpha = 4
 phi = 0.3
 
@@ -64,6 +64,14 @@ def problem_set(prob:str):
         n_obj = problem.n_obj
         n_const = problem.n_const
         weights = [MINIMIZE]*n_obj
+
+    elif prob == "osy":
+        problem = OSY()  
+        dvsize = 6
+        n_obj = 2
+        weights = [MINIMIZE]*n_obj
+        bmax = 1.0
+
     print("problem is ", problem)
 
 
@@ -102,7 +110,7 @@ if os.path.exists(inpfile):
         if argskey in inpdict:
             args[argskey] = inpdict.get(argskey)
         
-    args["dv_size"] = n_obj*10
+    #args["dv_size"] = n_obj*10
     dvsize = args["dv_size"]
     n_const = args["n_constraint"]
     max_epoch = inpdict["Genelation"]
@@ -115,6 +123,8 @@ if os.path.exists(inpfile):
     args["weight"] = weights
     args["eval_func"] = problem
     args["dv_bounds"] = ([0.0]*dvsize, [bmax]*dvsize)
+    if problem.__class__.__name__ == "OSY":
+        args["dv_bounds"] = ([0, 0, 1, 0, 1, 0], [10, 10, 5, 6, 5, 10])
     args["optimizer"] = eval(inpdict["optimizer"])
     args["cross_rate_dm"] = inpdict.get("cross_rate_dm", 1.0)
 
@@ -209,7 +219,7 @@ data0 = data[data[:,0] == 1]
 data_end = data[data[:,0] == max_epoch]
 # data_end = pareto_val
 # plt.scatter(data0[:,1], data0[:,2], c="green")
-plt.scatter(data0[:,1], data0[:,2], c="yellow")
+# plt.scatter(data0[:,1], data0[:,2], c="yellow")
 plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
@@ -243,8 +253,8 @@ print(solver.optimizer.name)
 #         print("dominate:",i, dom)
 
 plt.colorbar(sc)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.0])
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.0])
 plt.tight_layout()
 plt.savefig("result/fig.png", dpi=1200)
 # plt.savefig("result/fig.svg")

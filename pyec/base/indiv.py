@@ -17,6 +17,9 @@ class Fitness(object):
     def fitness(self):
         return self._fitness
 
+    def __getitem__(self, key):
+        return self._fitness[key]
+
     def set_fitness(self, value, optimizer=None):
         self._fitness = value
         self.optimizer = optimizer
@@ -27,15 +30,17 @@ class Individual(object):
     def __init__(self, genome: np.ndarray, parents=None):
         self._id: int = -1
         self.parent_id: List[int] = []
+        if parents is not None:
+            self.parent_id = [idv.id for idv in parents] 
         self.bounds = (0, 1)  # ((lower), (upper))
-        self.weight = None
-        self.n_obj = 1
+        self.weight: Optional[list] = None
+        self.n_obj: int = 1
 
         self.genome = genome  # 遺伝子
-        self.value = None  # 評価値
-        self.wvalue: Optional[list] = None  # 重みづけ評価値
+        self.value: Union[list, np.ndarray, None] = None  # 評価値
+        self.wvalue: Union[list, np.ndarray, None] = None  # 重みづけ評価値
         self.constraint_violation: Union[List, int, None] = None  # 制約違反量(負の値=制約違反なし)
-        self.feasible_rank = None
+        self.feasible_rank: Optional[int] = None
         self.fitness = Fitness()
 
     def __str__(self):
@@ -65,7 +70,7 @@ class Individual(object):
     def get_genome(self):
         return self.genome
 
-    def set_genome(self, genome:np.ndarray):
+    def set_genome(self, genome: np.ndarray):
         self.genome = genome
 
     def decode(self, genome):        
@@ -78,10 +83,9 @@ class Individual(object):
         lower, upper = self.bounds
         g = []
         for dv in dv_list:
-            g.append( (dv-lower)/(upper-lower) )
-        
-        self.genome = np.array(g)
+            g.append((dv-lower)/(upper-lower))
 
+        self.genome = np.array(g)
 
     def get_design_variable(self):
         return self.decode(self.genome)
@@ -101,7 +105,7 @@ class Individual(object):
                 raise IndividualError("Invaild value dimension")
             else:
                 self.value = value
-        
+
         if self.weight is not None:
             self.wvalue = self.weight*self.value
         else:
@@ -116,7 +120,7 @@ class Individual(object):
             self.constraint_violation = [constraint_violation]
             self.cv_sum = constraint_violation
 
-    def is_feasible(self)-> bool:
+    def is_feasible(self) -> bool:
         """ if all constraint violation value is under 0.0 => True
             else => False
         """
@@ -131,13 +135,13 @@ class Individual(object):
             cv_s = self.cv_sum
             if cv_s <= 0.0:
                 return True
-        
+
         return False
 
     def evaluated(self):
         return self.value is not None 
 
-    def evaluate(self, func, funcargs, n_constraint=0):
+    def evaluate(self, func, funcargs: list, n_constraint=0):
         # print("n_constraint:",n_constraint)
 
         if n_constraint == 0:
@@ -152,13 +156,13 @@ class Individual(object):
             self.set_constraint_violation(cv)
             return res, cv
 
-    def dominate(self, other:"Individual") -> bool:
+    def dominate(self, other: "Individual") -> bool:
         """selfがotherを優越する場合 -> True
            その他の場合             -> False
-        
+
         Arguments:
             other {Individual} -- [description]
-        
+
         Returns:
             bool -- [description]
         """
@@ -170,8 +174,8 @@ class Individual(object):
             # print(len(self.value), len(self.weight))
             self.wvalue = self.weight*self.value
             other.wvalue = other.weight*other.value
-        except:
-            raise
+        except TypeError:
+            raise IndividualError("self value not evaluated.")
 
 
         if all( s <= o for s,o in zip(self.wvalue, other.wvalue)) and \

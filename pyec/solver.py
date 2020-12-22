@@ -8,14 +8,22 @@ import time
 from .base.indiv import Individual
 from .base.population import Population
 from .base.environment import Environment
+from .operators.initializer import UniformInitializer 
+from .operators.initializer import Latin_HyperCube_Sampling as LHS 
 
 from .operators.selection import Selector, TournamentSelection, TournamentSelectionStrict
 from .operators.mutation import PolynomialMutation as PM
 from .operators.crossover import SimulatedBinaryCrossover as SBX
 from .operators.mating import Mating
+from .operators.sorting import NonDominatedSort
 
+from .optimizers import Optimizer
 from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
+<<<<<<< HEAD
 # from .optimizers import Optimizer
+=======
+from .optimizers.nsga import NSGA2
+>>>>>>> a43d39a397e75c465153bbc5a9b16596f4b85175
 
 class Solver(object):
     """進化計算ソルバー    
@@ -26,7 +34,7 @@ class Solver(object):
                  n_obj: int,  # 目的関数の数
                  selector,
                  mating,
-                 optimizer,
+                 optimizer: Optimizer,
                  eval_func, 
                  ksize: int = 0,
                  alpha: int = 0,
@@ -65,6 +73,7 @@ class Solver(object):
         self.restart = 0
         self.env: Environment
         # self.optimizer: 
+        self.sort = NonDominatedSort()
 
         if old_env is not None:
             print("loading environment data...")
@@ -90,7 +99,8 @@ class Solver(object):
                 # print("history", len(self.env.history))
             else:
                 self.env = Environment(popsize, dv_size, n_obj, optimizer,
-                                       eval_func, dv_bounds, n_constraint)
+                                       eval_func, dv_bounds, n_constraint,
+                                       initializer=kwargs.get("initializer", UniformInitializer))
 
             self.selector = selector
             self.mating = Mating(mating[0], mating[1], self.env.pool)
@@ -100,26 +110,26 @@ class Solver(object):
         # self.n_obj = len(eval_func( dummy_indiv.get_design_variable() ))
         print("n_obj:", self.n_obj)
 
-        print("set optimizer:", optimizer.name)
-        if optimizer.name == "moead":
+        # print("set optimizer:", optimizer.name)
+        if optimizer is MOEAD:
             if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj, 
-                                       self.selector, self.mating, ksize=ksize)
+                                       self.selector, self.mating, ksize=ksize, **kwargs)
 
-        elif optimizer.name == "moead_de":
+        elif optimizer is MOEAD_DE:
             if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj,
                                        self.selector, self.mating, ksize=ksize,
-                                       CR=0.75, F=0.75, eta=20)
+                                       CR=0.75, F=0.75, eta=20, **kwargs)
 
-        elif optimizer.name == "c_moead":
+        elif optimizer is C_MOEAD:
             if ksize == 0:
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj, 
                                        self.selector, self.mating,
-                                       self.env.pool, n_constraint, ksize=ksize)
+                                       self.env.pool, n_constraint, ksize=ksize, **kwargs)
 
         # elif optimizer.name is "c_moead_dma":
         elif optimizer is C_MOEAD_DMA:
@@ -153,6 +163,9 @@ class Solver(object):
                                        self.selector, self.mating,
                                        self.env.pool, n_constraint, ksize=ksize, alpha=alpha,
                                        **kwargs)
+        elif optimizer is NSGA2:
+            self.optimizer = optimizer(self.env.popsize, self.n_obj,
+                                       self.selector, self.mating)
 
         # self.optimizer.normalize = normalize
         self.optimizer.init_normalize(normalize)
@@ -175,6 +188,10 @@ class Solver(object):
     def initialize(self, savepath=None):
         if self.restart == 0:
             for _ in range(self.optimizer.popsize):
+                if isinstance(self.env.initializer, LHS):
+                    self.env.initializer.popsize = self.optimizer.popsize
+                    self.env.initializer.calc_lhs()
+
                 indiv = self.env.creator()
 
                 # indiv.set_id(self.env.current_id)
@@ -182,16 +199,20 @@ class Solver(object):
                 # print(type(indiv))
                 indiv.set_boundary(self.env.dv_bounds)
                 indiv.set_weight(self.env.weight)
+                self.env.evaluate(indiv)
 
                 self.env.nowpop.append(indiv)
 
-            for indiv in self.env.nowpop:
-                # 目的関数値を計算
-                # print("func:", self.eval_func.__dict__)
-                res = self.env.evaluate(indiv)
-                if self.env.n_constraint > 0:
-                    if indiv.is_feasible():
-                        self.env.feasible_indivs_id.append(indiv.id)
+            if self.env.n_constraint > 0:
+                feasible_ids = [indiv.id for indiv in self.env.nowpop if indiv.is_feasible()]
+                self.env.feasible_indivs_id.extend(feasible_ids)
+                # for indiv in self.env.nowpop:
+                #     # 目的関数値を計算
+                #     # print("func:", self.eval_func.__dict__)
+                #     # self.optimizer.get_offspring(self.env.nowpop, self.eval_func)
+                #     # res = self.env.evaluate(indiv)
+                #     if indiv.is_feasible():
+                #         self.env.feasible_indivs_id.append(indiv.id)
             # print("res", res)
 
             # 適応度計算
@@ -228,11 +249,13 @@ class Solver(object):
                 self.result(save=True, fname=f"opt_result_epoch{self.n_epoch}.pkl")
                 self.result(delete=True, fname=f"opt_result_epoch{self.n_epoch-1}.pkl")
             # print(len(self.optimizer.EP))
-            EP_id = [p.id for p in self.optimizer.EP]
-            self.env.EP_history.append(EP_id)
-            print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
-            self.optimizer.n_EPupdate = 0
-            print("ref point:", self.optimizer.ref_points)
+            if hasattr(self.optimizer, "EP"):
+                EP_id = [p.id for p in self.optimizer.EP]
+                self.env.EP_history.append(EP_id)
+                print(f"EPsize:{len(self.optimizer.EP)}, Num of update ", self.optimizer.n_EPupdate, ", feasibleIndivs :", len(self.env.feasible_indivs_id))
+                self.optimizer.n_EPupdate = 0
+            if hasattr(self.optimizer, "ref_points"):
+                print("ref point:", self.optimizer.ref_points)
 
             if savepath is not None:
                 self.save_current_generation(savepath)
@@ -243,16 +266,25 @@ class Solver(object):
         nowpop = copy.deepcopy(self.env.nowpop)
         # nowpop = self.env.nowpop
 
-        for i in range(len(self.env.nowpop)):
-            child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
-            if self.env.n_constraint > 0:
-                # vioration = child.constraint_violation
-                if child.is_feasible():
-                    self.env.feasible_indivs_id.append(child.id)
-                    # print("feasible append")
+        nowpop = self.optimizer.get_new_generation(nowpop, self.eval_func)
+        # print("nowpop size:",len(nowpop))
+        if self.env.n_constraint > 0:
+            feasible_ids = [indiv.id for indiv in nowpop if indiv.is_feasible()]
+            self.env.feasible_indivs_id.extend(feasible_ids)
+            # for indiv in nowpop:
+            #     if indiv.is_feasible():
+            #         self.env.feasible_indivs_id.append(indiv.id)
+        # self.optimizer.update_allEP(nowpop)
+        # for i in range(len(self.env.nowpop)):
+        #     child = self.optimizer.get_offspring(i, nowpop, self.eval_func)
+        #     if self.env.n_constraint > 0:
+        #         # vioration = child.constraint_violation
+        #         if child.is_feasible():
+        #             self.env.feasible_indivs_id.append(child.id)
+        #             # print("feasible append")
 
         next_pop = nowpop
-        self.optimizer.calc_fitness(next_pop)
+        # self.optimizer.calc_fitness(next_pop)
 
         self.env.alternate(next_pop)
 
@@ -282,11 +314,11 @@ class Solver(object):
 
     def save_resultobj(self):
         sttime = time.time()
-        self._serializer("indiv_pool.pkl", self.env.pool)
-        print(f"pool savetime: {time.time() - sttime}")
+        # self._serializer("indiv_pool.pkl", self.env.pool)
+        # print(f"pool savetime: {time.time() - sttime}")
         self._serializer("indiv_history.pkl", self.env.history)
         print(f"history savetime: {time.time() - sttime}")
-        self.optimizer.mating.clear_pool()
+        # self.optimizer.mating.clear_pool()
         self._serializer("optimizer.pkl", self.optimizer)
         print(f"optimizer savetime: {time.time() - sttime}")
 

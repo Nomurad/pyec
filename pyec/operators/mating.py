@@ -10,17 +10,19 @@ from .crossover import AbstractCrossover
 from .crossover import BlendCrossover, SimulatedBinaryCrossover
 from .mutation import PolynomialMutation
 
+
 class MatingError(Exception):
     pass 
 
+
 class Mating(object):
-    
+
     def __init__(self, crossover: AbstractCrossover, mutation: PolynomialMutation, pool: Pool):
         self._crossover = crossover
         self._mutation = mutation
         self._pool = pool
-        self._parents = []
-        self._stored = []
+        self._parents: List[Individual] = []
+        self._stored: List[Individual] = []
 
     @property
     def pool(self):
@@ -41,15 +43,18 @@ class Mating(object):
 
         parent_genomes = [indiv.get_genome() for indiv in parents]
         # print("parent genomes:", parent_genomes)
+
         child_genomes = self._crossover(parent_genomes)
+
         if singlemode == True:
             child_genome = random.choice(child_genomes)
+            child_genome = self._mutation(child_genome)   # 一定確率で突然変異
             child_indiv = self._pool.indiv_creator(child_genome, parents)
             child_indiv.set_weight(parents[0].weight)
             child_indiv.set_boundary(parents[0].bounds)
             self._stored.append(child_indiv)
             return self._stored
-        
+
         for child_genome in child_genomes:
             child_genome = self._mutation(child_genome)   # 一定確率で突然変異
             child_indiv = self._pool.indiv_creator(child_genome, parents)
@@ -57,11 +62,12 @@ class Mating(object):
             child_indiv.set_weight(parents[0].weight)
             child_indiv.set_boundary(parents[0].bounds)
             self._stored.append(child_indiv)
-        
+
         return self._stored
 
     def set_parents(self, parents):
         self._parents = parents
+
 
 class PartialMatingIterator(object):
     ''' MatingIteratorの部分適用オブジェクト
@@ -74,6 +80,7 @@ class PartialMatingIterator(object):
     def __call__(self, parents):
         return MatingIterator(self._crossover, self._mutation, 
                               self._pool, parents)
+
 
 class MatingIterator(object):
 

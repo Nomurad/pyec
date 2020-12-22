@@ -1,9 +1,11 @@
 from typing  import List, Any
 import numpy as np 
+import pandas as pd
 
 from .indiv import Individual, Fitness
 from .population import Population
 from ..operators.initializer import UniformInitializer
+from ..operators.initializer import Latin_HyperCube_Sampling
 
 
 class EnvironmentError(Exception):
@@ -19,10 +21,10 @@ class Pool(object):
         self.current_id = 0
         self.data = []  # 全個体リスト
 
-    def __call__(self, genome: np.ndarray, parents=None):
+    def __call__(self, genome: np.ndarray, parents: Individual = None):
         self.indiv_creator(genome, parents)
 
-    def indiv_creator(self, genome: np.ndarray, parents=None):
+    def indiv_creator(self, genome: np.ndarray, parents: Individual = None):
         """遺伝子情報から個体を生成，全個体リストに追加しておく
 
         Arguments:
@@ -52,6 +54,13 @@ class Pool(object):
     def clear_indivpool(self):
         self.data = [] 
 
+    def to_csv(self):
+        indivdata = []
+        for i, indiv in enumerate(self.data):
+            indivdata.append([indiv.id]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
+        indivdata = np.array(indivdata)
+        pd.DataFrame(indivdata).to_csv("poolindiv_values.csv", header=None, index=False)
+
 
 class Environment(object):
     """進化計算のパラメータなどを保存するクラス
@@ -65,6 +74,7 @@ class Environment(object):
                  dv_bounds: tuple = (0, 1),   # 設計変数の上下限値
                  n_constraint=0,  # 制約条件の数
                  normalize=False,
+                 initializer=UniformInitializer,
                  old_pop=None
                  ):
 
@@ -93,7 +103,7 @@ class Environment(object):
         self.feasible_indivs_id: List[int] = []
 
         # initializerの設定
-        self.initializer = UniformInitializer(dv_size) 
+        self.initializer = initializer(dv_size, popsize=popsize, n_obj=n_obj)
         self.creator = Creator(self.initializer, self.pool)
 
     def alternate(self, population=None, indivs=None):
