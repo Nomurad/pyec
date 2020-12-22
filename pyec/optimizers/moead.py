@@ -248,7 +248,7 @@ class MOEAD(Optimizer):
             # tmpEP = []
             # self.EP.sort()
             for i in reversed(range(len(self.EP))):
-                if all(indiv.wvalue == self.EP[i].wvalue):
+                if all(np.array(indiv.wvalue) == np.array(self.EP[i].wvalue)):
                     return
                 
                 if indiv.dominate(self.EP[i]):
