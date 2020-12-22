@@ -19,11 +19,8 @@ from .operators.sorting import NonDominatedSort
 
 from .optimizers import Optimizer
 from .optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
-<<<<<<< HEAD
-# from .optimizers import Optimizer
-=======
+from .optimizers import Optimizer
 from .optimizers.nsga import NSGA2
->>>>>>> a43d39a397e75c465153bbc5a9b16596f4b85175
 
 class Solver(object):
     """進化計算ソルバー    
@@ -72,7 +69,7 @@ class Solver(object):
         self.n_epoch = 0
         self.restart = 0
         self.env: Environment
-        # self.optimizer: 
+        self.optimizer: Optimizer
         self.sort = NonDominatedSort()
 
         if old_env is not None:
