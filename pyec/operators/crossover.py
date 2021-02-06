@@ -27,7 +27,7 @@ class BlendCrossover(AbstractCrossover):
 
         if random.random() > self.rate:
             return x1, x2
-        gamma = (1 + 2 * self.alpha) * np.random.rand(x1.shape) - self.alpha
+        gamma = (1 + 2 * self.alpha) * np.random.uniform(size=x1.shape) - self.alpha
 
         if self.oneout:
             y = (1 - gamma) * x1 + gamma * x2
