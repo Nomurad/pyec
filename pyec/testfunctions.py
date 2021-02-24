@@ -171,6 +171,53 @@ class OSY(Constraint_TestProblem):
         return (f1, f2), (-g1, -g2, -g3, -g4, -g5, -g6)
 
 
+def Welded_beam(Constraint_TestProblem):
+    def __init__(self):
+        super().__init__(2, 6)
+        self.P_lb  = 6000.0
+        self.L_in  = 14.0
+        self.E_psi = 30.0*10e6
+        self.G_psi = 12.0*10e6
+        self.t_max = 13600.0
+        self.s_max = 30000.0
+
+    def __call__(self, x):
+        return self.welded_beam(x)
+
+    def welded_beam(self, x):
+        """ Welded beam test problem
+            n_objects : 4
+            n_constraints : 4
+        """
+        P_lb = self.P_lb
+        L_in = self.L_in
+        E_psi = self.E_psi
+        G_psi = self.G_psi
+        t_max = self.t_max
+        s_max = self.s_max
+
+        delta = 4.0*P_lb*(L_in**3)/(E_psi*x[3]*(x[2]**3))
+        f1 = 1.10471 * x[0]**2 * x[1] + 0.04811 * x[2] * x[3] * (14.0 + x[1])
+        f2 = delta
+
+        R = np.sqrt(x[1]**2)
+        M = P_lb * (L_in + x[1] / 2)
+        J = 2*np.sqrt(0.5) * x[0] * x[1] * ((x[1]**2)/12.0 + 0.25 * (x[0] + x[2])**2)
+        t1 = P_lb / (np.sqrt(2.0) * x[0] * x[1])
+        t2 = M * R / J
+        t = np.sqrt(t1 ** 2 + t2 ** 2 + t1 * t2 * x[1] / R)
+        sigma = 6 * P_lb * L_in / (x[3] * x[2] ** 2)
+        # P_c = 64746.022 * (1 - 0.0282346 * x[2]) * x[2] * x[3] ** 3
+        P_c = (4.013*E_psi*x[2]*(x[3]**2)) / 6.0*(L_in**2)
+        P_c = P_c * (1.0 - (x[2]/(2*L_in)) * np.sqrt(E_psi/(4.0*G_psi)))
+
+        g1 = (1 / t_max) * (t - t_max)
+        g2 = (1 / s_max) * (sigma - s_max)
+        # g3 = (1 / (5 - 0.125)) * (x[0] - x[3])
+        g3 = 1.0 * (x[0] - x[3])
+        g4 = (1 / P_lb) * (P_lb - P_c)
+
+
 def tnk(x):
     """TNK -- n_obj=2, n_dv=2, n_constraint=2
 
