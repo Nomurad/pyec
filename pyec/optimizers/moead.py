@@ -138,8 +138,11 @@ class MOEAD(Optimizer):
         if self.normalize is not False: 
             if self.min_or_max[0] == 0: 
                 eps = 1e-16
-                self.min_or_max = np.array([int(wval/abs(wval + eps)) for wval in indiv.wvalue], dtype=int)
-                self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
+                # self.min_or_max = np.array([int(wval/abs(wval + eps)) for wval in indiv.wvalue], dtype=int)
+                # self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
+                wvals = np.array(indiv.wvalue)
+                self.ref_points = np.min([self.ref_points, wvals], axis=0)
+
                 # self.ref_points[self.ref_points > self.min_or_max] = 1.0
                 # self.ref_points[self.ref_points <= self.min_or_max] = 0.0
             # for i in range(len(self.ref_points)):
@@ -167,15 +170,13 @@ class MOEAD(Optimizer):
             # indiv.set_fitness(fit_value)
 
         parents = self.selector(subpop)
-        # print("len parents", parents)
-        # print("id_s", [p.get_id() for p in parents])
-        childs = self.mating(parents)
+        childs = self.mating(parents, singlemode=True)
         # child = random.choice(childs)
         child = childs[0]
-        idx = 0
-        if all(child.genome == childs[idx]):
-            idx = 1
-        self.mating.pool.pop(childs[idx].get_id())
+        # idx = 0
+        # if all(child.genome == childs[idx]):
+        #     idx = 1
+        # self.mating.pool.pop(childs[idx].get_id())
         # print(child.evaluated(), child.value)
         child.evaluate(eval_func, (child.get_design_variable()))
         self.update_reference(child)

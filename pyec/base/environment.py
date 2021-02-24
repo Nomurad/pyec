@@ -56,8 +56,12 @@ class Pool(object):
 
     def to_csv(self):
         indivdata = []
-        for i, indiv in enumerate(self.data):
-            indivdata.append([indiv.id]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
+        if self.data[-1].constraint_violation is None:
+            for i, indiv in enumerate(self.data):
+                indivdata.append([indiv.id]+list(indiv.value)+list(indiv.wvalue))
+        else:
+            for i, indiv in enumerate(self.data):
+                indivdata.append([indiv.id]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
         indivdata = np.array(indivdata)
         pd.DataFrame(indivdata).to_csv("poolindiv_values.csv", header=None, index=False)
 
@@ -178,7 +182,7 @@ class Normalizer(object):
             self.lower = 0.0
 
     def normalizing(self, indiv: Individual):
-        val = np.array(indiv.value)
+        val = np.array(indiv.value)*np.array(indiv.weight)
         res = (val - self.lower)/(self.upper - self.lower + self.eps)
         indiv.wvalue = (res) 
         return res
