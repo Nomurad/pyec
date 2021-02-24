@@ -109,7 +109,7 @@ class Individual(object):
         if self.weight is not None:
             self.wvalue = self.weight*self.value
         else:
-            self.wvalue = self.value
+            self.wvalue = np.array(self.value)
 
     def set_constraint_violation(self, constraint_violation):
         if hasattr(constraint_violation, "__len__"):

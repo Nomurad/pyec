@@ -58,7 +58,7 @@ dvsize = 10
 problem = Fonseca_and_Fleming_func(2, dvsize)
 problem = Problem()
 optimizer = MOEAD_DE
-optimizer = NSGA2
+#optimizer = NSGA2
 n_const = 0
 # problem = Knapsack(n_const=n_const ,phi=0.5)
 

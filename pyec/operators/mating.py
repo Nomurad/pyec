@@ -23,6 +23,9 @@ class Mating(object):
         self._pool = pool
         self._parents: List[Individual] = []
         self._stored: List[Individual] = []
+    
+    def __repr__(self):
+        return f"cross:{self._crossover}, mutate:{self._mutation}"
 
     @property
     def pool(self):

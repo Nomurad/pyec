@@ -1,6 +1,6 @@
 {
-    "problem": "Knapsack",
-    "optimizer": "C_MOEAD_DEDMA",
+    "problem": "mCDTLZ",
+    "optimizer": "C_MOEAD_HXDMA",
 
     "Genelation": 300,
     "popsize": 200,

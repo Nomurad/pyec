@@ -6,6 +6,9 @@ class PolynomialMutation():
         self.rate = rate
         self.eta = eta
 
+    def __repr__(self):
+        return f"cross_rate:{self.rate}, eta_c:{self.eta}"
+
     def __call__(self, gene):
         size = len(gene)
         res = np.array(gene)
