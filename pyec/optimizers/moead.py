@@ -90,6 +90,7 @@ class MOEAD(Optimizer):
         self.EPappend = self.EP.append
         self.EPpop = self.EP.pop
         self.n_EPupdate = 0
+        self.isEPupdate = kwargs.get("isEPupdate", True)
 
     def __call__(self, index: int, population: Population, eval_func) -> Individual: 
         child = self.get_offspring(index, population, eval_func)
@@ -244,6 +245,8 @@ class MOEAD(Optimizer):
         # print("EP append")
         if not indiv.is_feasible():
             return
+        elif self.isEPupdate == False:
+            return 
 
         if len(self.EP) > 2:
             # tmpEP = []
@@ -478,13 +481,15 @@ class C_MOEAD(MOEAD):
                 child.set_fitness(self.scalar(child, self.weight_vec[index], self.ref_points))
 
                 # nr = int(len(subpop))
-                nr = int(len(subpop)/2)
+                nr = int(len(subpop))
                 res = self._alternate(child, nr, index, population, subpop)
             else:
                 population[index] = child
                 res = child
         else:
-            if child.cv_sum < parent.cv_sum: 
+            if parent.is_feasible():
+                res = parent
+            elif child.cv_sum < parent.cv_sum: 
                 population[index] = child
                 res = child 
             else:

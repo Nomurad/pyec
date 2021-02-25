@@ -184,7 +184,7 @@ class Normalizer(object):
     def normalizing(self, indiv: Individual):
         val = np.array(indiv.value)*np.array(indiv.weight)
         res = (val - self.lower)/(self.upper - self.lower + self.eps)
-        indiv.wvalue = list(res) 
+        indiv.wvalue = (res) 
         return res
 
     def ref_update(self, upper, lower):

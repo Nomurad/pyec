@@ -46,6 +46,9 @@ class SimulatedBinaryCrossover(AbstractCrossover):
         self.eta = eta
         self.oneout = oneout
 
+    def __repr__(self):
+        return f"cross_rate:{self.rate}, eta_c:{self.eta}"
+
     def __call__(self, genomes):
         y1, y2 = map(np.array, genomes)
 
