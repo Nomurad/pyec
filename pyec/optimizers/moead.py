@@ -789,6 +789,7 @@ class C_MOEAD_HXDMA(C_MOEAD_DEDMA):
     """ 
         Hybrid crossover method(SBX & DE)
     """
+    name = "c_moead_hxdma"
 
     def __init__(self, popsize: int, n_obj: int, selection: Selector, mating: Mating, 
                  pool: Pool, n_constraint: int, ksize=3, alpha=4,

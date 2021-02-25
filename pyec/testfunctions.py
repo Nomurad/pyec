@@ -171,9 +171,9 @@ class OSY(Constraint_TestProblem):
         return (f1, f2), (-g1, -g2, -g3, -g4, -g5, -g6)
 
 
-def Welded_beam(Constraint_TestProblem):
+class Welded_beam(Constraint_TestProblem):
     def __init__(self):
-        super().__init__(2, 6)
+        super().__init__(2, 4)
         self.P_lb  = 6000.0
         self.L_in  = 14.0
         self.E_psi = 30.0*10e6
@@ -186,7 +186,7 @@ def Welded_beam(Constraint_TestProblem):
 
     def welded_beam(self, x):
         """ Welded beam test problem
-            n_objects : 4
+            n_objects : 2
             n_constraints : 4
         """
         P_lb = self.P_lb
@@ -200,22 +200,31 @@ def Welded_beam(Constraint_TestProblem):
         f1 = 1.10471 * x[0]**2 * x[1] + 0.04811 * x[2] * x[3] * (14.0 + x[1])
         f2 = delta
 
-        R = np.sqrt(x[1]**2)
-        M = P_lb * (L_in + x[1] / 2)
-        J = 2*np.sqrt(0.5) * x[0] * x[1] * ((x[1]**2)/12.0 + 0.25 * (x[0] + x[2])**2)
+        J = 2.0*(np.sqrt(2.0)*x[0]*x[1] * (((x[1]**2)/12.0) + ((x[0] + x[2])/2.0)**2))
+        M = P_lb * (L_in + x[1] / 2.0)
+
+        R = (x[1]**2)/4.0 + ((x[0]+x[2])/2.0)**2
+        R = np.sqrt(R)
+        
         t1 = P_lb / (np.sqrt(2.0) * x[0] * x[1])
         t2 = M * R / J
-        t = np.sqrt(t1 ** 2 + t2 ** 2 + t1 * t2 * x[1] / R)
-        sigma = 6 * P_lb * L_in / (x[3] * x[2] ** 2)
-        # P_c = 64746.022 * (1 - 0.0282346 * x[2]) * x[2] * x[3] ** 3
-        P_c = (4.013*E_psi*x[2]*(x[3]**2)) / 6.0*(L_in**2)
+        t = (t1**2) + (2.0*t1*t2*x[1]) / (2.0*R) + t2**2
+        t = np.sqrt(t)
+        # t = np.sqrt(t1**2 + t2**2 + t1*t2*x[1] / R)
+        
+        P_c = (4.013*E_psi*x[2]*(x[3]**3)) / 6.0 / (L_in**2)
         P_c = P_c * (1.0 - (x[2]/(2*L_in)) * np.sqrt(E_psi/(4.0*G_psi)))
+        # P_c = 64746.022 * (1 - 0.0282346 * x[2]) * x[2] * x[3] ** 3
+        sigma = 6.0*P_lb*(L_in**3) / (E_psi*x[3]*(x[2]**2))
+        # sigma = 6 * P_lb * L_in / (x[3] * x[2] ** 2)
 
-        g1 = (1 / t_max) * (t - t_max)
-        g2 = (1 / s_max) * (sigma - s_max)
+        g1 = (t - t_max) / t_max
+        g2 = (sigma - s_max) / s_max
         # g3 = (1 / (5 - 0.125)) * (x[0] - x[3])
-        g3 = 1.0 * (x[0] - x[3])
-        g4 = (1 / P_lb) * (P_lb - P_c)
+        g3 = (x[0] - x[3])
+        g4 = (P_lb - P_c) / P_lb
+
+        return (f1, f2), (g1, g2, g3, g4)
 
 
 def tnk(x):
