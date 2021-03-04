@@ -1,12 +1,12 @@
 {
-    "problem": "mCDTLZ",
-    "optimizer": "C_MOEAD_DMA",
+    "problem": "WB",
+    "optimizer": "C_MOEAD_HXDMA",
 
     "Genelation": 300,
     "popsize": 100,
-    "dv_size": 6,
+    "dv_size": 4,
     "n_obj": 2,
-    "n_constraint": 6,
+    "n_constraint": 4,
 
     "ksize": 11,
     "alpha": 4,
@@ -14,7 +14,7 @@
     "u_bounds": [1.0, 1.0],
     "CR":1.0,
     "F":0.5,
-    "cross_rate_dm": 1.0,
+    "cross_rate_dm": 0.5,
 
     "normalize": true,
     "save": false
