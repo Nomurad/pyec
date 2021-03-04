@@ -41,7 +41,7 @@ optimizer = C_MOEAD_DEDMA
 optimizer = eval("C_MOEAD_DMA")
 
 def problem_set(prob:str):
-    global n_obj, dvsize, bmax, problem, weights, phi
+    global n_obj, dvsize, bmax, bmin, problem, weights, phi
     print("problem name is ", prob)
     if prob == "mCDTLZ":
         # dvsize = n_obj
@@ -84,8 +84,8 @@ def problem_set(prob:str):
         n_const = problem.n_const
         print("n_const:",n_const)
         weights = [MINIMIZE]*n_obj
-        bmax = [0.125, 0.1, 0.1, 0.125]
-        bmin = [5.0, 10.0, 10.0, 5.0]
+        bmin = [0.125, 0.1, 0.1, 0.125]
+        bmax = [5.0, 10.0, 10.0, 5.0]
 
     print("problem is ", problem)
 
