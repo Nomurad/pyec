@@ -1,0 +1,38 @@
+
+# test problem name
+"problem": "mCDTLZ"
+
+# Implemented optimizers ================================#
+# NSGA2
+# MOEAD, MOEAD_DE
+# C_MOEAD, C_MOEAD_DMA, C_MOEAD_DEDMA, C_MOEAD_HXDMA
+#========================================================#
+"optimizer": "C_MOEAD_HXDMA"
+
+"Genelation": 100
+"popsize": 100
+
+# Num of design variable
+"dv_size": 4
+
+"n_obj": 2
+"n_constraint": 2
+
+"ksize": 11
+"alpha": 4
+
+# dv bounds set
+"dv_bounds": [
+    [0.0], # lower bounds
+    [1.0]  # upper bounds
+]
+
+"CR": 1.0
+"F": 0.5
+"cross_rate_dm": 0.5
+
+# objective function normalize option.
+"normalize": true
+
+# result saving option
+"save": false
