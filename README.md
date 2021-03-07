@@ -3,10 +3,12 @@
 PyEC is a framework for evolutionary computing in Python3.  
 
 ## Algorithms
-
 * MOEA/D
 * MOEA/D-DE
-* Constraint-MOEA/D (開発中)
+* Constraint-MOEA/D
+* CMOEA/D-DMA
+* CMOEA/D-DEDMA
+* CMOEA/D-HXDMA
 
 ## Install  
 
