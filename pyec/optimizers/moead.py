@@ -140,9 +140,9 @@ class MOEAD(Optimizer):
             if self.min_or_max[0] == 0: 
                 eps = 1e-16
                 # self.min_or_max = np.array([int(wval/abs(wval + eps)) for wval in indiv.wvalue], dtype=int)
-                # self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
-                wvals = np.array(indiv.wvalue)
-                self.ref_points = np.min([self.ref_points, wvals], axis=0)
+                self.ref_points = np.zeros(self.ref_points.shape, dtype=np.float)
+                # wvals = np.array(indiv.wvalue)
+                # self.ref_points = np.min([self.ref_points, wvals], axis=0)
 
                 # self.ref_points[self.ref_points > self.min_or_max] = 1.0
                 # self.ref_points[self.ref_points <= self.min_or_max] = 0.0
@@ -329,7 +329,7 @@ class MOEAD_DE(MOEAD):
 
     def __init__(self, popsize: int, n_obj: int,
                  selection: Selector, mating: Mating, ksize=3,
-                 CR=0.9, F=0.7, eta=20
+                 CR=0.9, F=0.7, eta=20, **kwargs
                  ):
         super().__init__(popsize, n_obj, selection, mating, ksize=ksize)
 
