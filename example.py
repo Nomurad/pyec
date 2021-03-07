@@ -4,6 +4,7 @@ import os
 import json
 import yaml
 import argparse
+import subprocess
 from pprint import pprint
 
 import numpy as np
@@ -209,13 +210,14 @@ for indiv in pop:
     data.append(list(indiv.value))
 data = np.array(data)
 
-### Start Optimizing
+### Start Optimizing ==========================================================
 st_time = time.time()
 max_epoch = inpdict.get("Genelation", max_epoch)
 solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
 print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
 
+### result saving =============================================================
 result = solver.result(save=True)
 solver.save_all_indiv()
 
@@ -223,10 +225,10 @@ with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
     # json.dump(solver.optimizer.__dict__, f, indent=4)
     pprint(solver.optimizer.__dict__, stream=f)
 
-### ===========================================================================
 data = solver.save_history_to_csv()
 print("data :", data)
-# np.set_printoptions(threshold=np.inf)
+
+### ===========================================================================
 np.set_printoptions(precision=5, suppress=True)
 # plt.scatter(data[-1,0], data[-1,1])
 print(f"ref_points = {solver.optimizer.ref_points}")
@@ -253,7 +255,6 @@ infeasible_dat = data[data[:,-1] > 0]
 
 
 ### result plot ===============================================================
-
 fig = plt.figure(figsize=(10,7))
 cm = plt.get_cmap("Blues")
 sc = plt.scatter(feasible_dat[:,1], feasible_dat[:,2], 
@@ -269,7 +270,7 @@ data_end = data[data[:,0] == max_epoch]
 # plt.scatter(data0[:,1], data0[:,2], c="yellow")
 # plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
-np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
+# np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
 print("solver\n")
 print(solver.optimizer.name)
 
