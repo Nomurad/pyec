@@ -6,9 +6,10 @@ Abstruct
 
 import math
 import random
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 import numpy as np
+from icecream import ic
 
 
 A = 10
@@ -26,6 +27,8 @@ class TestProblem(metaclass=ABCMeta):
 
     def __init__(self, n_obj):
         self.n_obj = n_obj
+        self.dvsize = 0
+        self.dv_bounds = (0, 1)
 
     @abstractmethod
     def __call__(self):
@@ -141,6 +144,11 @@ class Constraint_TestProblem(TestProblem):
 class OSY(Constraint_TestProblem):
     def __init__(self):
         super().__init__(2, 6)
+        self.dvsize = 6
+        self.dv_bounds = (
+            [0, 0, 1, 0, 1, 0],
+            [10, 10, 5, 6, 5, 10]
+        )
 
     def __call__(self, x):
         return self.osy(x)
@@ -174,6 +182,11 @@ class OSY(Constraint_TestProblem):
 class Welded_beam(Constraint_TestProblem):
     def __init__(self):
         super().__init__(2, 4)
+        self.dvsize = 4
+        self.dv_bounds = (
+            [0.125, 0.1, 0.1, 0.125],
+            [5.0, 10.0, 10.0, 5.0]
+        )
         self.P_lb  = 6000.0
         self.L_in  = 14.0
         self.E_psi = 30.0*10e6
@@ -261,6 +274,9 @@ class mCDTLZ(Constraint_TestProblem):
     def __init__(self, n_obj=2, n_const=2):
         super().__init__(n_obj, n_const)
         self.n_dv = None
+        self.dv_bounds = (
+            0.0, 1.0
+        )
 
     def __call__(self, x):
         if not hasattr(x, "__len__"):
@@ -269,7 +285,7 @@ class mCDTLZ(Constraint_TestProblem):
         if self.n_dv is None:
             self.n_dv = len(x)
             self.n_bar_m = int(self.n_dv/self.n_obj)
-            print("n/m = ", self.n_bar_m)
+            ic("n/m = ", self.n_bar_m)
 
         # n = self.n_dv  # num of design variable
         # m = self.n_obj #num of objective function

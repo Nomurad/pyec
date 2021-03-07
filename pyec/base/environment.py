@@ -1,6 +1,7 @@
 from typing  import List, Any
 import numpy as np 
 import pandas as pd
+from icecream import ic
 
 from .indiv import Individual, Fitness
 from .population import Population
@@ -63,7 +64,10 @@ class Pool(object):
             for i, indiv in enumerate(self.data):
                 indivdata.append([indiv.id]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
         indivdata = np.array(indivdata)
-        pd.DataFrame(indivdata).to_csv("poolindiv_values.csv", header=None, index=False)
+        df = pd.DataFrame(indivdata)
+        df.loc[:, 0] = df.loc[:, 0].astype("int")
+        # ic(df.dtypes)  # debug
+        df.to_csv("poolindiv_values.csv", header=None, index=False)
 
 
 class Environment(object):

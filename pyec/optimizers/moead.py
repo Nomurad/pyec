@@ -3,6 +3,7 @@ import copy
 from itertools import chain
 from typing import List, Tuple, Union, Optional
 import numpy as np
+from icecream import ic
 
 from ..base.indiv import Individual
 from ..base.population import Population
@@ -523,8 +524,8 @@ class C_MOEAD_DMA(C_MOEAD):
         # default cmoea/d-dma's crossover operator & mutation operator
         # if "cross_rate_dm" in kwargs: 
         #     self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
-        print("in moead cross_rate_dm: ", kwargs)
         self.cross_rate_dm = kwargs.get("cross_rate_dm", 1.0)
+        ic("in moead cross_rate_dm: ", self.cross_rate_dm)
         rate_cross = self.mating._crossover.rate
         rate_mutate = self.mating._mutation.rate
         self.mating._crossover = SimulatedBinaryCrossover(rate_cross, 20)
@@ -678,7 +679,7 @@ class C_MOEAD_DEDMA(C_MOEAD_DMA):
             popsize, n_obj, selection, mating, pool, n_constraint, ksize, alpha, **kwargs
         )
         # print("name is ", super(mros[0], self).name)
-        print("cross_rate_dm", self.cross_rate_dm)
+        ic("cross_rate_dm", self.cross_rate_dm)
 
         # DE settings
         self.CR = CR   # 交叉率

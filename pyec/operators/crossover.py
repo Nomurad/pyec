@@ -1,6 +1,7 @@
 import random 
 from abc import ABC, ABCMeta, abstractmethod
 import numpy as np 
+from icecream import ic
 
 class CrossoverError(Exception):
     pass

@@ -1,146 +1,254 @@
+import time
+import sys
+import os 
+import json
+import yaml
+import argparse
+from pprint import pprint
+
+import numpy as np
+import matplotlib.pyplot as plt
+from icecream import ic
+
 from pyec.base.indiv import Individual, Fitness
 from pyec.base.population import Population
 from pyec.base.environment import Environment
 
-from pyec.operators.crossover import SimulatedBinaryCrossover as SBX
+from pyec.operators.crossover import SimulatedBinaryCrossover
 from pyec.operators.selection import Selector, TournamentSelectionStrict
-from pyec.operators.mutation import PolynomialMutation as PM
+from pyec.operators.mutation import PolynomialMutation
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
-from pyec.optimizers.moead import MOEAD, MOEAD_DE, C_MOEAD
-from pyec.optimizers.nsga import NSGA2
+from pyec.optimizers.moead import *
 from pyec.solver import Solver
 
-from pyec.testfunctions import zdt1, zdt2, zdt3, Fonseca_and_Fleming_func 
-from pyec.testfunctions import tnk, mCDTLZ, Knapsack
+from pyec.testfunctions import TestProblem, Constraint_TestProblem
+from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, OSY, Welded_beam
 
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from pprint import pprint
+MAXIMIZE = -1
+MINIMIZE = 1
 
-class Problem():
+max_epoch = 100*2
+n_obj = 2
+dvsize = 6
+alpha = 4
+phi = 0.3
+
+# boundary set
+bmax = [1.0]
+bmin = [0.0]
+
+optimizer = C_MOEAD
+optimizer = C_MOEAD_DMA
+optimizer = C_MOEAD_DEDMA
+
+# cmd argument parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-f", "--input_file", type=str, default="calc_input.json")
+args = parser.parse_args()
+
+# Define the optimize problem for yourself.
+class my_problem1(Constraint_TestProblem):
+    """
+        const-opt problem example
+    """
     def __init__(self):
-        pass
-
+        super().__init__(n_obj=2, n_const=1)
+        self.dv_bounds = (
+            [0.0, 0.0],
+            [1.0, 1.0]
+        )
+    
     def __call__(self, x):
-        """ 
-        0 <= x1 <= 5
-        0 <= x2 <= 3
         """
-        return self.biases(x)
-
-    def belegundu(self, vars):
-        x = vars[0]
-        y = vars[1]
-        return [-2*x + y, 2*x + y], [-x + y - 1, x + y - 7]
-
-    def biases(self, x):
-        x = np.array(x)
-        n = len(x)
-        x1 = x[0]
-        x2 = x[1]
-        gamma = 0.1
-
-        f1 = 1 - np.exp(-4*x1)*(np.sin(5*np.pi*x1))**6
-        g = 1 + 10*(sum(x[1:])/(n-1))**0.25
-        h = 1 - (f1/g)**2
-        if f1 > g:
-            h = 0
-        f2 = g*h
-        return [f1, f2]
+            argument "x" is design variable vector.
+        """
+        f1 = x[0]*2
+        f2 = x[0]/2
+        
+        g1 = x - 1
+        
+        return (f1, f2), (g1)
 
 
 
-max_epoch = 200
-dvsize = 10
-problem = Fonseca_and_Fleming_func(2, dvsize)
-problem = Problem()
-optimizer = MOEAD_DE
-#optimizer = NSGA2
-n_const = 0
-# problem = Knapsack(n_const=n_const ,phi=0.5)
+# test problem setting function
+def problem_set(prob:str):
+    global n_obj, dvsize, bmax, bmin, problem, weights, phi
+    print("problem name is ", prob)
+    if prob == "mCDTLZ":
+        # dvsize = n_obj
+        problem = mCDTLZ(n_obj=n_obj, n_const=n_obj)
+        weights = [MINIMIZE]*n_obj
+        bmin = problem.dv_bounds[0]
+        bmax = problem.dv_bounds[1]
+
+    elif prob == "Knapsack":
+        # dvsize = 500
+        bmin = 0.0
+        bmax = 1.0
+        problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=phi)
+        weights = [MAXIMIZE]*n_obj
+
+    elif prob == "Circle":
+        dvsize = n_obj
+        bmin = 0.0
+        bmax = 2.0
+        problem = Circle_problem()
+        weights = [MAXIMIZE]*n_obj
+
+    elif prob == "osy":
+        problem = OSY()  
+        dvsize = problem.dvsize
+        n_obj = problem.n_obj
+        n_const = problem.n_const
+        weights = [MINIMIZE]*n_obj
+        bmin = problem.dv_bounds[0]
+        bmax = problem.dv_bounds[1]
+
+    elif prob == "WB":  # welded beem
+        problem = Welded_beam()
+        dvsize = problem.dvsize
+        n_obj = problem.n_obj
+        n_const = problem.n_const
+        weights = [MINIMIZE]*n_obj
+        bmin = problem.dv_bounds[0]
+        bmax = problem.dv_bounds[1]
+
+    print("problem is ", problem)
 
 
-args = {
-    "popsize": 100,
-    "dv_size": dvsize,
-    "n_obj": 2,
-    "selector": Selector(TournamentSelectionStrict),
-    "mating": [SBX(), PM()],
-    "optimizer": optimizer,
-    "eval_func": problem,
-    "ksize": 10,
-    "dv_bounds": ([0]*dvsize, [1]*dvsize),  # (lowerbounds_list, upperbounds_list)
-    "weight": [1, 1],
-    "normalize": False,
-    "n_constraint": n_const,
-    "save": False
-}
-#args["dv_bounds"] = ([-4]*dvsize, [4]*dvsize)
+inpfile = args.input_file
+extention = os.path.splitext(inpfile)[-1]
+if os.path.exists(inpfile):
+    with open(inpfile, "r") as f:
+        if extention == ".json":
+            inpdict = json.load(f)
+        elif extention == ".yml":
+            inpdict = yaml.safe_load(f)
+        ic(inpdict)
+        ic((inpdict.get("dv_bounds")))
+        ic(type(inpdict.get("dv_bounds")))
+        input()
+else:
+    print(f"input file ({inpfile}) is not exist...")
+    exit(1)
 
-print(optimizer.name)
+os.makedirs("result", exist_ok=True)
 
-solver = Solver(**args)
+
+problem_set(inpdict.get("problem"))
+n_obj = problem.n_obj
+n_const = problem.n_const
+
+cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
+mutate = PolynomialMutation(rate=1/dvsize, eta=20)
+
+solverargs = dict(
+    popsize=inpdict.pop("popsize"),
+    dv_size=inpdict.pop("dv_size"),
+    n_obj=inpdict.pop("n_obj"),
+    selector=Selector(TournamentSelectionStrict),  # SBX 
+    mating=[cross, mutate],
+    optimizer=eval(inpdict.pop("optimizer")),
+    eval_func=problem,
+    ksize=inpdict.pop("ksize"),
+    alpha=inpdict.pop("alpha"), 
+    dv_bounds=tuple(inpdict.pop("dv_bounds")),
+    weight=weights,
+    normalize=inpdict.pop("normalize"),
+    n_constraint=inpdict.pop("n_constraint"),
+    save=inpdict.pop("save"),
+    savepath=None,
+    old_env=None,
+    old_pop=None,
+    **inpdict
+)
+
+solver = Solver(**solverargs)
 print(solver.optimizer)
-pprint(solver.env.__dict__) # for debug
-pprint(solver.optimizer.__dict__)
+# pprint(solver.env.__dict__) # for debug
+# pprint(solver.optimizer.__dict__)
+
 pop = solver.env.history[0]
 data = []
 for indiv in pop:
     data.append(list(indiv.value))
 data = np.array(data)
-# plt.scatter(data[:,0], data[:,1], c="Blue")
-# for d in data:
-#     if d[-2]>=0 and d[-1]>=0:
-#         plt.scatter(data[:,0], data[:,1], c="Red")
-# plt.show()
 
 st_time = time.time()
+max_epoch = inpdict.get("Genelation", max_epoch)
 solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
+print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
+# print(solver.optimizer.mating.__repr__())
+# for indiv in solver.env.feasible_indivs:
+#     print(indiv.id)
 
 result = solver.result(save=True)
+solver.save_all_indiv()
+
+with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
+#     json.dump(solver.optimizer.__dict__, f, indent=4)
+    pprint(solver.optimizer.__dict__, stream=f)
 
 ###############################################################################
-
-cm = plt.get_cmap("Blues")
 
 data = []
 for epoch, pop in enumerate(result):
     for i, indiv in enumerate(pop):
-        data.append([epoch]+list(indiv.value)+list(indiv.wvalue))
+        data.append([epoch]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
 
 data = np.array(data)
-print(data)
+print("data :", data)
+# np.set_printoptions(threshold=np.inf)
+np.set_printoptions(precision=5, suppress=True)
 # plt.scatter(data[-1,0], data[-1,1])
-if hasattr(solver.optimizer, "ref_points"):
-    print(f"ref_points={solver.optimizer.ref_points}")
+print(f"ref_points={solver.optimizer.ref_points}")
 print(f"pool size={len(solver.env.pool)}")
 
 sort_func = NonDominatedSort()
 pop = solver.env.history[-1]
-for i in range(1, 11):
+for i in range(1, 100):
     pop = pop + solver.env.history[-i]
 
 print("popsize",len(pop))
 # fronts = non_dominate_sort(pop)
 # pareto = sort_func.output_pareto(pop)
-# pareto = solver.optimizer.EP
 # print("pareto size", len(pareto), end="\n\n")
 # print("pop:fronts=",len(pop), ":", sum([len(front) for front in fronts]))
-# pareto_val = np.array([indiv.value for indiv in pareto])
+pareto = solver.optimizer.EP
+pareto_val = np.array([indiv.value for indiv in pareto])
 # print(pareto_val)
-
 # np.savetxt("temp_data.csv", data, delimiter=",")
-# np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
+np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
-plt.scatter(data[:,1], data[:,2], c=data[:,0], cmap=cm)
-# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="red")
+feasible_dat = data[data[:,-1] < 0]
+infeasible_dat = data[data[:,-1] > 0]
+fig = plt.figure(figsize=(10,7))
+
+
+cm = plt.get_cmap("Blues")
+sc = plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm, zorder=10)
+# cm = plt.get_cmap("Reds")
+# plt.scatter(infeasible_dat[:,1], infeasible_dat[:,2], c=infeasible_dat[:,0], cmap=cm)
+data0 = data[data[:,0] == 1]
+data_end = data[data[:,0] == max_epoch]
+# data_end = pareto_val
+# plt.scatter(data0[:,1], data0[:,2], c="green")
+# plt.scatter(data0[:,1], data0[:,2], c="yellow")
+# plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
+
+headers = "epoch, value1, value2, wvalue1, wvalue2, CV"
+fmts = "%5f"
+# fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f", "%.5f"]
+np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
 print("data shape",data.shape)
+print("solver\n")
+print(solver.optimizer.name)
 
 ### 以下，制約条件ありで行う場合使用
 # data = []
@@ -162,5 +270,10 @@ print("data shape",data.shape)
 #     if dom != 0:
 #         print("dominate:",i, dom)
 
-#plt.ylim([0.0, 1.0])
+plt.colorbar(sc)
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.0])
+plt.tight_layout()
+plt.savefig("result/fig.png", dpi=1200)
+# plt.savefig("result/fig.svg")
 plt.show()

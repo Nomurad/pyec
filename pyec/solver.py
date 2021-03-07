@@ -4,6 +4,7 @@ import dill
 import copy
 import os 
 import time
+from icecream import ic
 
 from .base.indiv import Individual
 from .base.population import Population
@@ -104,7 +105,7 @@ class Solver(object):
         self.eval_func = self.env.func
         self.n_obj = self.env.n_obj
         # self.n_obj = len(eval_func( dummy_indiv.get_design_variable() ))
-        print("n_obj:", self.n_obj)
+        ic("n_obj:", self.n_obj)
 
         # print("set optimizer:", optimizer.name)
         if optimizer is MOEAD:
@@ -323,6 +324,9 @@ class Solver(object):
         EPdata = {"EP_id": EP_id, "EP_history": EPhist}
         self._serializer("EP_indivID.pkl", EPdata)
         print(f"save finish!! : {time.time() - sttime}")
+
+    def save_all_indiv(self):
+        self.env.pool.to_csv()
 
     def _serializer(self, fname, obj):
         with open(fname, "wb") as f:
