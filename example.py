@@ -14,9 +14,9 @@ from pyec.base.indiv import Individual, Fitness
 from pyec.base.population import Population
 from pyec.base.environment import Environment
 
-from pyec.operators.crossover import SimulatedBinaryCrossover
+from pyec.operators.crossover import SimulatedBinaryCrossover as SBX
 from pyec.operators.selection import Selector, TournamentSelectionStrict
-from pyec.operators.mutation import PolynomialMutation
+from pyec.operators.mutation import PolynomialMutation as PM
 from pyec.operators.mating import Mating
 from pyec.operators.sorting import NonDominatedSort, non_dominate_sort
 
@@ -24,29 +24,39 @@ from pyec.optimizers.moead import *
 from pyec.solver import Solver
 
 from pyec.testfunctions import TestProblem, Constraint_TestProblem
-from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, OSY, Welded_beam
+from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, OSY, Welded_beam, zdt1
 
 MAXIMIZE = -1
 MINIMIZE = 1
 
 max_epoch = 100*2
 n_obj = 2
-dvsize = 6
+dvsize = 2
 alpha = 4
 phi = 0.3
 
-# boundary set
-bmax = [1.0]
-bmin = [0.0]
-
-optimizer = C_MOEAD
-optimizer = C_MOEAD_DMA
-optimizer = C_MOEAD_DEDMA
-
 # cmd argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument("-f", "--input_file", type=str, default="calc_input.json")
+parser.add_argument("-i", "--input_file", type=str, default="calc_input.yml")
 args = parser.parse_args()
+
+# load setting file (calc_input.yml or .json)
+inpfile = args.input_file
+extention = os.path.splitext(inpfile)[-1]
+if os.path.exists(inpfile):
+    with open(inpfile, "r") as f:
+        if extention == ".json":
+            inpdict = json.load(f)
+        elif extention == ".yml":
+            inpdict = yaml.safe_load(f)
+        ic(inpdict)
+        ic((inpdict.get("dv_bounds")))
+        ic(type(inpdict.get("dv_bounds")))
+        # input()
+else:
+    print(f"input file ({inpfile}) is not exist...")
+    exit(1)
+
 
 # Define the optimize problem for yourself.
 class my_problem1(Constraint_TestProblem):
@@ -70,7 +80,6 @@ class my_problem1(Constraint_TestProblem):
         g1 = x - 1
         
         return (f1, f2), (g1)
-
 
 
 # test problem setting function
@@ -115,61 +124,84 @@ def problem_set(prob:str):
         weights = [MINIMIZE]*n_obj
         bmin = problem.dv_bounds[0]
         bmax = problem.dv_bounds[1]
+    
+    elif prob == "zdt1":
+        problem = zdt1
+        n_obj = 2
+        n_const = 0
+        weights = [MINIMIZE]*dvsize
+        bmin = 0.0
+        bmax = 1.0
+    
+    else:
+        return -1
 
     print("problem is ", problem)
+    return 0
 
-
-inpfile = args.input_file
-extention = os.path.splitext(inpfile)[-1]
-if os.path.exists(inpfile):
-    with open(inpfile, "r") as f:
-        if extention == ".json":
-            inpdict = json.load(f)
-        elif extention == ".yml":
-            inpdict = yaml.safe_load(f)
-        ic(inpdict)
-        ic((inpdict.get("dv_bounds")))
-        ic(type(inpdict.get("dv_bounds")))
-        input()
-else:
-    print(f"input file ({inpfile}) is not exist...")
-    exit(1)
 
 os.makedirs("result", exist_ok=True)
 
+cross = SBX(rate=1.0, eta=15)
+mutate = PM(rate=1/dvsize, eta=20)
+### read from inpdict ver. ###
+# cross = SBX(rate=inpdict.get("Pc", 1.0), eta=inpdict.get("eta_c", 15))
+# mutate = PM(rate=inpdict.get("Pm", 1.0), eta=inpdict.get("eta_m", 15))
 
-problem_set(inpdict.get("problem"))
-n_obj = problem.n_obj
-n_const = problem.n_const
-
-cross = SimulatedBinaryCrossover(rate=1.0, eta=15)
-mutate = PolynomialMutation(rate=1/dvsize, eta=20)
-
-solverargs = dict(
-    popsize=inpdict.pop("popsize"),
-    dv_size=inpdict.pop("dv_size"),
-    n_obj=inpdict.pop("n_obj"),
-    selector=Selector(TournamentSelectionStrict),  # SBX 
-    mating=[cross, mutate],
-    optimizer=eval(inpdict.pop("optimizer")),
-    eval_func=problem,
-    ksize=inpdict.pop("ksize"),
-    alpha=inpdict.pop("alpha"), 
-    dv_bounds=tuple(inpdict.pop("dv_bounds")),
-    weight=weights,
-    normalize=inpdict.pop("normalize"),
-    n_constraint=inpdict.pop("n_constraint"),
-    save=inpdict.pop("save"),
-    savepath=None,
-    old_env=None,
-    old_pop=None,
-    **inpdict
-)
-
+res = problem_set(inpdict.get("problem"))
+if res < 0:
+    solverargs = dict(
+        popsize=inpdict.pop("popsize"),
+        dv_size=inpdict.pop("dv_size"),
+        n_obj=inpdict.pop("n_obj"),
+        selector=Selector(TournamentSelectionStrict),  # SBX 
+        mating=[cross, mutate],
+        optimizer=eval(inpdict.pop("optimizer")),
+        eval_func=problem,
+        ksize=inpdict.pop("ksize"),
+        alpha=inpdict.pop("alpha"), 
+        dv_bounds=tuple(inpdict.pop("dv_bounds")),
+        weight=weights,
+        normalize=inpdict.pop("normalize"),
+        n_constraint=inpdict.pop("n_constraint"),
+        save=inpdict.pop("save"),
+        savepath=None,
+        old_env=None,
+        old_pop=None,
+        feasible_only=True,
+        **inpdict
+    )
+else:
+    inpdict.pop("n_obj")
+    inpdict.pop("n_constraint")
+    inpdict.pop("dv_bounds")
+    # inpdict.pop("")
+    
+    solverargs = dict(
+        popsize=inpdict.pop("popsize"),
+        dv_size=inpdict.pop("dv_size"),
+        n_obj=problem.n_obj,
+        selector=Selector(TournamentSelectionStrict),  # SBX 
+        mating=[cross, mutate],
+        optimizer=eval(inpdict.pop("optimizer")),
+        eval_func=problem,
+        ksize=inpdict.pop("ksize"),
+        alpha=inpdict.pop("alpha"), 
+        dv_bounds=problem.dv_bounds,
+        weight=weights,
+        normalize=inpdict.pop("normalize"),
+        n_constraint=problem.n_const,
+        save=inpdict.pop("save"),
+        savepath=None,
+        old_env=None,
+        old_pop=None,
+        feasible_only=True,
+        **inpdict
+    )
+ic(solverargs)
+input()
 solver = Solver(**solverargs)
 print(solver.optimizer)
-# pprint(solver.env.__dict__) # for debug
-# pprint(solver.optimizer.__dict__)
 
 pop = solver.env.history[0]
 data = []
@@ -177,36 +209,28 @@ for indiv in pop:
     data.append(list(indiv.value))
 data = np.array(data)
 
+### Start Optimizing
 st_time = time.time()
 max_epoch = inpdict.get("Genelation", max_epoch)
 solver.run(max_epoch)
 print("calc time: ", time.time()-st_time)
 print("num of feasible indivs: ", len(solver.env.feasible_indivs_id))
-# print(solver.optimizer.mating.__repr__())
-# for indiv in solver.env.feasible_indivs:
-#     print(indiv.id)
 
 result = solver.result(save=True)
 solver.save_all_indiv()
 
 with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
-#     json.dump(solver.optimizer.__dict__, f, indent=4)
+    # json.dump(solver.optimizer.__dict__, f, indent=4)
     pprint(solver.optimizer.__dict__, stream=f)
 
-###############################################################################
-
-data = []
-for epoch, pop in enumerate(result):
-    for i, indiv in enumerate(pop):
-        data.append([epoch]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation))
-
-data = np.array(data)
+### ===========================================================================
+data = solver.save_history_to_csv()
 print("data :", data)
 # np.set_printoptions(threshold=np.inf)
 np.set_printoptions(precision=5, suppress=True)
 # plt.scatter(data[-1,0], data[-1,1])
-print(f"ref_points={solver.optimizer.ref_points}")
-print(f"pool size={len(solver.env.pool)}")
+print(f"ref_points = {solver.optimizer.ref_points}")
+print(f"pool size = {len(solver.env.pool)}")
 
 sort_func = NonDominatedSort()
 pop = solver.env.history[-1]
@@ -226,13 +250,18 @@ np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 feasible_dat = data[data[:,-1] < 0]
 infeasible_dat = data[data[:,-1] > 0]
+
+
+### result plot ===============================================================
+
 fig = plt.figure(figsize=(10,7))
-
-
 cm = plt.get_cmap("Blues")
-sc = plt.scatter(feasible_dat[:,1], feasible_dat[:,2], c=feasible_dat[:,0], cmap=cm, zorder=10)
-# cm = plt.get_cmap("Reds")
-# plt.scatter(infeasible_dat[:,1], infeasible_dat[:,2], c=infeasible_dat[:,0], cmap=cm)
+sc = plt.scatter(feasible_dat[:,1], feasible_dat[:,2], 
+                c=feasible_dat[:,0], cmap=cm, zorder=10)
+# if solver.env.n_constraint > 0:
+cm = plt.get_cmap("Reds")
+plt.scatter(infeasible_dat[:,1], infeasible_dat[:,2], c=infeasible_dat[:,0], cmap=cm)
+
 data0 = data[data[:,0] == 1]
 data_end = data[data[:,0] == max_epoch]
 # data_end = pareto_val
@@ -241,34 +270,8 @@ data_end = data[data[:,0] == max_epoch]
 # plt.scatter(pareto_val[:,0], pareto_val[:,1], c="green")
 
 np.savetxt("gen000_pop_objs_eval.txt", data[:, 0:3])
-
-headers = "epoch, value1, value2, wvalue1, wvalue2, CV"
-fmts = "%5f"
-# fmts = ["%5d","%.5f","%.5f","%.5f","%.5f","%.5f", "%.5f"]
-np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=headers)
-print("data shape",data.shape)
 print("solver\n")
 print(solver.optimizer.name)
-
-### 以下，制約条件ありで行う場合使用
-# data = []
-# for pop in solver.env.history:
-#     for indiv in pop:
-#         if all( val <= 0 for val in indiv.feasible_value):
-#             data.append([epoch]+list(indiv.value)+list(indiv.feasible_value))
-
-# data = np.array(data)
-# print(data)
-# plt.scatter(data[:,1], data[:,2], c="Red")
-
-# for i, indiv in enumerate(pareto):
-#     dom = 0
-#     for j, other in enumerate(pareto):
-#         if i == j:
-#             continue
-#         dom += (indiv.dominate(other))
-#     if dom != 0:
-#         print("dominate:",i, dom)
 
 plt.colorbar(sc)
 # plt.xlim([0.0, 1.0])

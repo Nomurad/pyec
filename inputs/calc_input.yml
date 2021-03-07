@@ -9,26 +9,40 @@
 #========================================================#
 "optimizer": "C_MOEAD_HXDMA"
 
-"Genelation": 100
+"Genelation": 1000
 "popsize": 100
 
 # Num of design variable
-"dv_size": 4
+"dv_size": 6
 
 "n_obj": 2
-"n_constraint": 2
+"n_constraint": 6
 
+# SBX setting
+"Pc": 1.0
+"eta_c": 15
+
+# PolynomialMutation setting
+"Pm": 0.1
+"eta_m": 15
+
+# neighberhood size (for MOEA/D series)
 "ksize": 11
+
+# archive size (for CMOEA/D-DMA series)
 "alpha": 4
 
 # dv bounds set
 "dv_bounds": [
-    [0.0], # lower bounds
-    [1.0]  # upper bounds
+    0.0, # lower bounds
+    1.0  # upper bounds
 ]
 
-"CR": 1.0
-"F": 0.5
+# DE property
+"CR": 1.0   # crossover rate
+"F": 0.5    # mutation vector scaling factor
+
+# DM rate
 "cross_rate_dm": 0.5
 
 # objective function normalize option.

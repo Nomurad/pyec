@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pickle
 import dill
 import copy
@@ -119,7 +120,7 @@ class Solver(object):
                 ksize = 3
             self.optimizer = optimizer((self.env.popsize), self.n_obj,
                                        self.selector, self.mating, ksize=ksize,
-                                       CR=0.75, F=0.75, eta=20, **kwargs)
+                                       **kwargs)
 
         elif optimizer is C_MOEAD:
             if ksize == 0:
@@ -327,6 +328,33 @@ class Solver(object):
 
     def save_all_indiv(self):
         self.env.pool.to_csv()
+
+    def save_history_to_csv(self):
+        data = []
+        if self.env.n_constraint != 0:
+            for epoch, pop in enumerate(self.env.history):
+                for i, indiv in enumerate(pop):
+                    tmp = [epoch]+list(indiv.value)+list(indiv.wvalue)+list(indiv.constraint_violation)
+                    data.append(tmp)
+        else:
+            for epoch, pop in enumerate(self.env.history):
+                for i, indiv in enumerate(pop):
+                    tmp = [epoch]+list(indiv.value)+list(indiv.wvalue)
+                    data.append(tmp)
+        data = np.array(data)
+        # data = pd.DataFrame(data)
+        headers = ["epoch"] 
+        for i in range(self.env.n_obj):
+            headers.append(f"value{i+1}")
+        for i in range(self.env.n_obj):
+            headers.append(f"wvalue{i+1}")
+        headers.append("CV")
+
+        fmts = "%5f"
+        np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header="".join(headers))
+        # data.columns = headers
+        # data.to_csv("const_opt_result.csv", float_format=fmts)
+        return data
 
     def _serializer(self, fname, obj):
         with open(fname, "wb") as f:
