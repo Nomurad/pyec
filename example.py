@@ -192,7 +192,7 @@ else:
         **inpdict
     )
 ic(solverargs)
-input()
+# input()
 solver = Solver(**solverargs)
 print(solver.optimizer)
 
