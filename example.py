@@ -66,15 +66,13 @@ class my_problem(Constraint_TestProblem):
     """
     def __init__(self):
         super().__init__(n_obj=2, n_const=0)
-        self.dv_bounds = (
-            [0.0, 0.0],
-            [1.0, 1.0]
-        )
+
     
     def __call__(self, x):
         """
             argument "x" is design variable vector.
         """
+
         f1 = x[0]*2
         f2 = x[0]/2
         
