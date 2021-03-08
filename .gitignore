@@ -7,6 +7,7 @@ temp*.csv
 *.pkl
 gen000_pop_objs_eval.txt
 *opt_result.csv
+result/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
