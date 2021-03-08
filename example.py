@@ -25,7 +25,7 @@ from pyec.optimizers.moead import *
 from pyec.solver import Solver
 
 from pyec.testfunctions import TestProblem, Constraint_TestProblem
-from pyec.testfunctions import mCDTLZ, Knapsack, Circle_problem, OSY, Welded_beam, zdt1
+from pyec.testfunctions import mCDTLZ, Circle_problem, OSY, Welded_beam, zdt1
 
 MAXIMIZE = -1
 MINIMIZE = 1
@@ -34,16 +34,16 @@ max_epoch = 100*2
 n_obj = 2
 dvsize = 2
 alpha = 4
-phi = 0.3
 
 # cmd argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input_file", type=str, default="calc_input.yml")
+parser.add_argument("-i", "--input_file", type=str, default="./inputs/calc_input.yml")
 args = parser.parse_args()
 
 # load setting file (calc_input.yml or .json)
 inpfile = args.input_file
 extention = os.path.splitext(inpfile)[-1]
+ic(inpfile)
 if os.path.exists(inpfile):
     with open(inpfile, "r") as f:
         if extention == ".json":
@@ -60,12 +60,12 @@ else:
 
 
 # Define the optimize problem for yourself.
-class my_problem1(Constraint_TestProblem):
+class my_problem(Constraint_TestProblem):
     """
-        const-opt problem example
+        problem example
     """
     def __init__(self):
-        super().__init__(n_obj=2, n_const=1)
+        super().__init__(n_obj=2, n_const=0)
         self.dv_bounds = (
             [0.0, 0.0],
             [1.0, 1.0]
@@ -78,14 +78,14 @@ class my_problem1(Constraint_TestProblem):
         f1 = x[0]*2
         f2 = x[0]/2
         
-        g1 = x - 1
+        # g1 = x - 1
         
-        return (f1, f2), (g1)
+        return f1, f2
 
 
 # test problem setting function
 def problem_set(prob:str):
-    global n_obj, dvsize, bmax, bmin, problem, weights, phi
+    global n_obj, dvsize, bmax, bmin, problem, weights
     print("problem name is ", prob)
     if prob == "mCDTLZ":
         # dvsize = n_obj
@@ -93,13 +93,6 @@ def problem_set(prob:str):
         weights = [MINIMIZE]*n_obj
         bmin = problem.dv_bounds[0]
         bmax = problem.dv_bounds[1]
-
-    elif prob == "Knapsack":
-        # dvsize = 500
-        bmin = 0.0
-        bmax = 1.0
-        problem = Knapsack(n_obj=n_obj, n_items=dvsize, phi=phi)
-        weights = [MAXIMIZE]*n_obj
 
     elif prob == "Circle":
         dvsize = n_obj
@@ -151,6 +144,7 @@ mutate = PM(rate=1/dvsize, eta=20)
 
 res = problem_set(inpdict.get("problem"))
 if res < 0:
+    problem = my_problem
     solverargs = dict(
         popsize=inpdict.pop("popsize"),
         dv_size=inpdict.pop("dv_size"),
@@ -166,7 +160,7 @@ if res < 0:
         normalize=inpdict.pop("normalize"),
         n_constraint=inpdict.pop("n_constraint"),
         save=inpdict.pop("save"),
-        savepath=None,
+        savepath=inpdict.pop("savepath"),
         old_env=None,
         old_pop=None,
         feasible_only=True,
@@ -193,7 +187,7 @@ else:
         normalize=inpdict.pop("normalize"),
         n_constraint=problem.n_const,
         save=inpdict.pop("save"),
-        savepath=None,
+        savepath=inpdict.pop("savepath"),
         old_env=None,
         old_pop=None,
         feasible_only=True,
@@ -228,6 +222,9 @@ with open("result/result_"+ solver.optimizer.name +".json", "w") as f:
 data = solver.save_history_to_csv()
 print("data :", data)
 
+
+### ===========================================================================
+###
 ### ===========================================================================
 np.set_printoptions(precision=5, suppress=True)
 # plt.scatter(data[-1,0], data[-1,1])
@@ -252,7 +249,6 @@ np.savetxt("temp_pareto.csv", pareto_val, delimiter=",")
 
 feasible_dat = data[data[:,-1] < 0]
 infeasible_dat = data[data[:,-1] > 0]
-
 
 ### result plot ===============================================================
 fig = plt.figure(figsize=(10,7))

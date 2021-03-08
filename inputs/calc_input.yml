@@ -42,6 +42,9 @@
 "CR": 1.0   # crossover rate
 "F": 0.5    # mutation vector scaling factor
 
+# Set when the scaling factor F is varied according to a normal distribution.
+"sigma": 
+
 # DM rate
 "cross_rate_dm": 0.5
 
@@ -50,3 +53,5 @@
 
 # result saving option
 "save": false
+"savepath": 
+
