@@ -351,7 +351,7 @@ class Solver(object):
         headers.append("CV")
 
         fmts = "%5f"
-        np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header="".join(headers))
+        np.savetxt("const_opt_result.csv", data, delimiter=",", fmt=fmts, header=",".join(headers))
         # data.columns = headers
         # data.to_csv("const_opt_result.csv", float_format=fmts)
         return data
