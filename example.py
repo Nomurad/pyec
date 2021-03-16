@@ -101,7 +101,7 @@ def problem_set(prob:str):
         problem = Circle_problem()
         weights = [MAXIMIZE]*n_obj
 
-    elif prob == "osy":
+    elif prob == "OSY":
         problem = OSY()  
         dvsize = problem.dvsize
         n_obj = problem.n_obj
